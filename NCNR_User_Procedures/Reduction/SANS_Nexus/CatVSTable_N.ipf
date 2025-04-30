@@ -975,22 +975,19 @@ End
 
 
 //
-// TODO:
 // -- FEB 2020 copied this function over from VSANS, since it was popular there
 //
-// -- what else to add to the menu? (MSK and DIV now work)
+// x- what else to add to the menu? (MSK and DIV now work)
 // -- add directly to WORK files?
-// -- "set" as some special file type, intent, use? (quick "patch" operations)
+// x- "set" as some special file type, intent, use? (quick "patch" operations)
 // -- "check" the reduction protocol for completeness?
 //
 // x- seems to not "let go" of a selection (missing the mouse up?)
 //    (possibly) less annoying if I only handle mouseup and present a menu then.
 //
-//
 // // new columns of PURPOSE and INTENT can have the values:
 //   PURPOSE = Transmission, Scattering, He3
 //   INTENT = Sample, Empty Cell, Blocked Beam, Open Beam, Standard
-//
 //
 Function CatTableHook(infoStr)
 	String infoStr

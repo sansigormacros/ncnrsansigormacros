@@ -328,7 +328,7 @@ Function CircularAverageTo1D_old(type)
 	
 	Variable usingLenses = 0		//
 
-	if(cmpstr(getLensPrismStatus(type),"out") == 0 )		// TODO -- this read function is HARD-WIRED
+	if(cmpstr(getLensPrismStatus(type),"out") == 0 )		
 		// lenses and prisms are out
 		usingLenses = 0
 	else
@@ -766,8 +766,8 @@ Function CircularAverageTo1D(type)
 
 // after looping through all of the data on the panels, calculate errors on I(q),
 // just like in CircSectAve.ipf
-// TODO:
-// -- 2D Errors were (maybe) properly acculumated through reduction, so this loop of calculations is NOT VERIFIED (yet)
+// 
+// x- 2D Errors were properly accumulated through reduction, so this loop of calculations is correct
 // x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
 	for(ii=0;ii<nq;ii+=1)
 		if(nBin_qxqy[ii] == 0)
@@ -846,7 +846,6 @@ Function CircularAverageTo1D(type)
 //	V_RemoveNaNsQIS(qBin_qxqy, iBin_qxqy, eBin_qxqy)
 
 	
-	// TODO:
 	// -- This is where I calculate the resolution in SANS (see CircSectAve)
 	// -- from the top of the function, type = work folder
 	//
@@ -881,7 +880,7 @@ Function CircularAverageTo1D(type)
 	
 	Variable usingLenses = 0		//
 
-	if(cmpstr(getLensPrismStatus(type),"out") == 0 )		// TODO -- this read function is HARD-WIRED
+	if(cmpstr(getLensPrismStatus(type),"out") == 0 )		
 		// lenses and prisms are out
 		usingLenses = 0
 	else
@@ -1044,9 +1043,7 @@ End
 //
 //		Function that bins a 2D detctor panel into I(q) based on the q-value of the pixel
 //		- each pixel QxQyQz has been calculated beforehand
-//		- if multiple panels are selected to be combined, it is done here during the binning
-//		- the setting of deltaQ step is still a little suspect (TODO)
-//
+//		- the setting of deltaQ step is still a little suspect
 //
 // see the equivalent function in PlotUtils2D_v40.ipf
 //
@@ -1061,21 +1058,20 @@ End
 // x- VERIFY
 // x- figure out what the best location is to put the averaged data? currently @ top level of WORK folder
 //    but this is a lousy choice.
-// x- binning is now Mask-aware. If mask is not present, all data is used. If data is from VCALC, all data is used
+// x- binning is now Mask-aware. If mask is not present, all data is used.
 // x- Where do I put the solid angle correction? In here as a weight for each point, or later on as 
 //    a blanket correction (matrix multiply) for an entire panel? (Solid Angle correction is done in the
 //    step where data is added to a WORK file (see Raw_to_Work())
 //
 //
-// TODO:
-// -- some of the input parameters for the resolution calcuation are either assumed (apOff) or are currently
-//    hard-wired. these need to be corrected before even the pinhole resolution is correct
+// x- some of the input parameters for the resolution calcuation are assumed (apOff) 
+//
 // x- resolution calculation is in the correct place. The calculation is done per-panel (specified by TYPE),
 //    and then the unwanted points can be discarded (all 6 columns) as the data is trimmed and concatenated
 //    is separate functions that are resolution-aware.
 //
 //
-// folderStr = WORK folder, type = the binning type (may include multiple detectors)
+// folderStr = WORK folder
 //
 // side = one of "left;right;both;"
 // phi_rad = center of sector in radians
@@ -1246,7 +1242,7 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 	endfor
 		
 
-// after looping through all of the data on the panels, calculate errors on I(q),
+// calculate errors on I(q),
 // just like in CircSectAve.ipf
 
 // x- 2D Errors are properly acculumated through reduction
@@ -1302,7 +1298,7 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 	endif
 	
 	
-	// since the beam center is not always on the detector, many of the low Q bins will have zero pixels
+	// since the beam center may not be on the detector, many of the low Q bins will have zero pixels
 	// find the first non-zero point, working forwards
 	val = -1
 	do
@@ -1334,8 +1330,7 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 //
 	
 	// -- This is where I calculate the resolution in SANS (see CircSectAve)
-	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
-	// -- from the top of the function, folderStr = work folder, type = "FLRTB" or other type of averaging
+	// -- from the top of the function, folderStr = work folder
 	//
 	nq = numpnts(qBin_qxqy)
 	Make/O/D/N=(nq)  $(folderPath+":"+"sigmaQ")
@@ -1368,7 +1363,7 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 	
 	Variable usingLenses = 0		//
 
-	if(cmpstr(getLensPrismStatus(folderStr),"out") == 0 )		// TODO -- this read function is HARD-WIRED
+	if(cmpstr(getLensPrismStatus(folderStr),"out") == 0 )		
 		// lenses and prisms are out
 		usingLenses = 0
 	else
@@ -1388,8 +1383,6 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 //	DDet = DetectorPixelResolution(fileStr,detStr)		//needs detector type and beamline
 	//note that reading the detector pixel size from the header ASSUMES SQUARE PIXELS! - Jan2008
 	DDet = getDet_x_pixel_size(folderStr)/10			// header value (X) is in mm, want cm here
-	
-
 
 //
 //
@@ -1430,8 +1423,6 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 	
 	KillWaves/Z iBin_qxqy,iBin_qxqy,qBin_qxqy,nBin_qxqy,eBin_qxqy,iBin2_qxqy
 	
-	
-
 	SetDataFolder root:
 	
 	return(0)

@@ -2022,7 +2022,7 @@ Function DownstreamWindowTransmission(w,w_err,fname,destPath)
 //	trans = V_getSampleTransmission(fname)
 //	trans_err = V_getSampleTransError(fname)
 // TODO -- HARD WIRED values, need to set a global or find a place in the header (instrument block?) (reduction?)
-// currently globals are forced to one in WorkFolderUtils.ipf as the correction is done
+// currently globals are forced to =1 in WorkFolderUtils.ipf as the correction is done
 	NVAR trans = root:Packages:NIST:gDownstreamWinTrans
 	NVAR trans_err = root:Packages:NIST:gDownstreamWinTransErr	
 
