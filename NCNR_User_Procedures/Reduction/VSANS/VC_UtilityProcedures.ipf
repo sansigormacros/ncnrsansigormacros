@@ -1297,7 +1297,6 @@ Function V_beamIntensity()
 	t_filter = exp(-0.371 - 0.0305*lambda - 0.00352*lambda*lambda)
 	t_total = t_special*t_guide*t_filter
 
-    
 //	as = pi/4*a2*a2		//area of sample in the beam
 	as = a2Area			//area of sample in the beam
 	d2_phi = phi_0/(2*pi)

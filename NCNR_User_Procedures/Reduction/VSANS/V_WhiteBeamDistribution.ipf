@@ -1,4 +1,4 @@
-#pragma TextEncoding = "MacRoman"
+#pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
@@ -22,7 +22,7 @@
 
 // 9/2019
 // added an empirical functional form for the "Super" white beam mode where the deflector is out
-// and the wavelength is not cut off at the higher wavelength, but extends to 20 Å
+// and the wavelength is not cut off at the higher wavelength, but extends to 20 √Ö
 //
 // Integral = 30969.7 (cts*A) for middle fit
 //

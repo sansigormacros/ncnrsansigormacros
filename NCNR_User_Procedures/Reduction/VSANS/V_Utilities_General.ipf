@@ -1,4 +1,4 @@
-#pragma TextEncoding = "MacRoman"		// For details execute DisplayHelpTopic "The TextEncoding Pragma"
+#pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
@@ -1219,7 +1219,7 @@ End
 // @ IgorExchange
 //TicToc
 //Posted April 16th, 2009 by bgallarda
-//	¥	in Programming 6.10.x
+//	â€¢	in Programming 6.10.x
 
 ////duplicated here -- for VSANS use
 function v_tic()
@@ -1551,7 +1551,7 @@ End
 // processing done before passing the data to the file. The data is collected
 // in 1x1 mode, then filtered (11x11) and rebinned. This increases the 
 // pixel saturation value to 16399*16 = 262384
-// and the read background to Å 200*16
+// and the read background to â‰ˆ 200*16
 //
 //
 //

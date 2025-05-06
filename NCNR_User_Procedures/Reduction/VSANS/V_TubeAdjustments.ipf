@@ -1,3 +1,4 @@
+#pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
@@ -313,10 +314,10 @@ End
 // root:WA_PeakCentersY,root:WA_PeakCentersX
 //
 // -- so to see the results:
-//¥Edit/K=0  root:WA_PeakCentersY,root:WA_PeakCentersX
+//â€¢Edit/K=0  root:WA_PeakCentersY,root:WA_PeakCentersX
 // 
 // -- then sort the results - they seem to be in no real order...
-//¥Sort WA_PeakCentersX WA_PeakCentersY,WA_PeakCentersX
+//â€¢Sort WA_PeakCentersX WA_PeakCentersY,WA_PeakCentersX
 //
 Proc V_MakeTableForPeaks(numTube,numPeak)
 	Variable numTube=48,numPeak=5
@@ -469,26 +470,26 @@ End
 // result is in W_coef, W_sigma
 //
 // -- an example of the "quickFit" command is below, so it can be programmed rather than the menu every time
-//¥Display peak_spacing_mm_ctr vs WA_PeakCentersX3
-//¥CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=WA_PeakCentersX3/D
+//â€¢Display peak_spacing_mm_ctr vs WA_PeakCentersX3
+//â€¢CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=WA_PeakCentersX3/D
 //  fit_peak_spacing_mm_ctr= poly(W_coef,x)
 //  W_coef={-571.42,1.1135,-4.2444e-05}
 //  V_chisq= 8.5841;V_npnts= 20;V_numNaNs= 0;V_numINFs= 0;
 //  V_startRow= 0;V_endRow= 19;
 //  W_sigma={0.595,0.00246,2.15e-06}
-//  Coefficient values ± one standard deviation
-//  	K0	=-571.42 ± 0.595
-//  	K1	=1.1135 ± 0.00246
-//  	K2	=-4.2444e-05 ± 2.15e-06
+//  Coefficient values Â± one standard deviation
+//  	K0	=-571.42 Â± 0.595
+//  	K1	=1.1135 Â± 0.00246
+//  	K2	=-4.2444e-05 Â± 2.15e-06
 //
 //
 //
 // for (8) tubes, keep all of the fit coefficients
 //
-//¥make/O/D/N=(3,8) fit_coef
-//¥edit fit_coef
-//¥make/O/D/N=(3,8) fit_sigma
-//¥edit fit_sigma
+//â€¢make/O/D/N=(3,8) fit_coef
+//â€¢edit fit_coef
+//â€¢make/O/D/N=(3,8) fit_sigma
+//â€¢edit fit_sigma
 //
 // -- copy and paste in the W_coef and W_sigma values (or by a command)
 //
@@ -568,8 +569,8 @@ End
 
 
 
-//¥Duplicate tube1 tube1_mm
-//¥tube1_mm = V_TubePix_to_mm(fit_coef[0][0],fit_coef[1][0],fit_coef[2][0],p)
+//â€¢Duplicate tube1 tube1_mm
+//â€¢tube1_mm = V_TubePix_to_mm(fit_coef[0][0],fit_coef[1][0],fit_coef[2][0],p)
 
 
 ////////

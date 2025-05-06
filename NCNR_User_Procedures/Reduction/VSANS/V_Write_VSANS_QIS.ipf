@@ -1,4 +1,4 @@
-#pragma TextEncoding = "MacRoman"
+#pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
@@ -799,10 +799,10 @@ v_toc()
 		//so that double precision data is not written out
 		Redimension/S qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
 		Redimension/S SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s
-	
+
 		Redimension/N=(pixX*pixY) qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s,MaskData_s
-		
-		//not demo-compatible, but approx 8x faster!!	
+
+//not demo-compatible, but approx 8x faster!!	
 #if(strsearch(stringbykey("IGORKIND",IgorInfo(0),":",";"), "demo", 0 ) == -1)
 		
 //		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s as detSavePath	// without resolution

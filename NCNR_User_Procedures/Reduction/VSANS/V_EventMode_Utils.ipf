@@ -1,4 +1,4 @@
-#pragma TextEncoding = "MacRoman"
+#pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
@@ -1430,7 +1430,7 @@ Function V_decodeFakeEvent()
 	uint64 val,b1,b2,btime
 	val = w[0]
 	
-//	printf "%64b\r",w[0]		//wrong (drops the last Å 9 bits)
+//	printf "%64b\r",w[0]		//wrong (drops the last â‰ˆ 9 bits)
 	printf "%64b\r",val			//correct, assign value to 64bit variable
 //	print w[0]				//wrong
 	print val				// correct
@@ -1545,7 +1545,7 @@ v_tic()
 	uint64 val,b1,b2,btime
 	val = w[0]
 	
-//	printf "%64b\r",w[0]		//wrong (drops the last Å 9 bits)
+//	printf "%64b\r",w[0]		//wrong (drops the last â‰ˆ 9 bits)
 //	printf "%64b\r",val			//correct, assign value to 64bit variable
 //	print w[0]				//wrong
 //	print val				// correct
@@ -2168,7 +2168,7 @@ End
 //	56 53 41 4e 53 00 00 1b  00 40 3a 19 10 b3 e6 b6
 //	5f 00 00 00 00 d2 05 80  96 98 00 
 //	
-//	(5 b)  56 53 41 4e 53: VSANS Ð magic number
+//	(5 b)  56 53 41 4e 53: VSANS â€“ magic number
 //	(2 b)  00 00: file format revision
 //	(2 b)  1b  00: byte offset in file to event data
 //	(12 b)  40 3a 19 10 b3 e6 b6  5f 00 00 00 00 : time of origin (12 bytes instead of 10 as described in doc)

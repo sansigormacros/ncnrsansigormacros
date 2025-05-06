@@ -539,7 +539,7 @@ Function V_DetFitButtonProc(ba) : ButtonControl
 			Wave dispW=root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel
 			Wave coefW=root:coef_PeakPix2D
 			
-			FuncFitMD/H="11000101100"/NTHR=0/M=2 V_BroadPeak_Pix2D coefW  dispW /D			
+			FuncFitMD/H="11000101100"/NTHR=0/M=2 V_BroadPeak_Pix2D, coefW, dispW /D			
 			
 			Wave ws=W_sigma
 			AppendtoTable/W=PanelFit#T0 ws
