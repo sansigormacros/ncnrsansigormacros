@@ -1,5 +1,6 @@
-﻿#pragma TextEncoding = "UTF-8"
-#pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma rtFunctionErrors=1
+#pragma TextEncoding="UTF-8"
+#pragma rtGlobals=3 // Use modern global access method and strict wave access.
 
 //
 // Simple panel to load and plot NXcanSAS 2D data sets
@@ -21,31 +22,30 @@
 //
 // -- there is sasdata(0-7) (or 8)
 // root:sans56672_2D:sasentry1:sasdata0:I0		2D
-// root:sans56672_2D:sasentry1:sasdata0:Q0		3D [2][x][y] 
+// root:sans56672_2D:sasentry1:sasdata0:Q0		3D [2][x][y]
 //		first index is Qx, 2nd is Qy
 //
 // the numbering should hopefully follow the order of the detector list:
 // Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
 // -- so first guess is that LRTB => (F)0123 -- (M)4567
 
-
 // Quick way to save the displayed data as NXcanSAS2D
 
-Proc V_QuickSave_as_NXcanSAS2D(newFileName,activeType)
-	String newFileName=""
-	String activeType="RAW"
+Proc V_QuickSave_as_NXcanSAS2D(newFileName, activeType)
+	string newFileName = ""
+	string activeType  = "RAW"
 	Prompt newFileName, "Enter the file name"
 	Prompt activeType, "Enter the work folder type"
-	
-	String fullPath
-	Variable dialog = 0
-	PathInfo home
-		
-	fullPath = S_Path + newFileName+".2D.h5"
-	
-	V_WriteNXcanSAS2DData(activeType,fullPath,newFileName,dialog)
 
-end
+	string fullPath
+	variable dialog = 0
+	PathInfo home
+
+	fullPath = S_Path + newFileName + ".2D.h5"
+
+	V_WriteNXcanSAS2DData(activeType, fullPath, newFileName, dialog)
+
+EndMacro
 
 //
 //
@@ -56,16 +56,16 @@ end
 //
 Function V_Load_2D_NXCS()
 
-	Variable fileID
-	HDF5OpenFile /R /Z fileID as ""	// Displays a dialog
-	if (V_flag == 0)	// User selected a file?
-		String fileName = CleanupName(RemoveEnding(S_fileName,".h5"),0)
-		HDF5LoadGroup /O /R=2 /T=$fileName /IMAG=1 :, fileID, "/"
-//		HDF5LoadData /O fileID, S_FileName
+	variable fileID
+	HDF5OpenFile/R/Z fileID as "" // Displays a dialog
+	if(V_flag == 0) // User selected a file?
+		string fileName = CleanupName(RemoveEnding(S_fileName, ".h5"), 0)
+		HDF5LoadGroup/O/R=2/T=$fileName/IMAG=1 :, fileID, "/"
+		//		HDF5LoadData /O fileID, S_FileName
 		HDF5CloseFile fileID
 	endif
-	
-	return(0)
+
+	return (0)
 End
 
 //
@@ -74,30 +74,31 @@ End
 Proc V_Display_2D_VSANS()
 
 	V_Display_1()
-	
-End
+
+EndMacro
 
 // need a list of just NXcanSAS 2D data files
 // -- how to get just these ones?
 // try removing everything that does not end in "_2D"
 Function/S V_NX2D_fileList()
 
-	String str = "",newStr=""
+	string str    = ""
+	string newStr = ""
 	str = A_OneDDataInMemory()
-	
-	Variable num,ii
-	String tempStr=""
+
+	variable num, ii
+	string tempStr = ""
 	num = ItemsInList(str)
-	
-	for(ii=0;ii<num;ii+=1)
-		tempStr = StringFromList(ii,str,";")
-		if(stringmatch(tempStr,"*_2D") == 1)
+
+	for(ii = 0; ii < num; ii += 1)
+		tempStr = StringFromList(ii, str, ";")
+		if(stringmatch(tempStr, "*_2D") == 1)
 			newStr += tempStr + ";"
-		endif		
+		endif
 	endfor
 
-	return(newStr)
-end
+	return (newStr)
+End
 
 //
 // data loaded from a 2D NXcanSAS file can be displayed -- all panels together, plotted in terms
@@ -108,52 +109,48 @@ end
 //
 Function V_Display_1()
 
-	Variable sc=1
-	
+	variable sc = 1
+
 	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
 	if(gLaptopMode == 1)
 		sc = 0.7
 	endif
-	
+
 	DoWindow/F VSANS_NXCS
-	if(V_flag==0)
-		Display /W=(800*sc,40*sc,1308*sc,612*sc)/K=1
-		ControlBar 100*sc
+	if(V_flag == 0)
+		Display/W=(800 * sc, 40 * sc, 1308 * sc, 612 * sc)/K=1
+		ControlBar 100 * sc
 		DoWindow/C VSANS_NXCS
-		Button button0 pos={sc*20,10*sc},size={sc*130,20*sc},title="Load 2D NXcanSAS",proc=V_Load2DNXCS_ButtonProc
-		Button button1 pos={sc*20,70*sc},size={sc*130,20*sc},title="Change Display",proc=V_Change_1_ButtonProc
-		PopupMenu popup0 pos={sc*20,40*sc},title="Data Folder",value=V_NX2D_fileList()
+		Button button0, pos={sc * 20, 10 * sc}, size={sc * 130, 20 * sc}, title="Load 2D NXcanSAS", proc=V_Load2DNXCS_ButtonProc
+		Button button1, pos={sc * 20, 70 * sc}, size={sc * 130, 20 * sc}, title="Change Display", proc=V_Change_1_ButtonProc
+		PopupMenu popup0, pos={sc * 20, 40 * sc}, title="Data Folder", value=V_NX2D_fileList()
 
-
-		SetVariable setVar_b,pos={sc*300,35*sc},size={sc*120,15},title="axis Q",proc=V_2DQ_SetRange_SetVar
-		SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.12
-		CheckBox check_0a title="Log?",size={sc*60,20*sc},pos={sc*300,65*sc},proc=V_X1_Log_CheckProc
-
+		SetVariable setVar_b, pos={sc * 300, 35 * sc}, size={sc * 120, 15}, title="axis Q", proc=V_2DQ_SetRange_SetVar
+		SetVariable setVar_b, limits={0.02, 1, 0.02}, value=_NUM:0.12
+		CheckBox check_0a, title="Log?", size={sc * 60, 20 * sc}, pos={sc * 300, 65 * sc}, proc=V_X1_Log_CheckProc
 
 		if(gLaptopMode == 1)
-		// note that the dimensions here are not strictly followed since the aspect ratio is set below
-			Display/W=(10/sc,20/sc,200/sc,200/sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+			// note that the dimensions here are not strictly followed since the aspect ratio is set below
+			Display/W=(10 / sc, 20 / sc, 200 / sc, 200 / sc)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 		else
-			Display/W=(19,14,500,500)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
-		endif	
-		RenameWindow #,Panels_Q
-		ModifyGraph mode=2		// mode = 2 = dots
-		ModifyGraph tick=2,mirror=1,grid=2,standoff=0
-		ModifyGraph width={Aspect,1},height={Aspect,1},gbRGB=(56797,56797,56797)
-		SetAxis left -0.2,0.2
-		SetAxis bottom -0.2,0.2
-		Label left "Qy"
-		Label bottom "Qx"	
+			Display/W=(19, 14, 500, 500)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		endif
+		RenameWindow #, Panels_Q
+		ModifyGraph mode=2 // mode = 2 = dots
+		ModifyGraph tick=2, mirror=1, grid=2, standoff=0
+		ModifyGraph width={Aspect, 1}, height={Aspect, 1}, gbRGB=(56797, 56797, 56797)
+		SetAxis left - 0.2, 0.2
+		SetAxis bottom - 0.2, 0.2
+		Label left, "Qy"
+		Label bottom, "Qx"
 		SetActiveSubwindow ##
-	
+
 	endif
-	
+
 	SetDataFolder root:
-	
-	return(0)
+
+	return (0)
 End
-
-
 
 // folder is the data folder
 //
@@ -164,28 +161,23 @@ End
 // appends each of the data arrays to the graph (after scaling the data
 // to q-values)
 //
-Function V_Fill_1_Panel(folder)
-	String folder
-
+Function V_Fill_1_Panel(string folder)
 
 	//fill the back, if used
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	if(!gIgnoreDetB)
-		V_Panels_AsQ(folder,"B")
+		V_Panels_AsQ(folder, "B")
 	endif
-	
+
 	//fill the middle
-	V_Panels_AsQ(folder,"M")
+	V_Panels_AsQ(folder, "M")
 	//fill the front
-	V_Panels_AsQ(folder,"F")
+	V_Panels_AsQ(folder, "F")
 
-	
-	return(0)
-end
+	return (0)
+End
 
-
-
-// with a data wave passed in 
+// with a data wave passed in
 //locate the qx and qy waves, and return the min/max values (PBR)
 // to be used for the data scaling
 //
@@ -193,36 +185,31 @@ end
 // so pull these out one at a time and get min/max
 //
 
-Function V_getQxQyScaling_NXCS(dataW,minQx,maxQx,minQy,maxQy)
-	Wave dataW
-	Variable &minQx,&maxQx,&minQy,&maxQy
+Function V_getQxQyScaling_NXCS(WAVE dataW, variable &minQx, variable &maxQx, variable &minQy, variable &maxQy)
 
-	
 	DFREF dfr = GetWavesDataFolderDFR(dataW)
-	
+
 	WAVE qval = dfr:$("Q0")
-	Variable dx,dy
-	dx = DimSize(qval, 1 )
-	dy = DimSize(qval, 2 )
-	Make/O/D/N=(dx,dy) tempQ
+	variable dx, dy
+	dx = DimSize(qval, 1)
+	dy = DimSize(qval, 2)
+	Make/O/D/N=(dx, dy) tempQ
 	tempQ = qval[0][p][q]
-	
+
 	minQx = waveMin(tempQ)
 	maxQx = waveMax(tempQ)
-	
-	tempQ = qval[1][p][q]	
+
+	tempQ = qval[1][p][q]
 	minQy = waveMin(tempQ)
 	maxQy = waveMax(tempQ)
-	
+
 	killWaves/Z tempQ
-	return(0)
+	return (0)
 End
-
-
 
 // -- there is sasdata(0-7) (or 8)
 // root:sans56672_2D:sasentry1:sasdata0:I0		2D
-// root:sans56672_2D:sasentry1:sasdata0:Q0		3D [2][x][y] 
+// root:sans56672_2D:sasentry1:sasdata0:Q0		3D [2][x][y]
 //		first index is Qx, 2nd is Qy
 //
 // the numbering should hopefully follow the order of the detector list:
@@ -235,360 +222,347 @@ End
 // folder = data folder (under root:)
 // carr = det carriage str (F, M, or B)
 //
-Function V_Panels_AsQ(folder,carr)
-	String folder,carr
+Function V_Panels_AsQ(string folder, string carr)
 
-	Variable dval,minQx,maxQx,minQy,maxQy
+	variable dval, minQx, maxQx, minQy, maxQy
 
 	// -- set the log/lin scaling
 	ControlInfo/W=VSANS_NXCS check_0a
 	// V_Value == 1 if checked
-	
+
 	if(V_Value == 0)
 		// lookup wave
-		Wave LookupWave = root:Packages:NIST:VSANS:Globals:linearLookupWave
+		WAVE LookupWave = root:Packages:NIST:VSANS:Globals:linearLookupWave
 	else
 		// lookup wave - the linear version
-		Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
+		WAVE LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
 	endif
-	
-	String pathStr = "root:"+folder+":sasentry1:"
+
+	string pathStr = "root:" + folder + ":sasentry1:"
 
 	SetDataFolder pathStr
 
-	if(cmpstr(carr,"F")==0)
-		Wave/Z det_xL = $(pathStr + "sasdata0:I0")
-		Wave/Z det_xR = $(pathStr + "sasdata1:I0")
-		Wave/Z det_xT = $(pathStr + "sasdata2:I0")
-		Wave/Z det_xB = $(pathStr + "sasdata3:I0")
+	if(cmpstr(carr, "F") == 0)
+		WAVE/Z det_xL = $(pathStr + "sasdata0:I0")
+		WAVE/Z det_xR = $(pathStr + "sasdata1:I0")
+		WAVE/Z det_xT = $(pathStr + "sasdata2:I0")
+		WAVE/Z det_xB = $(pathStr + "sasdata3:I0")
 		// check for the existence of the data - if it doesn't exist, abort gracefully
-		if( !WaveExists(det_xB) || !WaveExists(det_xT) || !WaveExists(det_xL) || !WaveExists(det_xR) )
-			Abort "No FRONT Data in the "+folder+" folder"
+		if(!WaveExists(det_xB) || !WaveExists(det_xT) || !WaveExists(det_xL) || !WaveExists(det_xR))
+			Abort "No FRONT Data in the " + folder + " folder"
 		endif
 	else
-		if(cmpstr(carr,"M")==0)
-			Wave/Z det_xL = $(pathStr + "sasdata4:I0")
-			Wave/Z det_xR = $(pathStr + "sasdata5:I0")
-			Wave/Z det_xT = $(pathStr + "sasdata6:I0")
-			Wave/Z det_xB = $(pathStr + "sasdata7:I0")
+		if(cmpstr(carr, "M") == 0)
+			WAVE/Z det_xL = $(pathStr + "sasdata4:I0")
+			WAVE/Z det_xR = $(pathStr + "sasdata5:I0")
+			WAVE/Z det_xT = $(pathStr + "sasdata6:I0")
+			WAVE/Z det_xB = $(pathStr + "sasdata7:I0")
 			// check for the existence of the data - if it doesn't exist, abort gracefully
-			if( !WaveExists(det_xB) || !WaveExists(det_xT) || !WaveExists(det_xL) || !WaveExists(det_xR) )
-				Abort "No MIDDLE carriage Data in the "+folder+" folder"
+			if(!WaveExists(det_xB) || !WaveExists(det_xT) || !WaveExists(det_xL) || !WaveExists(det_xR))
+				Abort "No MIDDLE carriage Data in the " + folder + " folder"
 			endif
 		else
 			//must be the back detector carriage
-			Wave/Z det_xL = $(pathStr + "sasdata8:I0")
+			WAVE/Z det_xL = $(pathStr + "sasdata8:I0")
 			// check for the existence of the data - if it doesn't exist, abort gracefully
-			if( !WaveExists(det_xL) )
-				Abort "No BACK carriage Data in the "+folder+" folder"
+			if(!WaveExists(det_xL))
+				Abort "No BACK carriage Data in the " + folder + " folder"
 			endif
 		endif
 	endif
-	
 
-
-// (DONE) -- for each of the 4 data waves, find qmin, qmax and set the scale to q, rather than pixels
+	// (DONE) -- for each of the 4 data waves, find qmin, qmax and set the scale to q, rather than pixels
 	//set the wave scaling for the detector image so that it can be plotted in q-space
 	// (DONE): this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
 	// take the middle value. At very small angles, OK, at 1m, this is a crummy approximation.
 	// since qTot is magnitude only, I need to put in the (-ve)
-	if(cmpstr(carr,"B")==0)
-	// only one panel on B
-		V_getQxQyScaling_NXCS(det_xL,minQx,maxQx,minQy,maxQy)
-		SetScale/I x minQx,maxQx,"", det_xL		//this sets the left and right ends of the data scaling
-		SetScale/I y minQy,maxQy,"", det_xL	
+	if(cmpstr(carr, "B") == 0)
+		// only one panel on B
+		V_getQxQyScaling_NXCS(det_xL, minQx, maxQx, minQy, maxQy)
+		SetScale/I x, minQx, maxQx, "", det_xL //this sets the left and right ends of the data scaling
+		SetScale/I y, minQy, maxQy, "", det_xL
 	endif
 
-	Variable dx,dy,extra_x,extra_y
-	
-	extra_x = 7		// "extra" points to add to account for shifting. maybe not needed since xPix is an overestimate
+	variable dx, dy, extra_x, extra_y
+
+	extra_x = 7 // "extra" points to add to account for shifting. maybe not needed since xPix is an overestimate
 	extra_y = 7
-	
-//	Variable QxMax_tot,QxMin_tot,QyMax_tot,QyMin_tot,xPix,yPix
-//	Variable minxb,minxt,minxl,minxr		//temporary storage
-//	Variable minyb,minyt,minyl,minyr
-//	Variable maxxb,maxxt,maxxl,maxxr
-//	Variable maxyb,maxyt,maxyl,maxyr
-	
-//	QxMax_tot = -10		// bad starting values to replace
-//	QxMin_tot = 10
-//	QyMax_tot = -10
-//	QyMin_tot = 10
-	
-//	xPix = 250		//dimensions of the interpolated q-matrix
-//	yPix = 250
 
-	
-	if(cmpstr(carr,"F") == 0 )
+	//	Variable QxMax_tot,QxMin_tot,QyMax_tot,QyMin_tot,xPix,yPix
+	//	Variable minxb,minxt,minxl,minxr		//temporary storage
+	//	Variable minyb,minyt,minyl,minyr
+	//	Variable maxxb,maxxt,maxxl,maxxr
+	//	Variable maxyb,maxyt,maxyl,maxyr
+
+	//	QxMax_tot = -10		// bad starting values to replace
+	//	QxMin_tot = 10
+	//	QyMax_tot = -10
+	//	QyMin_tot = 10
+
+	//	xPix = 250		//dimensions of the interpolated q-matrix
+	//	yPix = 250
+
+	if(cmpstr(carr, "F") == 0)
 		// 4 panels on F, M
-	// this method simply sets the data scale. the image then plotted is not any better than a straight
-	// pixel display. Fast, but only approximate if tubes shift
-//		V_getQxQyScaling_NXCS(det_xB,minQx,maxQx,minQy,maxQy)
-//		SetScale/I x minQx,maxQx,"", det_xB		//this sets the left and right ends of the data scaling
-//		SetScale/I y minQy,maxQy,"", det_xB	
-//	
-//		V_getQxQyScaling_NXCS(det_xT,minQx,maxQx,minQy,maxQy)
-//		SetScale/I x minQx,maxQx,"", det_xT		//this sets the left and right ends of the data scaling
-//		SetScale/I y minQy,maxQy,"", det_xT	
-//	
-//		V_getQxQyScaling_NXCS(det_xL,minQx,maxQx,minQy,maxQy)
-//		SetScale/I x minQx,maxQx,"", det_xL		//this sets the left and right ends of the data scaling
-//		SetScale/I y minQy,maxQy,"", det_xL	
-//	
-//		V_getQxQyScaling_NXCS(det_xR,minQx,maxQx,minQy,maxQy)
-//		SetScale/I x minQx,maxQx,"", det_xR		//this sets the left and right ends of the data scaling
-//		SetScale/I y minQy,maxQy,"", det_xR	
+		// this method simply sets the data scale. the image then plotted is not any better than a straight
+		// pixel display. Fast, but only approximate if tubes shift
+		//		V_getQxQyScaling_NXCS(det_xB,minQx,maxQx,minQy,maxQy)
+		//		SetScale/I x minQx,maxQx,"", det_xB		//this sets the left and right ends of the data scaling
+		//		SetScale/I y minQy,maxQy,"", det_xB
+		//
+		//		V_getQxQyScaling_NXCS(det_xT,minQx,maxQx,minQy,maxQy)
+		//		SetScale/I x minQx,maxQx,"", det_xT		//this sets the left and right ends of the data scaling
+		//		SetScale/I y minQy,maxQy,"", det_xT
+		//
+		//		V_getQxQyScaling_NXCS(det_xL,minQx,maxQx,minQy,maxQy)
+		//		SetScale/I x minQx,maxQx,"", det_xL		//this sets the left and right ends of the data scaling
+		//		SetScale/I y minQy,maxQy,"", det_xL
+		//
+		//		V_getQxQyScaling_NXCS(det_xR,minQx,maxQx,minQy,maxQy)
+		//		SetScale/I x minQx,maxQx,"", det_xR		//this sets the left and right ends of the data scaling
+		//		SetScale/I y minQy,maxQy,"", det_xR
 
-/// March 2025 - interpolate each detector panel to a proper q-matrix
-// try and do each carriage as a separate image dince doing all 4 together doesn't work well. all together,
-// the hole in the middle is not a hole any more - so you can't see the middle carriage
-//
-//		Make/O/N=(xPix+extra_x,yPix+extra_y) dataMat_F=0			// the interpolated matrix is initialized here
+		/// March 2025 - interpolate each detector panel to a proper q-matrix
+		// try and do each carriage as a separate image dince doing all 4 together doesn't work well. all together,
+		// the hole in the middle is not a hole any more - so you can't see the middle carriage
+		//
+		//		Make/O/N=(xPix+extra_x,yPix+extra_y) dataMat_F=0			// the interpolated matrix is initialized here
 
-//		V_getQxQyScaling_NXCS(det_xB,minxb,maxxb,minyb,maxyb)	//min/max set PBR
-//		V_getQxQyScaling_NXCS(det_xT,minxt,maxxt,minyt,maxyt)	//min/max set PBR
-//		V_getQxQyScaling_NXCS(det_xL,minxl,maxxl,minyl,maxyl)	//min/max set PBR
-//		V_getQxQyScaling_NXCS(det_xR,minxr,maxxr,minyr,maxyr)	//min/max set PBR
-//	
-//		QxMin_tot = min(QxMin_tot,minxb,minxt,minxl,minxr)
-//		QxMax_tot = max(QxMin_tot,maxxb,maxxt,maxxl,maxxr)
-//		QyMin_tot = min(QxMin_tot,minyb,minyt,minyl,minyr)
-//		QyMax_tot = max(QxMin_tot,maxyb,maxyt,maxyl,maxyr)
-//
-//		SetScale/I x QxMin_tot,QxMax_tot,"",dataMat_F
-//		SetScale/I y QyMin_tot,QyMax_tot,"",dataMat_F
-//		Duplicate /O dataMat_F,countMat_F
+		//		V_getQxQyScaling_NXCS(det_xB,minxb,maxxb,minyb,maxyb)	//min/max set PBR
+		//		V_getQxQyScaling_NXCS(det_xT,minxt,maxxt,minyt,maxyt)	//min/max set PBR
+		//		V_getQxQyScaling_NXCS(det_xL,minxl,maxxl,minyl,maxyl)	//min/max set PBR
+		//		V_getQxQyScaling_NXCS(det_xR,minxr,maxxr,minyr,maxyr)	//min/max set PBR
+		//
+		//		QxMin_tot = min(QxMin_tot,minxb,minxt,minxl,minxr)
+		//		QxMax_tot = max(QxMin_tot,maxxb,maxxt,maxxl,maxxr)
+		//		QyMin_tot = min(QxMin_tot,minyb,minyt,minyl,minyr)
+		//		QyMax_tot = max(QxMin_tot,maxyb,maxyt,maxyl,maxyr)
+		//
+		//		SetScale/I x QxMin_tot,QxMax_tot,"",dataMat_F
+		//		SetScale/I y QyMin_tot,QyMax_tot,"",dataMat_F
+		//		Duplicate /O dataMat_F,countMat_F
 
-	// now I need to extract the qx qy data and do the interpolation for each of the 4 panels.
+		// now I need to extract the qx qy data and do the interpolation for each of the 4 panels.
 
-	// panel FB
-		DFREF dfr = GetWavesDataFolderDFR(det_xB)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xB,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_FB=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_FB		//this sets the left and right ends of the data scaling
-		SetScale/I y minQy,maxQy,"", dataMat_FB	
-		Duplicate /O dataMat_FB,countMat_FB
+		// panel FB
+		DFREF dfr  = GetWavesDataFolderDFR(det_xB)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		V_getQxQyScaling_NXCS(det_xB, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_FB = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_FB //this sets the left and right ends of the data scaling
+		SetScale/I y, minQy, maxQy, "", dataMat_FB
+		Duplicate/O dataMat_FB, countMat_FB
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xB}, dataMat_FB,countMat_FB		// Don't use the /AS flag
-		dataMat_FB /= countMat_FB	// Replace cumulative z value with average
+		ImageFromXYZ {tempQx, tempQy, det_xB}, dataMat_FB, countMat_FB // Don't use the /AS flag
+		dataMat_FB /= countMat_FB // Replace cumulative z value with average
 		MatrixFilter NanZapMedian, dataMat_FB // Apply median filter, zapping NaNs
-				
-	// panel FT
-		DFREF dfr = GetWavesDataFolderDFR(det_xT)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xT,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_FT=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_FT		
-		SetScale/I y minQy,maxQy,"", dataMat_FT	
-		Duplicate /O dataMat_FT,countMat_FT
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		// panel FT
+		DFREF dfr  = GetWavesDataFolderDFR(det_xT)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
+
+		V_getQxQyScaling_NXCS(det_xT, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_FT = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_FT
+		SetScale/I y, minQy, maxQy, "", dataMat_FT
+		Duplicate/O dataMat_FT, countMat_FT
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xT}, dataMat_FT,countMat_FT		// Don't use the /AS flag
-		dataMat_FT /= countMat_FT	
-		MatrixFilter NanZapMedian, dataMat_FT 
-		
-//	// panel FL
-		DFREF dfr = GetWavesDataFolderDFR(det_xL)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xL,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_FL=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_FL		
-		SetScale/I y minQy,maxQy,"", dataMat_FL	
-		Duplicate /O dataMat_FL,countMat_FL
+		ImageFromXYZ {tempQx, tempQy, det_xT}, dataMat_FT, countMat_FT // Don't use the /AS flag
+		dataMat_FT /= countMat_FT
+		MatrixFilter NanZapMedian, dataMat_FT
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		//	// panel FL
+		DFREF dfr  = GetWavesDataFolderDFR(det_xL)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
+
+		V_getQxQyScaling_NXCS(det_xL, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_FL = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_FL
+		SetScale/I y, minQy, maxQy, "", dataMat_FL
+		Duplicate/O dataMat_FL, countMat_FL
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xL}, dataMat_FL,countMat_FL		// Don't use the /AS flag
-		dataMat_FL /= countMat_FL	
-		MatrixFilter NanZapMedian, dataMat_FL 
-		
-//	// panel FR
-		DFREF dfr = GetWavesDataFolderDFR(det_xR)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xR,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_FR=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_FR		
-		SetScale/I y minQy,maxQy,"", dataMat_FR	
-		Duplicate /O dataMat_FR,countMat_FR
+		ImageFromXYZ {tempQx, tempQy, det_xL}, dataMat_FL, countMat_FL // Don't use the /AS flag
+		dataMat_FL /= countMat_FL
+		MatrixFilter NanZapMedian, dataMat_FL
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		//	// panel FR
+		DFREF dfr  = GetWavesDataFolderDFR(det_xR)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
+
+		V_getQxQyScaling_NXCS(det_xR, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_FR = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_FR
+		SetScale/I y, minQy, maxQy, "", dataMat_FR
+		Duplicate/O dataMat_FR, countMat_FR
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xR}, dataMat_FR,countMat_FR		// Don't use the /AS flag
-		dataMat_FR /= countMat_FR	
-		MatrixFilter NanZapMedian, dataMat_FR 
-
-
-
-
-
+		ImageFromXYZ {tempQx, tempQy, det_xR}, dataMat_FR, countMat_FR // Don't use the /AS flag
+		dataMat_FR /= countMat_FR
+		MatrixFilter NanZapMedian, dataMat_FR
 
 	endif
-	
-	if(cmpstr(carr,"M") == 0 ) 
 
-/// March 2025 - interpolate each detector panel to a proper q-matrix
-// try and do each carriage as a separate image
+	if(cmpstr(carr, "M") == 0)
 
-	// panel MB
-		DFREF dfr = GetWavesDataFolderDFR(det_xB)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xB,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_MB=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_MB		//this sets the left and right ends of the data scaling
-		SetScale/I y minQy,maxQy,"", dataMat_MB	
-		Duplicate /O dataMat_MB,countMat_MB
+		/// March 2025 - interpolate each detector panel to a proper q-matrix
+		// try and do each carriage as a separate image
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		// panel MB
+		DFREF dfr  = GetWavesDataFolderDFR(det_xB)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
+
+		V_getQxQyScaling_NXCS(det_xB, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_MB = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_MB //this sets the left and right ends of the data scaling
+		SetScale/I y, minQy, maxQy, "", dataMat_MB
+		Duplicate/O dataMat_MB, countMat_MB
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xB}, dataMat_MB,countMat_MB		// Don't use the /AS flag
-		dataMat_MB /= countMat_MB	// Replace cumulative z value with average
+		ImageFromXYZ {tempQx, tempQy, det_xB}, dataMat_MB, countMat_MB // Don't use the /AS flag
+		dataMat_MB /= countMat_MB // Replace cumulative z value with average
 		MatrixFilter NanZapMedian, dataMat_MB // Apply median filter, zapping NaNs
-				
-	// panel MT
-		DFREF dfr = GetWavesDataFolderDFR(det_xT)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xT,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_MT=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_MT		
-		SetScale/I y minQy,maxQy,"", dataMat_MT	
-		Duplicate /O dataMat_MT,countMat_MT
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		// panel MT
+		DFREF dfr  = GetWavesDataFolderDFR(det_xT)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
+
+		V_getQxQyScaling_NXCS(det_xT, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_MT = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_MT
+		SetScale/I y, minQy, maxQy, "", dataMat_MT
+		Duplicate/O dataMat_MT, countMat_MT
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xT}, dataMat_MT,countMat_MT		// Don't use the /AS flag
-		dataMat_MT /= countMat_MT	
-		MatrixFilter NanZapMedian, dataMat_MT 
-		
-//	// panel ML
-		DFREF dfr = GetWavesDataFolderDFR(det_xL)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xL,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_ML=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_ML		
-		SetScale/I y minQy,maxQy,"", dataMat_ML	
-		Duplicate /O dataMat_ML,countMat_ML
+		ImageFromXYZ {tempQx, tempQy, det_xT}, dataMat_MT, countMat_MT // Don't use the /AS flag
+		dataMat_MT /= countMat_MT
+		MatrixFilter NanZapMedian, dataMat_MT
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		//	// panel ML
+		DFREF dfr  = GetWavesDataFolderDFR(det_xL)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
+
+		V_getQxQyScaling_NXCS(det_xL, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_ML = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_ML
+		SetScale/I y, minQy, maxQy, "", dataMat_ML
+		Duplicate/O dataMat_ML, countMat_ML
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xL}, dataMat_ML,countMat_ML		// Don't use the /AS flag
-		dataMat_ML /= countMat_ML	
-		MatrixFilter NanZapMedian, dataMat_ML 
-		
-//	// panel MR
-		DFREF dfr = GetWavesDataFolderDFR(det_xR)
-		WAVE qval = dfr:$("Q0")
-		dx = DimSize(qval, 1 )
-		dy = DimSize(qval, 2 )
-		
-		V_getQxQyScaling_NXCS(det_xR,minQx,maxQx,minQy,maxQy)
-		Make/O/N=(dx+extra_x,dy+extra_y) dataMat_MR=0			// the interpolated matrix is initialized here
-		SetScale/I x minQx,maxQx,"", dataMat_MR		
-		SetScale/I y minQy,maxQy,"", dataMat_MR	
-		Duplicate /O dataMat_MR,countMat_MR
+		ImageFromXYZ {tempQx, tempQy, det_xL}, dataMat_ML, countMat_ML // Don't use the /AS flag
+		dataMat_ML /= countMat_ML
+		MatrixFilter NanZapMedian, dataMat_ML
 
-		Make/O/D/N=(dx,dy) tempQx,tempQy
+		//	// panel MR
+		DFREF dfr  = GetWavesDataFolderDFR(det_xR)
+		WAVE  qval = dfr:$("Q0")
+		dx = DimSize(qval, 1)
+		dy = DimSize(qval, 2)
+
+		V_getQxQyScaling_NXCS(det_xR, minQx, maxQx, minQy, maxQy)
+		Make/O/N=(dx + extra_x, dy + extra_y) dataMat_MR = 0 // the interpolated matrix is initialized here
+		SetScale/I x, minQx, maxQx, "", dataMat_MR
+		SetScale/I y, minQy, maxQy, "", dataMat_MR
+		Duplicate/O dataMat_MR, countMat_MR
+
+		Make/O/D/N=(dx, dy) tempQx, tempQy
 		tempQx = qval[0][p][q]
-		tempQy = qval[1][p][q]	
-		Redimension/N=(dx*dy) tempQx,tempQy
+		tempQy = qval[1][p][q]
+		Redimension/N=(dx * dy) tempQx, tempQy
 
-		ImageFromXYZ {tempQx,tempQy,det_xR}, dataMat_MR,countMat_MR		// Don't use the /AS flag
-		dataMat_MR /= countMat_MR	
-		MatrixFilter NanZapMedian, dataMat_MR 
+		ImageFromXYZ {tempQx, tempQy, det_xR}, dataMat_MR, countMat_MR // Don't use the /AS flag
+		dataMat_MR /= countMat_MR
+		MatrixFilter NanZapMedian, dataMat_MR
 
-	endif	
+	endif
 
-	
-	String imageList,item
-	Variable ii,num
+	string imageList, item
+	variable ii, num
 
-	if(cmpstr(carr,"B")==0)
+	if(cmpstr(carr, "B") == 0)
 		AppendImage/W=VSANS_NXCS#Panels_Q det_xL
 	endif
-	
-	if(cmpstr(carr,"M")==0)
+
+	if(cmpstr(carr, "M") == 0)
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_MT
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_MB
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_ML
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_MR
 	endif
-	
-	if(cmpstr(carr,"F")==0)
+
+	if(cmpstr(carr, "F") == 0)
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_FT
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_FB
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_FL
 		AppendImage/W=VSANS_NXCS#Panels_Q dataMat_FR
 	endif
 
-	
-	imageList= ImageNameList("VSANS_NXCS#Panels_Q",";")
-	num = ItemsInList(imageList)			
-	for(ii=0;ii<num;ii+=1)
-		item = StringFromList(ii,imageList,";")
+	imageList = ImageNameList("VSANS_NXCS#Panels_Q", ";")
+	num       = ItemsInList(imageList)
+	for(ii = 0; ii < num; ii += 1)
+		item = StringFromList(ii, imageList, ";")
 		// faster way than to write them explicitly
 		//				ModifyImage/W=VSANS_X4#UU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
-		ModifyImage/W=VSANS_NXCS#Panels_Q $item ctab= {*,*,ColdWarm,0}
-		ModifyImage/W=VSANS_NXCS#Panels_Q $item ctabAutoscale=0,lookup= LookupWave
+		ModifyImage/W=VSANS_NXCS#Panels_Q $item, ctab={*, *, ColdWarm, 0}
+		ModifyImage/W=VSANS_NXCS#Panels_Q $item, ctabAutoscale=0, lookup=LookupWave
 		//ModifyImage/W=VSANS_X4#UU_Panels_Q $item log=V_Value
 	endfor
 
-// (DONE) -- set the q-range of the axes
+	// (DONE) -- set the q-range of the axes
 	ControlInfo/W=VSANS_NXCS setVar_b
 	dval = V_Value
 
-	SetAxis/W=VSANS_NXCS#Panels_Q left -dval,dval
-	SetAxis/W=VSANS_NXCS#Panels_Q bottom -dval,dval	
-
+	SetAxis/W=VSANS_NXCS#Panels_Q left - dval, dval
+	SetAxis/W=VSANS_NXCS#Panels_Q bottom - dval, dval
 
 	SetDataFolder root:
-	return(0)
+	return (0)
 End
-
 
 // clear all of the images to start fresh again
 //
@@ -597,79 +571,78 @@ End
 //
 //
 Function V_Clear_1_Panel()
-	String type,polType,carr
 
-	
-	String imageList,item
-	Variable ii,num
+	string type, polType, carr
 
-	imageList= ImageNameList("VSANS_NXCS#Panels_Q",";")
-//	Print ImageNameList("VSANS_NXCS#Panels_Q",";")
+	string imageList, item
+	variable ii, num
 
-	num = ItemsInList(imageList)			
-	for(ii=0;ii<num;ii+=1)
-		item = StringFromList(ii,imageList,";")
+	imageList = ImageNameList("VSANS_NXCS#Panels_Q", ";")
+	//	Print ImageNameList("VSANS_NXCS#Panels_Q",";")
+
+	num = ItemsInList(imageList)
+	for(ii = 0; ii < num; ii += 1)
+		item = StringFromList(ii, imageList, ";")
 		// faster way than to write them explicitly
 		//				ModifyImage/W=VSANS_X4#UU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
-		RemoveImage/Z/W=VSANS_NXCS#Panels_Q  $item 
+		RemoveImage/Z/W=VSANS_NXCS#Panels_Q $item
 	endfor
-//	Print ImageNameList("VSANS_NXCS#Panels_Q",";")
+	//	Print ImageNameList("VSANS_NXCS#Panels_Q",";")
 
-	return(0)
+	return (0)
 End
-
-
-
 
 // setVar for the range (in Q) for the 2D plot of the detectors
 //
 // this assumes that everything (the data) is already updated - this only updates the plot range
-Function V_2DQ_SetRange_SetVar(sva) : SetVariableControl
-	STRUCT WMSetVariableAction &sva
+Function V_2DQ_SetRange_SetVar(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
-	switch( sva.eventCode )
-		case 1: // mouse up
-		case 2: // Enter key
+	switch(sva.eventCode)
+		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
 		case 3: // Live update
-			Variable dval = sva.dval
-			String sval = sva.sval
-			
-			SetAxis/W=VSANS_NXCS#Panels_Q left -dval,dval
-			SetAxis/W=VSANS_NXCS#Panels_Q bottom -dval,dval
+			variable dval = sva.dval
+			string   sval = sva.sval
 
-//			FrontPanels_AsQ()
-			
+			SetAxis/W=VSANS_NXCS#Panels_Q left - dval, dval
+			SetAxis/W=VSANS_NXCS#Panels_Q bottom - dval, dval
+
+			//			FrontPanels_AsQ()
+
 			break
 		case -1: // control being killed
+			break
+		default:
+			// FIXME(BugproneMissingSwitchDefaultCase)
 			break
 	endswitch
 
 	return 0
 End
-
 
 //
 // check box to toggle log/lin
 //
-Function V_X1_Log_CheckProc(cba) : CheckBoxControl
-	STRUCT WMCheckboxAction &cba
+Function V_X1_Log_CheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 
-	switch( cba.eventCode )
+	switch(cba.eventCode)
 		case 2: // mouse up
-			Variable checked = cba.checked
-			
-			Struct WMButtonAction ba
-			ba.eventCode = 2		//fake mouse up
-			V_Change_1_ButtonProc(ba)		//fake click on "do it"
-			
+			variable checked = cba.checked
+
+			STRUCT WMButtonAction ba
+			ba.eventCode = 2 //fake mouse up
+			V_Change_1_ButtonProc(ba) //fake click on "do it"
+
 			break
 		case -1: // control being killed
+			break
+		default:
+			// FIXME(BugproneMissingSwitchDefaultCase)
 			break
 	endswitch
 
 	return 0
 End
-
 
 //
 // this is the "Change Display" button
@@ -677,18 +650,16 @@ End
 // - clears all of the old images off of the display
 // then fills in all of the data from the selected folder
 //
-Function V_Change_1_ButtonProc(ba) : ButtonControl
-	STRUCT WMButtonAction &ba
+Function V_Change_1_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
-	String dataFolder
-	
-	switch( ba.eventCode )
+	string dataFolder
+
+	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
 			ControlInfo popup0
 			dataFolder = S_Value
 
-			
 			// ?? each call here is supposed to clear everything from all 4 subwindows,
 			// but for some reason, I need to do this multiple times...
 			V_Clear_1_Panel()
@@ -698,32 +669,36 @@ Function V_Change_1_ButtonProc(ba) : ButtonControl
 
 			// then fill each subwindow with each XS (9 panels)
 			V_Fill_1_Panel(dataFolder)
-						
+
 			break
 		case -1: // control being killed
+			break
+		default:
+			// FIXME(BugproneMissingSwitchDefaultCase)
 			break
 	endswitch
 
 	return 0
 End
 
-
 //
 // button to load 2D NXcanSAS data files as written out by Igor (Jeff's procedures)
 //
-Function V_Load2DNXCS_ButtonProc(ba) : ButtonControl
-	STRUCT WMButtonAction &ba
+Function V_Load2DNXCS_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
-	String dataFolder
-	
-	switch( ba.eventCode )
+	string dataFolder
+
+	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
-			
+
 			V_Load_2D_NXCS()
-					
+
 			break
 		case -1: // control being killed
+			break
+		default:
+			// FIXME(BugproneMissingSwitchDefaultCase)
 			break
 	endswitch
 
