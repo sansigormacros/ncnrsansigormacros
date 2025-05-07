@@ -997,6 +997,10 @@ Function V_SortTimeData()
 	KillWaves/Z OscSortIndex
 
 	if(WaveExists($"root:Packages:NIST:VSANS:Event:OscSortIndex") == 0)
+		WAVE rescaledTime = rescaledTime
+		WAVE yLoc = yLoc
+		WAVE xLoc = xLoc
+		WAVE timePt = timePt
 		Duplicate/O rescaledTime, OscSortIndex
 		MakeIndex rescaledTime, OscSortIndex
 		IndexSort OscSortIndex, yLoc, xLoc, timePt, rescaledTime
@@ -1190,7 +1194,14 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	// x- MatrixOp or a wave assignemt should be able to break up the 3D
 	//
 
+	WAVE eventTime = eventTime
+	WAVE tube = tube
+	WAVE xLoc = xLoc
+	WAVE yLoc = yLoc
+	WAVE location = location
+		
 	KillWaves/Z timePt, xLoc, yLoc
+	
 	Duplicate/O eventTime, timePt
 
 	KillWaves/Z eventTime // not needed any longer, use timePt or rescaledTime
@@ -2084,7 +2095,10 @@ Function V_EC_DoDifferential(STRUCT WMButtonAction &ba) : ButtonControl
 				//if trace is not on graph, add it
 
 				SetDataFolder root:Packages:NIST:VSANS:Event:
-
+				
+				WAVE rescaledTime_DIF = rescaledTime_DIF
+				WAVE rescaledTime = rescaledTime
+				
 				list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
 				if(WhichListItem("rescaledTime_DIF", list, ";") < 0) // not on the graph
 					AppendToGraph/R rescaledTime_DIF
@@ -2109,6 +2123,9 @@ Function V_EC_DoDifferential(STRUCT WMButtonAction &ba) : ButtonControl
 				DoWindow/F V_EventCorrectionPanel
 				//if trace is not on graph, add it
 				SetDataFolder root:Packages:NIST:VSANS:Event:
+				
+				WAVE onePanel_DIF = onePanel_DIF
+				WAVE onePanel = onePanel
 
 				list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
 				if(WhichListItem("onePanel_DIF", list, ";") < 0) // not on the graph
@@ -2457,6 +2474,9 @@ Function V_EC_ShowAllButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 				// already on graph, do nothing
 
 			else
+				
+				WAVE rescaledTime = rescaledTime
+				
 				RemoveFromGraph/Z onePanel, rescaledTime
 				RemoveFromGraph/Z onePanel_DIF, rescaledTime_DIF
 				AppendToGraph rescaledTime
@@ -2793,6 +2813,7 @@ Function V_CB_NumSlicesSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariable
 
 			WAVE timeWidth  = timeWidth
 			WAVE binEndTime = binEndTime
+			WAVE binCount = binCount
 
 			Redimension/N=(dval) timeWidth
 			Redimension/N=(dval + 1) binEndTime, binCount
@@ -2975,6 +2996,9 @@ Function V_AccumulateSlices(variable mode)
 	switch(mode)
 		case 0:
 			DoAlert 0, "The current data has been copied to the accumulated set. You are now ready to add more data."
+			WAVE slicedData = slicedData
+			WAVE accumulatedData = accumulatedData
+			
 			KillWaves/Z accumulatedData
 			Duplicate/O slicedData, accumulatedData
 			break
