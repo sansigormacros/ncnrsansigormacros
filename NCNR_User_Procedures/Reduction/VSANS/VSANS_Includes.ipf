@@ -1,14 +1,16 @@
-#pragma rtGlobals=3		// Use modern global access method and strict wave access.
-#pragma IgorVersion = 7.00
+#pragma TextEncoding="UTF-8"
+#pragma rtFunctionErrors=1
+#pragma rtGlobals=3 // Use modern global access method and strict wave access.
+#pragma IgorVersion=7.00
 
-// to properly set up the template for other facility reduction templates, 
+// to properly set up the template for other facility reduction templates,
 // function NCNR_VSANS() must exist here in the Includes file.
 //
 Function NCNR_VSANS()
-	//does nothing but define NCNR()
-	return(0)
-End
 
+	//does nothing but define NCNR()
+	return (0)
+End
 
 // These files are COMMON NCNR FILES
 // the first three are necessary for loading and plotting of 1D data sets
@@ -20,13 +22,11 @@ End
 #include "NIST_NXcanSAS_v709"
 #include "USANS_SlitSmearing_v40"
 
-#include "V_PlotUtils2D_VSANS"			// basic loaders for the QxQyASCII exported VSANS data
+#include "V_PlotUtils2D_VSANS" // basic loaders for the QxQyASCII exported VSANS data
 
 //
 //#include "NCNR_Utils"		//needed to load linear fits, mostly VAX file name junk
 //#include "LinearizedFits_v40"		//won't compile - needs NCNR_Utils (then starts a chain of dependencies...)
-
-
 
 // VC designation is for VCALC (mostly)
 // and V designation is for VSANS
@@ -34,11 +34,10 @@ End
 //  note that the common files are not in the VSANS procedure folder and
 //  are not included in the line count
 
-
 #include "VC_DetectorBinning_Q"
 #include "VC_DetectorBinning_Slit"
 #include "VC_DetectorBinning_Utils"
-#include "VC_FrontView_Deg"	
+#include "VC_FrontView_Deg"
 #include "VC_HDF5_VSANS_Utils"
 #include "VC_SideView"
 #include "VC_UtilityProcedures"
@@ -48,7 +47,7 @@ End
 #include "Vx_Nexus_SANS_Write"
 #include "Vx_Nexus_VSANS_Write"
 //#include "V_ReadWrite_HDF5"		//AUG2015 beginning of read/write, renamed Nov2015
-#include "Vx_NexusFromIgor"			//AUG2015 - depricated, but keep for now
+#include "Vx_NexusFromIgor" //AUG2015 - depricated, but keep for now
 
 // for possible peak fitting
 #include "V_BroadPeak_Pix_2D"
@@ -66,7 +65,7 @@ End
 #include "V_HDF5_Write"
 #include "V_HDF5_RW_Utils"
 #include "V_Write_VSANS_NXcanSAS"
-#include "V_2DLoader_NXcanSAS"		//JUL 2020 load/plot 2D--NXcanSAS
+#include "V_2DLoader_NXcanSAS" //JUL 2020 load/plot 2D--NXcanSAS
 
 // start of VSANS reduction procedures
 #include "V_Initialize"
@@ -76,8 +75,8 @@ End
 #include "V_WorkFolderUtils"
 
 // start of raw data display panel
-#include "V_RAW_Data_Panel"		// rename this later when it's done
-#include "V_Utilities_General"		//
+#include "V_RAW_Data_Panel" // rename this later when it's done
+#include "V_Utilities_General" //
 #include "V_DataPlotting"
 
 // 1D binning, combining 1D sets
@@ -109,7 +108,6 @@ End
 #include "V_EventMode_Utils"
 #include "V_EventModeProcessing"
 
-
 //
 #include "V_Instrument_Resolution"
 #include "V_IQ_Annular"
@@ -135,7 +133,6 @@ End
 #include "V_SWB_GaussSpheres"
 #include "V_WB_Beaucage"
 #include "V_SWB_Beaucage"
-
 
 #include "V_Utilities_Comparisons"
 #include "V_Sector_Average"
