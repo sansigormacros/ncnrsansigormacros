@@ -760,7 +760,7 @@ Function/S V_ValidFileString(string partialName)
 		if(ii == 0)
 			//first pass, try the partialName
 			tempName = partialName
-			Open/Z/R/T="????TEXT"/P=catPathName refnum, tempName //Does open file (/Z flag)
+			Open/Z/R/T="????TEXT"/P=catPathName refnum as tempName //Does open file (/Z flag)
 			if(V_flag == 0)
 				//file exists
 				Close refnum //YES needed,
@@ -768,7 +768,7 @@ Function/S V_ValidFileString(string partialName)
 			endif
 		else
 			tempName = partialName + ";" + num2istr(ii)
-			Open/Z/R/T="????TEXT"/P=catPathName refnum, tempName
+			Open/Z/R/T="????TEXT"/P=catPathName refnum as tempName
 			if(V_flag == 0)
 				//file exists
 				Close refnum

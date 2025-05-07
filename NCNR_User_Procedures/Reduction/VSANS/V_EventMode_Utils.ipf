@@ -372,7 +372,7 @@ EndMacro
 Function V_DuplicateRAWForExport()
 
 	KillDataFolder/Z root:export
-	DuplicateDataFolder root:Packages:NIST:VSANS:RAW:root:export
+	DuplicateDataFolder root:Packages:NIST:VSANS:RAW  root:export
 	return (0)
 End
 
