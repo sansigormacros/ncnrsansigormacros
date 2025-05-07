@@ -598,8 +598,8 @@ End
 Function V_2DQ_SetRange_SetVar(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, fall through by design
+		case 2: // Enter key, fall through by design
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -613,7 +613,7 @@ Function V_2DQ_SetRange_SetVar(STRUCT WMSetVariableAction &sva) : SetVariableCon
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - do not respond to other event
 			break
 	endswitch
 
@@ -637,7 +637,7 @@ Function V_X1_Log_CheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - do not respond to other events
 			break
 	endswitch
 
@@ -674,7 +674,7 @@ Function V_Change_1_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - do not respond to other events
 			break
 	endswitch
 
@@ -698,7 +698,7 @@ Function V_Load2DNXCS_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - do not respond to other events
 			break
 	endswitch
 

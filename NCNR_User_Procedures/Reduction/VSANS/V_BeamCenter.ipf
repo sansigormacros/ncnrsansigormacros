@@ -166,7 +166,7 @@ Function V_SetDetPanelPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -258,9 +258,9 @@ Function V_DrawDetPanel(string str)
 	// common values (panel position, etc)
 	// TODO -- units are absolute, based on pixels in cm. make sure this is always correct
 	strswitch(str)
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL": // fall through by design -- all left and right panels
+		case "FR": // fall through by design
+		case "ML": // fall through by design
 		case "MR":
 			width  = trunc(nPix_X * pixSize_X * scale * 1.15) //48 tubes @ 8 mm
 			height = trunc(nPix_Y * pixSize_Y * scale * 0.8)  //128 pixels @ 8 mm
@@ -276,9 +276,9 @@ Function V_DrawDetPanel(string str)
 			bottom2 = bottom
 
 			break
-		case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FT": // fall through by design -- all top and bottom panels
+		case "FB": // fall through by design
+		case "MT": // fall through by design
 		case "MB":
 			width  = trunc(nPix_X * pixSize_X * scale * 1.) //128 pix @ 4 mm
 			height = trunc(nPix_Y * pixSize_Y * scale)      // 48 tubes @ 8 mm
@@ -362,7 +362,7 @@ Function V_DetModelPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -391,7 +391,7 @@ Function V_DetFitGuessButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -410,7 +410,7 @@ Function V_GizmoFitButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -429,7 +429,7 @@ Function V_MaskBeforeFitButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -465,7 +465,7 @@ Function V_ConvertFitPix2cmButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -502,7 +502,7 @@ Function V_CopyCtrButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -534,7 +534,7 @@ Function V_DetFitButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -553,7 +553,7 @@ Function V_DetFitHelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -572,7 +572,7 @@ Function V_CtrTableButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -591,7 +591,7 @@ Function V_WriteCtrTableButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// do nothing - mouse up is all I respond to
 			break
 	endswitch
 
@@ -615,30 +615,29 @@ Function V_RescaleToBeamCenter(string folderStr, string detStr, variable xCtr, v
 	variable nTubes = 48
 
 	strswitch(detStr) // string switch
-		case "MT": // top panels, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "MT": // top panels, fall through by design
 		case "FT":
 			//			SetScale/I x -xCtr,npix-xCtr,"",w
 			SetScale/I x - xCtr / 2, (npix - xCtr) / 2, "", w // fake 4mm by compressing the scale
 			SetScale/I y - yCtr, nTubes - yCtr, "", w
 			break // exit from switch
-		case "MB": // bottom panels, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "MB": // bottom panels, fall through by design
 		case "FB":
 			//			SetScale/I x -xCtr,npix-xCtr,"",w
 			SetScale/I x - xCtr / 2, (npix - xCtr) / 2, "", w
 			SetScale/I y - yCtr, nTubes - yCtr, "", w
 			break // exit from switch
-		case "ML": // left panels, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "ML": // left panels, fall through by design
 		case "FL":
 			SetScale/I x - xCtr, nTubes - xCtr, "", w
 			SetScale/I y - yCtr, npix - yCtr, "", w
 			break // exit from switch
-		case "MR": // Right panels, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "MR": // Right panels, fall through by design
 		case "FR":
 			SetScale/I x - xCtr, nTubes - xCtr, "", w
 			SetScale/I y - yCtr, npix - yCtr, "", w
 			break // exit from switch
-
-		default: // optional default expression executed, FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: // optional default expression executed
 			Print "Error in V_RescaleToBeamCenter()"
 	endswitch
 
@@ -912,7 +911,7 @@ Function V_Convert_FittedPix_2_cm(string panel, variable xPix, variable yPix)
 	WAVE yW = $(pathStr + panel + ":data_realDistY")
 
 	strswitch(panel) // string switch
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL": // fall through by design
 		case "ML":
 			// for Left/Right
 			tmpTube = yW[0][p]
@@ -921,7 +920,7 @@ Function V_Convert_FittedPix_2_cm(string panel, variable xPix, variable yPix)
 			y_cm = tmpTube[yPix] / 10
 
 			break
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FR": // fall through by design
 		case "MR":
 			// for Left/Right
 			tmpTube = yW[0][p]
@@ -930,7 +929,7 @@ Function V_Convert_FittedPix_2_cm(string panel, variable xPix, variable yPix)
 			y_cm = tmpTube[yPix] / 10
 
 			break
-		case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FT": // fall through by design
 		case "MT":
 			// for Top/Bottom
 			tmpTube = xW[p][0]
@@ -939,7 +938,7 @@ Function V_Convert_FittedPix_2_cm(string panel, variable xPix, variable yPix)
 			y_cm = (yW[0][0] + yPix * 8.4) / 10
 
 			break
-		case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FB": // fall through by design
 		case "MB":
 			// for Top/Bottom
 			tmpTube = xW[p][0]
