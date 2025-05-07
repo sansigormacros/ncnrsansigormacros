@@ -1,7 +1,7 @@
-#pragma TextEncoding = "MacRoman"		// For details execute DisplayHelpTopic "The TextEncoding Pragma"
-#pragma rtGlobals=3		// Use modern global access method and strict wave access.
-#pragma IgorVersion = 7.00
-
+#pragma rtFunctionErrors=1
+#pragma TextEncoding="UTF-8" // For details execute DisplayHelpTopic "The TextEncoding Pragma"
+#pragma rtGlobals=3 // Use modern global access method and strict wave access.
+#pragma IgorVersion=7.00
 
 //
 // Operation does no scaling, only the basic (default) trim of the ends, concatenate, sort, and save
@@ -17,7 +17,7 @@
 // see the binning routines in VC_DetectorBinning_Utils.ipf for the details
 //
 
-// (DONE) 
+// (DONE)
 //
 // x- verify the binning for slit mode. Looks correct, but verify
 // -- DOCUMENT
@@ -25,14 +25,12 @@
 // x- detector "B" is currently skipped since the calibration waves are not faked
 //    when the raw data is loaded. Then the qxqyqz waves are not generated.
 //
-// x- REDO the logic here. It's a mess, and will get the calculation wrong 
+// x- REDO the logic here. It's a mess, and will get the calculation wrong
 //
 // x- figure out the binning type (where is it set for VSANS?)
 // x- don't know, so currently VSANS binning type is HARD-WIRED
 // x- figure out when this needs to be called to (force) re-calculate I vs Q
 //
-
-
 
 //
 // NOTE
@@ -43,7 +41,7 @@
 //
 // - the numbers here in the switch can be out of order - it's fine
 //
-// old modes can be removed from the string constant ksBinTypeStr(n) (in V_Initialize.ipf), but the 
+// old modes can be removed from the string constant ksBinTypeStr(n) (in V_Initialize.ipf), but the
 // mode numbers are what many different binning, plotting, and reduction functions are
 // switching on. In the future, it may be necessary to change the key (everywhere) to a string
 // switch, but for now, stick with the numbers.
@@ -51,23 +49,22 @@
 // Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-B;SLIT-F2-M2-B;"
 //
 //
-Function V_BinTypeStr2Num(binStr)
-	String binStr
-	
-	Variable binType
-	strswitch(binStr)	// string switch
+Function V_BinTypeStr2Num(string binStr)
+
+	variable binType
+	strswitch(binStr) // string switch
 		case "F4-M4-B":
 			binType = 1
-			break		// exit from switch
+			break // exit from switch
 		case "F2-M2-B":
 			binType = 2
-			break		// exit from switch
+			break // exit from switch
 		case "F1-M1-B":
 			binType = 3
-			break		// exit from switch
+			break // exit from switch
 		case "SLIT-F2-M2-B":
 			binType = 4
-			break		// exit from switch
+			break // exit from switch
 
 		case "F2-M1-B":
 			binType = 5
@@ -78,130 +75,121 @@ Function V_BinTypeStr2Num(binStr)
 		case "F2-M2xTB-B":
 			binType = 7
 			break
-			
-		default:			// optional default expression executed
+
+		default: // optional default expression executed
 			binType = 0
-			Abort "Binning mode not found"// when no case matches
-	endswitch	
-	
-	return(binType)
-end
+			Abort "Binning mode not found" // when no case matches
+	endswitch
+
+	return (binType)
+End
 
 //
 // (DONE) x- binType == 4 (slit mode) should never end up here, but if it does, no problem
 // -- new logic in calling routines to dispatch to proper routine
 // -- AND need to write the routine for binning_SlitMode
 //
-Function V_QBinAllPanels_Circular(folderStr,binType,collimationStr)
-	String folderStr
-	Variable binType
-	String collimationStr
+Function V_QBinAllPanels_Circular(string folderStr, variable binType, string collimationStr)
 
 	// do the back, middle, and front separately
-	
-//	figure out the binning type (where is it set?)
-	Variable ii,delQ
-	String detStr
 
-//	binType = V_GetBinningPopMode()
+	//	figure out the binning type (where is it set?)
+	variable ii, delQ
+	string detStr
+
+	//	binType = V_GetBinningPopMode()
 
 	// set delta Q for binning (used later inside VC_fDoBinning_QxQy2D)
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
-		
-		delQ = V_SetDeltaQ(folderStr,detStr)		// this sets (overwrites) the global value for each panel type
+
+		delQ = V_SetDeltaQ(folderStr, detStr) // this sets (overwrites) the global value for each panel type
 	endfor
-	
 
 	switch(binType)
 		case 1:
-			VC_fDoBinning_QxQy2D(folderStr,"FL",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"FR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"FT",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"FB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"ML",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MT",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MB",collimationStr)			
-			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+			VC_fDoBinning_QxQy2D(folderStr, "FL", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "FR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "FT", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "FB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "ML", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MT", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B", collimationStr)
 
 			break
 		case 2:
-			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+			VC_fDoBinning_QxQy2D(folderStr, "FLR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "FTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MLR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B", collimationStr)
 
 			break
 		case 3:
-			VC_fDoBinning_QxQy2D(folderStr,"MLRTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"FLRTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
-			
+			VC_fDoBinning_QxQy2D(folderStr, "MLRTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "FLRTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B", collimationStr)
+
 			break
-		case 4:				/// this is for a tall, narrow slit mode	
-			VC_fBinDetector_byRows(folderStr,"FL")
-			VC_fBinDetector_byRows(folderStr,"FR")
-			VC_fBinDetector_byRows(folderStr,"ML")
-			VC_fBinDetector_byRows(folderStr,"MR")
-			VC_fBinDetector_byRows(folderStr,"B")
+		case 4: /// this is for a tall, narrow slit mode
+			VC_fBinDetector_byRows(folderStr, "FL")
+			VC_fBinDetector_byRows(folderStr, "FR")
+			VC_fBinDetector_byRows(folderStr, "ML")
+			VC_fBinDetector_byRows(folderStr, "MR")
+			VC_fBinDetector_byRows(folderStr, "B")
 
 			break
 		case 5:
-			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MLRTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
-		
+			VC_fDoBinning_QxQy2D(folderStr, "FTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "FLR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MLRTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B", collimationStr)
+
 			break
 		case 6:
-			VC_fDoBinning_QxQy2D(folderStr,"FLRTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
-		
+			VC_fDoBinning_QxQy2D(folderStr, "FLRTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MLR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B", collimationStr)
+
 			break
 		case 7:
-			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
-			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
-		
+			VC_fDoBinning_QxQy2D(folderStr, "FTB", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "FLR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "MLR", collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B", collimationStr)
+
 			break
-			
+
 		default:
-			Abort "Binning mode not found in V_QBinAllPanels_Circular"// when no case matches	
+			Abort "Binning mode not found in V_QBinAllPanels_Circular" // when no case matches
 	endswitch
-	
 
-	return(0)
+	return (0)
 End
-
 
 //
 // (DONE) x- binType == 4 (slit mode) should be the only case to end up here
 // -- new logic in calling routines to dispatch to proper routine
 // -- AND need to write the routine for binning_SlitMode
 //
-Function V_QBinAllPanels_Slit(folderStr,binType)
-	String folderStr
-	Variable binType
+Function V_QBinAllPanels_Slit(string folderStr, variable binType)
 
 	// do the back, middle, and front separately
-	
-//	figure out the binning type (where is it set?)
-	Variable ii,delQ
-	String detStr
 
-//	binType = V_GetBinningPopMode()
+	//	figure out the binning type (where is it set?)
+	variable ii, delQ
+	string detStr
+
+	//	binType = V_GetBinningPopMode()
 
 	// set delta Q for binning (used later inside VC_fDoBinning_QxQy2D)
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
-		
-		delQ = V_SetDeltaQ(folderStr,detStr)		// this sets (overwrites) the global value for each panel type
+
+		delQ = V_SetDeltaQ(folderStr, detStr) // this sets (overwrites) the global value for each panel type
 	endfor
-	
 
 	switch(binType)
 		case 1:
@@ -213,50 +201,44 @@ Function V_QBinAllPanels_Slit(folderStr,binType)
 		case 3:
 
 			break
-		case 4:				/// this is for a tall, narrow slit mode	
-			VC_fBinDetector_byRows(folderStr,"FL")
-			VC_fBinDetector_byRows(folderStr,"FR")
-			VC_fBinDetector_byRows(folderStr,"ML")
-			VC_fBinDetector_byRows(folderStr,"MR")
-			VC_fBinDetector_byRows(folderStr,"B")
+		case 4: /// this is for a tall, narrow slit mode
+			VC_fBinDetector_byRows(folderStr, "FL")
+			VC_fBinDetector_byRows(folderStr, "FR")
+			VC_fBinDetector_byRows(folderStr, "ML")
+			VC_fBinDetector_byRows(folderStr, "MR")
+			VC_fBinDetector_byRows(folderStr, "B")
 
 			break
 		case 5:
-		
+
 			break
 		case 6:
-		
+
 			break
 		case 7:
-	
+
 			break
-			
+
 		default:
-			Abort "Binning mode not found in V_QBinAllPanels_Slit"// when no case matches	
+			Abort "Binning mode not found in V_QBinAllPanels_Slit" // when no case matches
 	endswitch
-	
-	
 
-	return(0)
+	return (0)
 End
-
-
 
 // concatenates and sorts the 1D data in "type" WORK folder
 // uses the current display if type==""
 //
-Function V_ConcatenateForSave(pathStr,type,tagStr,binType)
-	String pathStr,type,tagStr
-	Variable binType
-	
-// get the current display type, if null string passed in
+Function V_ConcatenateForSave(string pathStr, string type, string tagStr, variable binType)
+
+	// get the current display type, if null string passed in
 	SVAR curtype = root:Packages:NIST:VSANS:Globals:gCurDispType
-	
-	if(strlen(type)==0)
+
+	if(strlen(type) == 0)
 		type = curType
 	endif
 
-// trim the data if needed
+	// trim the data if needed
 	// remove the q=0 point from the back detector, if it's there
 	// does not need to know binType
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
@@ -264,79 +246,74 @@ Function V_ConcatenateForSave(pathStr,type,tagStr,binType)
 		V_RemoveQ0_B(type)
 	endif
 
-// concatenate the data sets
-// TODO x- figure out which binning was used (this is done in V_1DConcatenate())
+	// concatenate the data sets
+	// TODO x- figure out which binning was used (this is done in V_1DConcatenate())
 	// clear the old tmp waves first, if they still exist
-//	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
-	SetDataFolder $(pathStr+type)
-	Killwaves/Z tmp_q,tmp_i,tmp_s,tmp_sq,tmp_qb,tmp_fs
+	//	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
+	SetDataFolder $(pathStr + type)
+	Killwaves/Z tmp_q, tmp_i, tmp_s, tmp_sq, tmp_qb, tmp_fs
 	setDataFolder root:
-	V_1DConcatenate(pathStr,type,tagStr,binType)
-	
-// sort the data set
-	V_TmpSort1D(pathStr,type)
-	
-	return(0)
+	V_1DConcatenate(pathStr, type, tagStr, binType)
+
+	// sort the data set
+	V_TmpSort1D(pathStr, type)
+
+	return (0)
 End
 
 //
 // this is only called from the button on the data panel (**not anymore**)
 // so the type is the currently displayed type, and the binning is from the panel
 //
-Function V_SimpleSave1DData(pathStr,type,tagStr,saveName)
-	String pathStr,type,tagStr,saveName
+Function V_SimpleSave1DData(string pathStr, string type, string tagStr, string saveName)
 
-// 
-// get the current display type, if null string passed in
-	SVAR curtype = root:Packages:NIST:VSANS:Globals:gCurDispType
-	Variable binType = V_GetBinningPopMode()
-	
-	V_ConcatenateForSave(pathStr,curType,tagStr,binType)
-	
-// write out the data set to a file
-	if(strlen(saveName)==0)
+	//
+	// get the current display type, if null string passed in
+	SVAR     curtype = root:Packages:NIST:VSANS:Globals:gCurDispType
+	variable binType = V_GetBinningPopMode()
+
+	V_ConcatenateForSave(pathStr, curType, tagStr, binType)
+
+	// write out the data set to a file
+	if(strlen(saveName) == 0)
 		Execute "V_GetNameForSave()"
 		SVAR newName = root:saveName
 		saveName = newName
 	endif
-	
-	V_Write1DData(pathStr,curtype,saveName)
+
+	V_Write1DData(pathStr, curtype, saveName)
 
 End
-
 
 Proc V_GetNameForSave(str)
-	String str
-	String/G root:saveName=str
-End
-
+	string str
+	string/G root:saveName = str
+EndMacro
 
 // blindly assumes that there is only one zero at the top of the wave
 // could be more sophisticated in the future...
-Function V_RemoveQ0_B(type)
-	String type
-	
-	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
+Function V_RemoveQ0_B(string type)
 
-	WAVE/Z qBin = qBin_qxqy_B
-	WAVE/Z iBin = iBin_qxqy_B
-	WAVE/Z eBin = eBin_qxqy_B
-	WAVE/Z nBin = nBin_qxqy_B
+	SetDataFolder $("root:Packages:NIST:VSANS:" + type)
+
+	WAVE/Z qBin  = qBin_qxqy_B
+	WAVE/Z iBin  = iBin_qxqy_B
+	WAVE/Z eBin  = eBin_qxqy_B
+	WAVE/Z nBin  = nBin_qxqy_B
 	WAVE/Z iBin2 = iBin2_qxqy_B
 
 	// resolution waves
-	Wave/Z sigQ = sigmaQ_qxqy_B
-	Wave/Z qBar = qBar_qxqy_B
-	Wave/Z fSubS = fSubS_qxqy_B
+	WAVE/Z sigQ  = sigmaQ_qxqy_B
+	WAVE/Z qBar  = qBar_qxqy_B
+	WAVE/Z fSubS = fSubS_qxqy_B
 
 	if(qBin[0] == 0)
-		DeletePoints 0, 1, qBin,iBin,eBin,nBin,iBin2,sigQ,qBar,fSubS
+		DeletePoints 0, 1, qBin, iBin, eBin, nBin, iBin2, sigQ, qBar, fSubS
 	endif
-	
-	SetDataFolder root:
-	return(0)
-end
 
+	SetDataFolder root:
+	return (0)
+End
 
 // concatentate data in folderStr
 //
@@ -372,88 +349,83 @@ end
 // pathStr must have the trailing colon
 // tagStr is normally null, but is "_trim" for data to be trimmed
 //
-Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
-	String pathStr,folderStr,tagStr
-	Variable binType
-	
+Function V_1DConcatenate(string pathStr, string folderStr, string tagStr, variable binType)
 
-	if(binType==-9999)
+	if(binType == -9999)
 		binType = V_GetBinningPopMode()
-	endif	
-	
-	String binTypeString = V_getBinTypeString(binType)
-	if(strlen(binTypeString) == 0)
-		DoAlert 0,"binTypeString is null in V_1DConcatenate"
-		return(0)
 	endif
-	
-//	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
-	SetDataFolder $(pathStr+folderStr)
+
+	string binTypeString = V_getBinTypeString(binType)
+	if(strlen(binTypeString) == 0)
+		DoAlert 0, "binTypeString is null in V_1DConcatenate"
+		return (0)
+	endif
+
+	//	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+	SetDataFolder $(pathStr + folderStr)
 
 	//kill these waves before starting, or the new concatenation will be added to the old
-	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_qb,tmp_sq,tmp_fs
+	KillWaves/Z tmp_q, tmp_i, tmp_s, tmp_qb, tmp_sq, tmp_fs
 
-	String q_waveListStr=""
-	String i_waveListStr=""
-	String s_waveListStr=""
-	String sq_waveListStr=""
-	String qb_waveListStr=""
-	String fs_waveListStr=""
-	
-	Variable num,ii
-	String item=""
-	
-	//Generate string lists of the waves to be concatenated based on the 
+	string q_waveListStr  = ""
+	string i_waveListStr  = ""
+	string s_waveListStr  = ""
+	string sq_waveListStr = ""
+	string qb_waveListStr = ""
+	string fs_waveListStr = ""
+
+	variable num, ii
+	string item = ""
+
+	//Generate string lists of the waves to be concatenated based on the
 	// binTypeString (a global string constant with the extensions)
 	//
-	
+
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	if(!gIgnoreDetB)
-		q_waveListStr =  "qBin_qxqy_B" + tagStr + ";"
-		i_waveListStr =  "iBin_qxqy_B" + tagStr + ";"
-		s_waveListStr =  "eBin_qxqy_B" + tagStr + ";"
-		sq_waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
-		qb_waveListStr =  "qBar_qxqy_B" + tagStr + ";"
-		fs_waveListStr =  "fSubS_qxqy_B" + tagStr + ";"	
+		q_waveListStr  = "qBin_qxqy_B" + tagStr + ";"
+		i_waveListStr  = "iBin_qxqy_B" + tagStr + ";"
+		s_waveListStr  = "eBin_qxqy_B" + tagStr + ";"
+		sq_waveListStr = "sigmaQ_qxqy_B" + tagStr + ";"
+		qb_waveListStr = "qBar_qxqy_B" + tagStr + ";"
+		fs_waveListStr = "fSubS_qxqy_B" + tagStr + ";"
 	endif
 
 	num = ItemsInList(binTypeString, ";")
-	for(ii=0;ii<num;ii+=1)
-		item = StringFromList(ii, binTypeString  ,";")	
-	
-	// "B" was handled outside the loop, be sure to skip here
-		if(cmpstr(item,"B") != 0)
-			q_waveListStr +=  "qBin_qxqy_" + item + tagStr + ";"
-			i_waveListStr +=  "iBin_qxqy_" + item + tagStr + ";"
-			s_waveListStr +=  "eBin_qxqy_" + item + tagStr + ";"
-			sq_waveListStr +=  "sigmaQ_qxqy_" + item + tagStr + ";"
-			qb_waveListStr +=  "qBar_qxqy_" + item + tagStr + ";"
-			fs_waveListStr +=  "fSubS_qxqy_" + item + tagStr + ";"	
+	for(ii = 0; ii < num; ii += 1)
+		item = StringFromList(ii, binTypeString, ";")
+
+		// "B" was handled outside the loop, be sure to skip here
+		if(cmpstr(item, "B") != 0)
+			q_waveListStr  += "qBin_qxqy_" + item + tagStr + ";"
+			i_waveListStr  += "iBin_qxqy_" + item + tagStr + ";"
+			s_waveListStr  += "eBin_qxqy_" + item + tagStr + ";"
+			sq_waveListStr += "sigmaQ_qxqy_" + item + tagStr + ";"
+			qb_waveListStr += "qBar_qxqy_" + item + tagStr + ";"
+			fs_waveListStr += "fSubS_qxqy_" + item + tagStr + ";"
 		endif
 	endfor
-	
+
 	// concatenate each of the sets
 
 	Concatenate/NP/O q_waveListStr, tmp_q
-	
+
 	Concatenate/NP/O i_waveListStr, tmp_i
-		
+
 	Concatenate/NP/O s_waveListStr, tmp_s
-		
+
 	Concatenate/NP/O sq_waveListStr, tmp_sq
 
 	Concatenate/NP/O qb_waveListStr, tmp_qb
-		
+
 	Concatenate/NP/O fs_waveListStr, tmp_fs
-										
 
+	// Can't kill here, since they are still needed to sort and write out!
+	//	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_res0,tmp_res1,tmp_res2,tmp_res3
 
-// Can't kill here, since they are still needed to sort and write out!
-//	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_res0,tmp_res1,tmp_res2,tmp_res3	
-	
 	SetDataFolder root:
-	
-	return(0)		
+
+	return (0)
 End
 
 // TODO:
@@ -463,97 +435,90 @@ End
 //
 // see Auto_Sort() in the SANS Automation ipf for the rest of the details of
 // how to combine the resolution waves (they also need to be concatenated, which is currently not done)
-// 
-Function V_TmpSort1D(pathStr,folderStr)
-	String pathStr,folderStr
-	
-	SetDataFolder $(pathStr+folderStr)
+//
+Function V_TmpSort1D(string pathStr, string folderStr)
 
-	Wave qw = tmp_q
-	Wave iw = tmp_i
-	Wave sw = tmp_s
-	Wave sq = tmp_sq
-	Wave qb = tmp_qb
-	Wave fs = tmp_fs
-	
+	SetDataFolder $(pathStr + folderStr)
 
-	Sort qw, qw,iw,sw,sq,qb,fs
+	WAVE qw = tmp_q
+	WAVE iw = tmp_i
+	WAVE sw = tmp_s
+	WAVE sq = tmp_sq
+	WAVE qb = tmp_qb
+	WAVE fs = tmp_fs
 
+	Sort qw, qw, iw, sw, sq, qb, fs
 
 	SetDataFolder root:
-	return(0)
+	return (0)
 End
 
+Function V_RemoveDuplicateQvals(string pathStr, string folderStr)
 
-Function V_RemoveDuplicateQvals(pathStr,folderStr)
-	String pathStr,folderStr
-	
-	SetDataFolder $(pathStr+folderStr)
+	SetDataFolder $(pathStr + folderStr)
 
-	Wave qw = tmp_q
-	Wave iw = tmp_i
-	Wave sw = tmp_s
-	Wave sq = tmp_sq
-	Wave qb = tmp_qb
-	Wave fs = tmp_fs
-	
+	WAVE qw = tmp_q
+	WAVE iw = tmp_i
+	WAVE sw = tmp_s
+	WAVE sq = tmp_sq
+	WAVE qb = tmp_qb
+	WAVE fs = tmp_fs
+
 	// zero point waves can be generated from sector averages, exit now
 	if(numpnts(qw) == 0)
 		SetDataFolder root:
-		return(1)
+		return (1)
 	endif
-	
-	Variable q1,q2,tol,ii
-	tol = 0.001 		// 0.1 %
-	q1 = qw[0]
-	ii=0
+
+	variable q1, q2, tol, ii
+	tol = 0.001 // 0.1 %
+	q1  = qw[0]
+	ii  = 0
 	do
-		q2 = qw[ii+1]
-		if(V_CloseEnough(q1,q2,q1*tol))
+		q2 = qw[ii + 1]
+		if(V_CloseEnough(q1, q2, q1 * tol))
 			// check to be sure that both values are actually real numbers before trying to average
-			if(numtype(iw[ii])==0 && numtype(iw[ii+1])==0)		//==0 => real number
-				iw[ii] = (iw[ii] + iw[ii+1])/2		//both OK
+			if(numtype(iw[ii]) == 0 && numtype(iw[ii + 1]) == 0) //==0 => real number
+				iw[ii] = (iw[ii] + iw[ii + 1]) / 2 //both OK
 			endif
-			if(numtype(iw[ii])==0 && numtype(iw[ii+1])!=0)		//==0 => real number
-				iw[ii] = iw[ii]		//one OK
+			if(numtype(iw[ii]) == 0 && numtype(iw[ii + 1]) != 0) //==0 => real number
+				iw[ii] = iw[ii] //one OK
 			endif
-			if(numtype(iw[ii])!=0 && numtype(iw[ii+1])==0)		//==0 => real number
-				iw[ii] = iw[ii+1]		//other OK
+			if(numtype(iw[ii]) != 0 && numtype(iw[ii + 1]) == 0) //==0 => real number
+				iw[ii] = iw[ii + 1] //other OK
 			endif
-			if(numtype(iw[ii])!=0 && numtype(iw[ii+1])!=0)		//==0 => real number
-				iw[ii] = (iw[ii])		// both NaN, get rid of it later
+			if(numtype(iw[ii]) != 0 && numtype(iw[ii + 1]) != 0) //==0 => real number
+				iw[ii] = (iw[ii]) // both NaN, get rid of it later
 			endif
-		
-			if(numtype(sw[ii])==0 && numtype(sw[ii+1])==0)		//==0 => real number
-				sw[ii] = sqrt(sw[ii]^2 + sw[ii+1]^2)		//both OK
+
+			if(numtype(sw[ii]) == 0 && numtype(sw[ii + 1]) == 0) //==0 => real number
+				sw[ii] = sqrt(sw[ii]^2 + sw[ii + 1]^2) //both OK
 			endif
-			if(numtype(sw[ii])==0 && numtype(sw[ii+1])!=0)		//==0 => real number
-				sw[ii] = sw[ii]		//one OK
+			if(numtype(sw[ii]) == 0 && numtype(sw[ii + 1]) != 0) //==0 => real number
+				sw[ii] = sw[ii] //one OK
 			endif
-			if(numtype(sw[ii])!=0 && numtype(sw[ii+1])==0)		//==0 => real number
-				sw[ii] = sw[ii+1]		//other OK
+			if(numtype(sw[ii]) != 0 && numtype(sw[ii + 1]) == 0) //==0 => real number
+				sw[ii] = sw[ii + 1] //other OK
 			endif
-			if(numtype(sw[ii])!=0 && numtype(sw[ii+1])!=0)		//==0 => real number
-				sw[ii] = (sw[ii])		// both NaN, get rid of it later
+			if(numtype(sw[ii]) != 0 && numtype(sw[ii + 1]) != 0) //==0 => real number
+				sw[ii] = (sw[ii]) // both NaN, get rid of it later
 			endif
-			
-			DeletePoints ii+1, 1, qw,iw,sw,sq,qb,fs
+
+			DeletePoints ii + 1, 1, qw, iw, sw, sq, qb, fs
 		else
-			ii+=1
-			q1 = q2
+			ii += 1
+			q1  = q2
 		endif
-	while(ii<numpnts(qw)-2)
-	
-	
+	while(ii < (numpnts(qw) - 2))
 
 	SetDataFolder root:
-	return(0)
+	return (0)
 End
 
 //
 Proc V_Load_Data_ITX()
-	V_Load_itx("","",0,0)
-end
+	V_Load_itx("", "", 0, 0)
+EndMacro
 
 // TODO
 // -- fill in
@@ -572,89 +537,84 @@ end
 //
 // see A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 //
-Function V_Load_itx(fileStr,outStr,doPlot,forceOverwrite)
-	String fileStr, outstr
-	Variable doPlot,forceOverwrite
+Function V_Load_itx(string fileStr, string outStr, variable doPlot, variable forceOverwrite)
 
-	SetDataFolder root:		//build sub-folders for each data set under root
+	SetDataFolder root: //build sub-folders for each data set under root
 
 	// if no fileStr passed in, display dialog now
-	if (cmpStr(fileStr,"") == 0)
+	if(cmpStr(fileStr, "") == 0)
 		fileStr = DoOpenFileDialog("Select a data file to load")
-		if (cmpstr(fileStr,"") == 0)
-			String/G root:Packages:NIST:gLastFileName = ""
-			return(0)		//get out if no file selected
+		if(cmpstr(fileStr, "") == 0)
+			string/G root:Packages:NIST:gLastFileName = ""
+			return (0) //get out if no file selected
 		endif
 	endif
 
 	//Load the waves, using default waveX names
 	//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 	LoadWave/O/T fileStr
-//	LoadWave/G/D/A/Q fileStr
-	String fileNamePath = S_Path+S_fileName
-//		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
+	//	LoadWave/G/D/A/Q fileStr
+	string fileNamePath = S_Path + S_fileName
+	//		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
 
-	String basestr
-	if (!cmpstr(outstr, ""))		//Outstr = "", cmpstr returns 0
-//			enforce a short enough name here to keep Igor objects < 31 chars
-		baseStr = ShortFileNameString(CleanupName(S_fileName,0))
-		baseStr = CleanupName(baseStr,0)		//in case the user added odd characters
+	string basestr
+	if(!cmpstr(outstr, "")) //Outstr = "", cmpstr returns 0
+		//			enforce a short enough name here to keep Igor objects < 31 chars
+		baseStr = ShortFileNameString(CleanupName(S_fileName, 0))
+		baseStr = CleanupName(baseStr, 0) //in case the user added odd characters
 		//baseStr = CleanupName(S_fileName,0)
 	else
-		baseStr = outstr			//for output, hopefully correct length as passed in
+		baseStr = outstr //for output, hopefully correct length as passed in
 	endif
 
-//		print "basestr :"+basestr
-	String fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
-//		print "filename :"+filename
-	
-	Variable ii,num=ItemsinList(S_waveNames)
-	
-	if(DataFolderExists("root:"+baseStr))
-		if (!forceOverwrite)
-			DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
-			if(V_flag==2)	//user selected No, don't load the data
+	//		print "basestr :"+basestr
+	string fileName = ParseFilePath(0, ParseFilePath(5, filestr, ":", 0, 0), ":", 1, 0)
+	//		print "filename :"+filename
+
+	variable ii
+	variable num = ItemsinList(S_waveNames)
+
+	if(DataFolderExists("root:" + baseStr))
+		if(!forceOverwrite)
+			DoAlert 1, "The file " + S_filename + " has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+			if(V_flag == 2) //user selected No, don't load the data
 				SetDataFolder root:
-				for(ii=0;ii<num;ii+=1)		
-					KillWaves $(StringFromList(ii, S_waveNames))	// kill the waves that were loaded
+				for(ii = 0; ii < num; ii += 1)
+					KillWaves $(StringFromList(ii, S_waveNames)) // kill the waves that were loaded
 				endfor
 				if(DataFolderExists("root:Packages:NIST"))
-					String/G root:Packages:NIST:gLastFileName = filename
+					string/G root:Packages:NIST:gLastFileName = filename
 				endif
-				return(0)	//quits the macro
+				return (0) //quits the macro
 			endif
 		endif
-		SetDataFolder $("root:"+baseStr)
+		SetDataFolder $("root:" + baseStr)
 	else
-		NewDataFolder/S $("root:"+baseStr)
+		NewDataFolder/S $("root:" + baseStr)
 	endif
-	
-//			////overwrite the existing data, if it exists
 
-// a semicolon-delimited list of wave names loaded
-//S_waveNames
-	for(ii=0;ii<num;ii+=1)		
-		Duplicate/O $("root:"+StringFromList(ii, S_waveNames)), $(StringFromList(ii, S_waveNames))
+	//			////overwrite the existing data, if it exists
+
+	// a semicolon-delimited list of wave names loaded
+	//S_waveNames
+	for(ii = 0; ii < num; ii += 1)
+		Duplicate/O $("root:" + StringFromList(ii, S_waveNames)), $(StringFromList(ii, S_waveNames))
 	endfor
 
-
-// clean up
+	// clean up
 	SetDataFolder root:
 
-	for(ii=0;ii<num;ii+=1)		
-		KillWaves $(StringFromList(ii, S_waveNames))	// kill the waves that were loaded
+	for(ii = 0; ii < num; ii += 1)
+		KillWaves $(StringFromList(ii, S_waveNames)) // kill the waves that were loaded
 	endfor
-//			Duplicate/O $("root:"+n0), $w0
-//			Duplicate/O $("root:"+n1), $w1
-//			Duplicate/O $("root:"+n2), $w2
-	
+	//			Duplicate/O $("root:"+n0), $w0
+	//			Duplicate/O $("root:"+n1), $w1
+	//			Duplicate/O $("root:"+n2), $w2
+
 	// no resolution matrix to make
 
-	
-	return(0)
+	return (0)
 End
-
-
 
 // string function to select the correct string constant
 // that corresponds to the selected binType. This string constant
@@ -662,10 +622,9 @@ End
 //
 // returns null string if no match
 //
-Function/S V_getBinTypeString(binType)
-	Variable binType
-	
-	String detListStr=""
+Function/S V_getBinTypeString(variable binType)
+
+	string detListStr = ""
 	if(binType == 1)
 		detListStr = ksBinType1
 	endif
@@ -687,9 +646,8 @@ Function/S V_getBinTypeString(binType)
 	if(binType == 7)
 		detListStr = ksBinType7
 	endif
-	
-	
-	return(detListStr)
+
+	return (detListStr)
 End
 
 // given strings of the number of points to remove, loop over the detectors
@@ -697,124 +655,115 @@ End
 // TODO
 // -- currently uses global strings or default strings
 // -- if proper strings (non-null) are passed in, they are used, otherwise global, then default
-Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
-	String folderStr
-	Variable binType
-	String nBegStr,nEndStr
-	
-	String detListStr=""
+Function V_Trim1DDataStr(string folderStr, variable binType, string nBegStr, string nEndStr)
 
-	detListStr = V_getBinTypeString(binType)		//the list of extensions
-	if(strlen(detListStr)==0)
-		return(0)
+	string detListStr = ""
+
+	detListStr = V_getBinTypeString(binType) //the list of extensions
+	if(strlen(detListStr) == 0)
+		return (0)
 	endif
 
-	
 	//use global, then default values if null string passed in
-	if(strlen(nBegStr)==0)
-		SVAR/Z gBegPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
-		SVAR/Z gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
-	
-		if(!SVAR_exists(gBegPtsStr) || !SVAR_exists(gEndPtsStr) || strlen(gBegPtsStr)==0 || strlen(gEndPtsStr)==0)
+	if(strlen(nBegStr) == 0)
+		SVAR/Z gBegPtsStr = root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
+		SVAR/Z gEndPtsStr = root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
+
+		if(!SVAR_exists(gBegPtsStr) || !SVAR_exists(gEndPtsStr) || strlen(gBegPtsStr) == 0 || strlen(gEndPtsStr) == 0)
 			nBegStr = ksBinTrimBegDefault
 			nEndStr = ksBinTrimEndDefault
 		else
 			nBegStr = gBegPtsStr
 			nEndStr = gEndPtsStr
 		endif
-	endif	
+	endif
 
-	Variable num, ii,nBeg,nEnd
-	String item,detstr
+	variable num, ii, nBeg, nEnd
+	string item, detstr
 
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
-	
-	num = ItemsInList(detListStr)
-	for(ii=0;ii<num;ii+=1)
-		detStr = StringFromList(ii, detListStr)
-		if(cmpstr(detStr,"B")==0 && gIgnoreDetB)
-				//skip det B, do nothing
-		else
-			nBeg = NumberByKey(detStr, nBegStr,"=",";")
-			nEnd = NumberByKey(detStr, nEndStr,"=",";")
 
-			V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
+	num = ItemsInList(detListStr)
+	for(ii = 0; ii < num; ii += 1)
+		detStr = StringFromList(ii, detListStr)
+		if(cmpstr(detStr, "B") == 0 && gIgnoreDetB)
+			//skip det B, do nothing
+		else
+			nBeg = NumberByKey(detStr, nBegStr, "=", ";")
+			nEnd = NumberByKey(detStr, nEndStr, "=", ";")
+
+			V_TrimOneSet(folderStr, detStr, nBeg, nEnd)
 		endif
 	endfor
 
-	return(0)
+	return (0)
 End
 
 // TODO
 // x- make this resolution-aware
 //
-Function V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
-	String folderStr,detStr
-	Variable nBeg,nEnd
-	
-	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+Function V_TrimOneSet(string folderStr, string detStr, variable nBeg, variable nEnd)
 
+	SetDataFolder $("root:Packages:NIST:VSANS:" + folderStr)
 
-// TODO	
-// for each binType block:
-// --declare the waves
-// --make a copy of the waves??
-//	//--Break out resolution wave into separate waves
-// --delete the beginning points from everything
+	// TODO
+	// for each binType block:
+	// --declare the waves
+	// --make a copy of the waves??
+	//	//--Break out resolution wave into separate waves
+	// --delete the beginning points from everything
 	// --trim off the last nEnd points from everything
-//	--DeletePoints num-nEnd,nEnd, qw,iw,sw
-//	// --delete all points where the shadow is < 0.98
-////--Put resolution contents back???
+	//	--DeletePoints num-nEnd,nEnd, qw,iw,sw
+	//	// --delete all points where the shadow is < 0.98
+	////--Put resolution contents back???
 
-		Wave/Z qw = $("qBin_qxqy_"+detStr)
-		Wave/Z iw = $("iBin_qxqy_"+detStr)
-		Wave/Z ew = $("eBin_qxqy_"+detStr)
-		// resolution waves
-		Wave/Z sigQ = $("sigmaQ_qxqy_"+detStr)
-		Wave/Z qBar = $("qBar_qxqy_"+detStr)
-		Wave/Z fSubS = $("fSubS_qxqy_"+detStr)
+	WAVE/Z qw = $("qBin_qxqy_" + detStr)
+	WAVE/Z iw = $("iBin_qxqy_" + detStr)
+	WAVE/Z ew = $("eBin_qxqy_" + detStr)
+	// resolution waves
+	WAVE/Z sigQ  = $("sigmaQ_qxqy_" + detStr)
+	WAVE/Z qBar  = $("qBar_qxqy_" + detStr)
+	WAVE/Z fSubS = $("fSubS_qxqy_" + detStr)
 
-// check for the existence of every wave + non-zero length
-// zero length/null waves can be generated with sector averages
-// exit if something is wrong
-		if(waveExists(qw) == 0 || numpnts(qw) == 0)
-			SetDataFolder root:
-			return(1)
-		endif
-		if(waveExists(iw) == 0 || numpnts(iw) == 0)
-			SetDataFolder root:
-			return(1)
-		endif
-		if(waveExists(ew) == 0 || numpnts(ew) == 0)
-			SetDataFolder root:
-			return(1)
-		endif
-		if(waveExists(sigQ) == 0 || numpnts(sigQ) == 0)
-			SetDataFolder root:
-			return(1)
-		endif
-		if(waveExists(qBar) == 0 || numpnts(qBar) == 0)
-			SetDataFolder root:
-			return(1)
-		endif
-		if(waveExists(fSubS) == 0 || numpnts(fSubS) == 0)
-			SetDataFolder root:
-			return(1)
-		endif
-
-
-	// waves all exist		
-		DeletePoints 0,nBeg, qw,iw,ew,sigQ,qBar,fSubS
-
-		Variable npt
-		npt = numpnts(qw) 
-		DeletePoints npt-nEnd,nEnd, qw,iw,ew,sigQ,qBar,fSubS
-	
-		Printf "%d points removed from beginning, %d points from the end  of %s \r",nbeg,nend,detStr
+	// check for the existence of every wave + non-zero length
+	// zero length/null waves can be generated with sector averages
+	// exit if something is wrong
+	if(waveExists(qw) == 0 || numpnts(qw) == 0)
 		SetDataFolder root:
-	return(0)
-End
+		return (1)
+	endif
+	if(waveExists(iw) == 0 || numpnts(iw) == 0)
+		SetDataFolder root:
+		return (1)
+	endif
+	if(waveExists(ew) == 0 || numpnts(ew) == 0)
+		SetDataFolder root:
+		return (1)
+	endif
+	if(waveExists(sigQ) == 0 || numpnts(sigQ) == 0)
+		SetDataFolder root:
+		return (1)
+	endif
+	if(waveExists(qBar) == 0 || numpnts(qBar) == 0)
+		SetDataFolder root:
+		return (1)
+	endif
+	if(waveExists(fSubS) == 0 || numpnts(fSubS) == 0)
+		SetDataFolder root:
+		return (1)
+	endif
 
+	// waves all exist
+	DeletePoints 0, nBeg, qw, iw, ew, sigQ, qBar, fSubS
+
+	variable npt
+	npt = numpnts(qw)
+	DeletePoints npt - nEnd, nEnd, qw, iw, ew, sigQ, qBar, fSubS
+
+	Printf "%d points removed from beginning, %d points from the end  of %s \r", nbeg, nend, detStr
+	SetDataFolder root:
+	return (0)
+End
 
 ////
 //// returns 1 if the val is non-negative, other value
@@ -822,18 +771,17 @@ End
 ////
 //// TODO:
 //// -- this DUPLICATES a same-named SANS procedure, so there could be a clash at some point
-//// -- bigger issue - I'll need a better way to identify and load the different resolution 
+//// -- bigger issue - I'll need a better way to identify and load the different resolution
 //// 		conditions with VSANS
 ////
 ////
 //xFunction isSANSResolution(val)
 //	Variable val
-//	
+//
 //	if(val >= 0)
 //		return(1)
 //	else
 //		return(0)
 //	endif
 //End
-
 

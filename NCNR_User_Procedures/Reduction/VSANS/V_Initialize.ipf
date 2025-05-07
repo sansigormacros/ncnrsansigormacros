@@ -1,6 +1,8 @@
-#pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma TextEncoding="UTF-8"
+#pragma rtFunctionErrors=1
+#pragma rtGlobals=3 // Use modern global access method and strict wave access.
 #pragma version=0.1
-#pragma IgorVersion = 7.00
+#pragma IgorVersion=7.00
 
 //
 //
@@ -34,58 +36,51 @@ Constant kVSANSVersion = 8.08
 // to set up a separate file of "constants" or "globals" where the actual numbers are
 //stored.
 
-
 // for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
 // this need not ever change from 1
 // the back detector is always treated as a beam center in pixels, since it is the natural definition
-Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
+Constant kBCTR_CM = 1 //set to 1 to use beam center in cm. O to use pixels
 
 // // DONE: -- replace this constant with V_getDet_panel_gap(fname,detStr)
 //Constant kPanelTouchingGap = 10			// DONE -- gap when panels "touch", UNITS OF mm, not cm
 
-
 // the base data folder path where the raw data is loaded
-Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
-
+StrConstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
 // the list of WORK Folders
 // RawVSANS does not behave as a WORK folder, but it is local. so add it in explicitly to the list if needed
 // VCALC behaves *almost* as a WORK folder, but it is local. so add it in explicitly to the list if needed
 //Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;VCALC;RawVSANS;"
-Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;"
-
+StrConstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;"
 
 // for defining which "bin type" corresponds to which set of extensions for I(q) data
 // !! see V_BinTypeStr2Num() for the numbering, not the order of the list
 //
 //////////////////
 //Strconstant ksBinTypeStr = "One;Two;Four;Slit Mode;"
-Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-B;SLIT-F2-M2-B;"
-Strconstant ksBinType1 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"		//these are the "active" extensions
-Strconstant ksBinType2 = "FTB;FLR;MTB;MLR;B;"
-Strconstant ksBinType3 = "FLRTB;MLRTB;B;"
-Strconstant ksBinType4 = "FL;FR;ML;MR;B;"		//in SLIT mode, disregard the T/B panels
-Strconstant ksBinType5 = "FTB;FLR;MLRTB;B;"
-Strconstant ksBinType6 = "FLRTB;MLR;B;"
-Strconstant ksBinType7 = "FTB;FLR;MLR;B;"
+StrConstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-B;SLIT-F2-M2-B;"
+StrConstant ksBinType1   = "FT;FB;FL;FR;MT;MB;ML;MR;B;" //these are the "active" extensions
+StrConstant ksBinType2   = "FTB;FLR;MTB;MLR;B;"
+StrConstant ksBinType3   = "FLRTB;MLRTB;B;"
+StrConstant ksBinType4   = "FL;FR;ML;MR;B;"             //in SLIT mode, disregard the T/B panels
+StrConstant ksBinType5   = "FTB;FLR;MLRTB;B;"
+StrConstant ksBinType6   = "FLRTB;MLR;B;"
+StrConstant ksBinType7   = "FTB;FLR;MLR;B;"
 ///////////////////
 
-
 // for looping over each detector
-Strconstant ksDetectorListNoB = "FL;FR;FT;FB;ML;MR;MT;MB;"
-Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
-
+StrConstant ksDetectorListNoB = "FL;FR;FT;FB;ML;MR;MT;MB;"
+StrConstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
 
 // for Protocols
 Constant kNumProtocolSteps = 12
 // for trimming of the I(q) data sets, and part of the protocol
-Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
-Strconstant ksBinTrimBegDefault = "B=5;FT=3;FB=3;FL=3;FR=3;MT=3;MB=3;ML=3;MR=3;FTB=2;FLR=2;MTB=2;MLR=2;FLRTB=1;MLRTB=1;"
-Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;FTB=4;FLR=4;MTB=4;MLR=4;FLRTB=3;MLRTB=3;"
+StrConstant ksPanelBinTypeList  = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
+StrConstant ksBinTrimBegDefault = "B=5;FT=3;FB=3;FL=3;FR=3;MT=3;MB=3;ML=3;MR=3;FTB=2;FLR=2;MTB=2;MLR=2;FLRTB=1;MLRTB=1;"
+StrConstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;FTB=4;FLR=4;MTB=4;MLR=4;FLRTB=3;MLRTB=3;"
 // for the case of Narrow_Slit, don't trim any points by default
-Strconstant ksBinTrimBegZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
-Strconstant ksBinTrimEndZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
-
+StrConstant ksBinTrimBegZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
+StrConstant ksBinTrimEndZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
 
 //////// HIGH RESOLUTION DETECTOR  ///////////////
 //
@@ -98,7 +93,6 @@ Strconstant ksBinTrimEndZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=
 // and the data is noise-free before I get the data - so I don't need to do this
 // filtering or rebinning
 
-
 // the average read noise level of the back detector
 // taken from multiple runs with the beam off, 6-28-18
 // runs sans12324 to sans12353
@@ -110,11 +104,11 @@ Strconstant ksBinTrimEndZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=
 //Constant kReadNoiseLevel_bin4 = 200
 //Constant kReadNoiseLevel_Err_bin4 = 14
 // after binning/processing changes from March 2019:
-Constant kReadNoiseLevel_bin4 = 3160			// from bkg area of sans30201 (a transmission measurement)
-Constant kReadNoiseLevel_Err_bin4 = 50		//estimated
+Constant kReadNoiseLevel_bin4     = 3160 // from bkg area of sans30201 (a transmission measurement)
+Constant kReadNoiseLevel_Err_bin4 = 50   //estimated
 
 // TODOHIGHRES: these values are complete fiction
-Constant kReadNoiseLevel_bin1 = 20
+Constant kReadNoiseLevel_bin1     = 20
 Constant kReadNoiseLevel_Err_bin1 = 1
 
 // Pixel shifts for the back detector to bring the three CCDs into registry
@@ -123,32 +117,29 @@ Constant kReadNoiseLevel_Err_bin1 = 1
 // runs 12221,12225,27,33,34,35,38,42
 // middle CCD is not moved
 // See V_ShiftBackDetImage() for implementation
-Constant 		kShift_TopX_bin4 = 7
-Constant		kShift_TopY_bin4 = 105
-Constant		kShift_BottomX_bin4 = 5
-Constant		kShift_BottomY_bin4 = 35
+Constant kShift_TopX_bin4    = 7
+Constant kShift_TopY_bin4    = 105
+Constant kShift_BottomX_bin4 = 5
+Constant kShift_BottomY_bin4 = 35
 
 // TODOHIGHRES -- these values need to be verified. they are currently simply 4x the bin4 values
-Constant 		kShift_TopX_bin1 = 28
-Constant		kShift_TopY_bin1 = 420
-Constant		kShift_BottomX_bin1 = 20
-Constant		kShift_BottomY_bin1 = 130
+Constant kShift_TopX_bin1    = 28
+Constant kShift_TopY_bin1    = 420
+Constant kShift_BottomX_bin1 = 20
+Constant kShift_BottomY_bin1 = 130
 
-Constant 		kNum_x_HighRes_CCD = 680				//old High res, removed in April? 2023
-Constant		kNum_y_HighRes_CCD = 1656
+Constant kNum_x_HighRes_CCD = 680 //old High res, removed in April? 2023
+Constant kNum_y_HighRes_CCD = 1656
 
-Constant		kNum_x_Denex = 512					// TODO -- as of April 2023, these values are not known
-Constant		kNum_y_Denex = 512
+Constant kNum_x_Denex = 512 // TODO -- as of April 2023, these values are not known
+Constant kNum_y_Denex = 512
 
-Constant		kDownstreamWinTrans = 1				// TODO -- set these to measured values once they are known
-Constant		kDownstreamWinTransErr = 0
-
-
-
+Constant kDownstreamWinTrans    = 1 // TODO -- set these to measured values once they are known
+Constant kDownstreamWinTransErr = 0
 
 Proc Initialize_VSANS()
 	V_Initialize()
-End
+EndMacro
 
 //this is the main initialization procedure that must be the first thing
 //done when opening a new Data reduction experiment
@@ -156,39 +147,38 @@ End
 //sets up data folders, globals, protocols, and draws the main panel
 Proc V_Initialize()
 
-	Variable curVersion = kVSANSVersion
-	Variable oldVersion = NumVarOrDefault("root:VSANS_RED_VERSION",curVersion)
+	variable curVersion = kVSANSVersion
+	variable oldVersion = NumVarOrDefault("root:VSANS_RED_VERSION", curVersion)
 
 	if(oldVersion == curVersion)
 		//must just be a new startup with the current version
-		Variable/G root:VSANS_RED_VERSION=kVSANSVersion
+		variable/G root:VSANS_RED_VERSION = kVSANSVersion
 	endif
 
 	if(oldVersion < curVersion)
-		String str = 	"This experiment was created with version "+num2str(oldVersion)+" of the macros. I'll try to make this work, but please start new work with a current template"
-		DoAlert 0,str
+		string str = "This experiment was created with version " + num2str(oldVersion) + " of the macros. I'll try to make this work, but please start new work with a current template"
+		DoAlert 0, str
 	endif
 
 	V_InitFolders()
-
 
 	V_InitFakeProtocols()
 	V_InitGlobals()
 	V_InitFacilityGlobals()
 	DoWindow/F Main_VSANS_Panel
-	If(V_flag == 0)
+	if(V_flag == 0)
 		//draw panel
 		Main_VSANS_Panel()
-	Endif
-//	V_ResizeCmdWindow()
+	endif
+	//	V_ResizeCmdWindow()
 
-	VC_Initialize_Space()		//initialize folders for VCALC
+	VC_Initialize_Space() //initialize folders for VCALC
 
-// (DONE) - be sure that NCNR is defined correctly
+	// (DONE) - be sure that NCNR is defined correctly
 	//unload the NCNR_Package_Loader, if NCNR not defined
 	UnloadNCNR_VSANS_Procedures()
 
-End
+EndMacro
 
 //creates all the necessary data folders in the root folder
 //does not overwrite any existing folders of the same name
@@ -202,17 +192,17 @@ Function V_InitFolders()
 	NewDataFolder/O root:Packages:NIST
 	NewDataFolder/O root:Packages:NIST:VSANS
 
-// for the file catalog
+	// for the file catalog
 	NewDataFolder/O root:Packages:NIST:VSANS:CatVSHeaderInfo
-// for the globals
+	// for the globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Patch
 
-// for the raw nexus data (so I don't need to reload to get a single value)
+	// for the raw nexus data (so I don't need to reload to get a single value)
 	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
 
-// folders for the reduction steps
+	// folders for the reduction steps
 	NewDataFolder/O root:Packages:NIST:VSANS:RAW
 	NewDataFolder/O root:Packages:NIST:VSANS:SAM
 	NewDataFolder/O root:Packages:NIST:VSANS:EMP
@@ -230,19 +220,13 @@ Function V_InitFolders()
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC
 	NewDataFolder/O root:Packages:NIST:VSANS:ReadNoise
 
+	// ?? anything else
 
-// ?? anything else
+	// for simulation
+	//	NewDataFolder/O root:Packages:NIST:VSANS:SAS
 
-// for simulation
-//	NewDataFolder/O root:Packages:NIST:VSANS:SAS
-
-
-
-	Return(0)
+	return (0)
 End
-
-
-
 
 //
 //Global folder already exists...
@@ -252,28 +236,27 @@ End
 //
 Function V_InitGlobals()
 
-
-	Variable/G root:Packages:NIST:VSANS:Globals:gIsLogScale = 0
-	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = "RAW"
+	variable/G root:Packages:NIST:VSANS:Globals:gIsLogScale  = 0
+	string/G   root:Packages:NIST:VSANS:Globals:gCurDispType = "RAW"
 
 	//check platform, so Angstrom can be drawn correctly
 
 	//TODO	-- this is different on Igor 7. Macintosh # has been updated, but Windows has not
 	// use Print char2num("Å") to find the magic number
-	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
-		String/G root:Packages:NIST:gAngstStr = num2char(197)
-		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 1
+	if(cmpstr("Macintosh", IgorInfo(2)) == 0)
+		string/G   root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
+		string/G   root:Packages:NIST:gAngstStr               = num2char(197)
+		variable/G root:Packages:NIST:VSANS:Globals:gIsMac    = 1
 	else
 		//either Windows or Windows NT
-//		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-59)
-//		String/G root:Packages:NIST:gAngstStr = num2char(-59)
-		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
-		String/G root:Packages:NIST:gAngstStr = num2char(197)
-		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 0
+		//		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-59)
+		//		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+		string/G   root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
+		string/G   root:Packages:NIST:gAngstStr               = num2char(197)
+		variable/G root:Packages:NIST:VSANS:Globals:gIsMac    = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
 		// SRK APRIL 2019 - removed this, does not exist in Igor 8 on WIN, and cause an error.
-//		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
+		//		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
 
 	// DONE x- find the SANS preferences, copy over and update for VSANS
@@ -285,32 +268,31 @@ Function V_InitGlobals()
 	//this is critical to initialize now - as it has the y/n flags for the detector correction steps
 	Execute "Initialize_VSANSPreferences()"
 
-	Execute "V_TubeZeroPointTables()"			// correction to the beam center
+	Execute "V_TubeZeroPointTables()" // correction to the beam center
 
 	// set the lookup waves for log/lin display of the detector images
-	V_MakeImageLookupTables(10000,0,1)
+	V_MakeImageLookupTables(10000, 0, 1)
 
 	// globals that store hi/lo file numbers for multiple patch panels
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy = 0
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy = 0
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_dt = 0
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_dt = 0
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_calib = 0
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_calib = 0
-	
+	variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy    = 0
+	variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy    = 0
+	variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_dt    = 0
+	variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_dt    = 0
+	variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_calib = 0
+	variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_calib = 0
+
 	//set flag if Demo Version is detected
-	Variable/G root:Packages:NIST:VSANS:Globals:isDemoVersion = V_isDemo()
+	variable/G root:Packages:NIST:VSANS:Globals:isDemoVersion = V_isDemo()
 
-
-// for testing
-// if this is set to 1, the OLD (incorrect) cos^3 solid angle will be applied to the tubes
-// and a lot of alerts will pop up...
-	Variable/G root:Packages:NIST:VSANS:Globals:gDo_OLD_SolidAngleCor = 0
+	// for testing
+	// if this is set to 1, the OLD (incorrect) cos^3 solid angle will be applied to the tubes
+	// and a lot of alerts will pop up...
+	variable/G root:Packages:NIST:VSANS:Globals:gDo_OLD_SolidAngleCor = 0
 
 	//set XML globals
-//	String/G root:Packages:NIST:gXMLLoader_Title = ""
+	//	String/G root:Packages:NIST:gXMLLoader_Title = ""
 
-	Return(0)
+	return (0)
 End
 
 //
@@ -323,33 +305,31 @@ End
 // (DONE) hi, lo not used properly here, seems to mangle log display now that
 // I'm switching the lo,hi of the ctab
 //
-Function V_MakeImageLookupTables(num,lo,hi)
-	Variable num,lo,hi
+Function V_MakeImageLookupTables(variable num, variable lo, variable hi)
 
-		// lookup waves for log and linear display of images
+	// lookup waves for log and linear display of images
 	// this is used for the main data display. With this, I can use the original
 	// detector data (no copy) and the zeros in the data set are tolerated when displaying
 	// on log scale
 	SetDataFolder root:Packages:NIST:VSANS:Globals
-	Variable val,offset
+	variable val, offset
 
-	offset = 1/num		//can't use 1/lo if lo == 0
+	offset = 1 / num //can't use 1/lo if lo == 0
 
-	Make/O/D/N=(num) logLookupWave,linearLookupWave
+	Make/O/D/N=(num) logLookupWave, linearLookupWave
 
-	linearLookupWave = (p+1)/num
+	linearLookupWave = (p + 1) / num
 
-
-	logLookupWave = log(linearLookupWave)
-	val = logLookupWave[0]
+	logLookupWave  = log(linearLookupWave)
+	val            = logLookupWave[0]
 	logLookupWave += -val + offset
-	val = logLookupWave[num-1]
+	val            = logLookupWave[num - 1]
 	logLookupWave /= val
 
 	SetDataFolder root:
 
-	return(0)
-end
+	return (0)
+End
 
 //
 // initializes globals that are specific to VSANS
@@ -366,44 +346,44 @@ end
 //
 Function V_InitFacilityGlobals()
 
-//	//Detector -specific globals
-//	Variable/G root:myGlobals:gNPixelsX=128
-//	Variable/G root:myGlobals:gNPixelsY=128
-//
-//	// as of Jan2008, detector pixel sizes are read directly from the file header, so they MUST
-//	// be set correctly in instr.cfg - these values are not used, but declared to avoid errors
-//	Variable/G root:myGlobals:PixelResNG3_ILL = 1.0		//pixel resolution in cm
-//	Variable/G root:myGlobals:PixelResNG5_ILL = 1.0
-//	Variable/G root:myGlobals:PixelResNG7_ILL = 1.0
-//	Variable/G root:myGlobals:PixelResNG3_ORNL = 0.5
-//	Variable/G root:myGlobals:PixelResNG5_ORNL = 0.5
-//	Variable/G root:myGlobals:PixelResNG7_ORNL = 0.5
-//	Variable/G root:myGlobals:PixelResNGB_ORNL = 0.5
-////	Variable/G root:myGlobals:PixelResCGB_ORNL = 0.5		// fiction
-//
-//	Variable/G root:myGlobals:PixelResDefault = 0.5
-//
-//	Variable/G root:myGlobals:DeadtimeNG3_ILL = 3.0e-6		//deadtime in seconds
-//	Variable/G root:myGlobals:DeadtimeNG5_ILL = 3.0e-6
-//	Variable/G root:myGlobals:DeadtimeNG7_ILL = 3.0e-6
-//	Variable/G root:myGlobals:DeadtimeNGB_ILL = 4.0e-6		// fictional
-//	Variable/G root:myGlobals:DeadtimeNG3_ORNL_VAX = 3.4e-6		//pre - 23-JUL-2009 used VAX
-//	Variable/G root:myGlobals:DeadtimeNG3_ORNL_ICE = 1.5e-6		//post - 23-JUL-2009 used ICE
-//	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
-//	Variable/G root:myGlobals:DeadtimeNG7_ORNL_VAX = 3.4e-6		//pre 25-FEB-2010 used VAX
-//	Variable/G root:myGlobals:DeadtimeNG7_ORNL_ICE = 2.3e-6		//post 25-FEB-2010 used ICE
-//	Variable/G root:myGlobals:DeadtimeNGB_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-2013, best value we have for the oscillating data
-//
-////	Variable/G root:myGlobals:DeadtimeCGB_ORNL_ICE = 1.5e-6		// fiction
-//
-//	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6
-//
-//	//new 11APR07
-//	Variable/G root:myGlobals:BeamstopXTol = -8			// (cm) is BS Xpos is -5 cm or less, it's a trans measurement
-//	// sample aperture offset is NOT stored in the VAX header, but it should be
-//	// - when it is, remove the global and write an accessor AND make a place for
-//	// it in the RealsRead
-//	Variable/G root:myGlobals:apOff = 5.0				// (cm) distance from sample aperture to sample position
+	//	//Detector -specific globals
+	//	Variable/G root:myGlobals:gNPixelsX=128
+	//	Variable/G root:myGlobals:gNPixelsY=128
+	//
+	//	// as of Jan2008, detector pixel sizes are read directly from the file header, so they MUST
+	//	// be set correctly in instr.cfg - these values are not used, but declared to avoid errors
+	//	Variable/G root:myGlobals:PixelResNG3_ILL = 1.0		//pixel resolution in cm
+	//	Variable/G root:myGlobals:PixelResNG5_ILL = 1.0
+	//	Variable/G root:myGlobals:PixelResNG7_ILL = 1.0
+	//	Variable/G root:myGlobals:PixelResNG3_ORNL = 0.5
+	//	Variable/G root:myGlobals:PixelResNG5_ORNL = 0.5
+	//	Variable/G root:myGlobals:PixelResNG7_ORNL = 0.5
+	//	Variable/G root:myGlobals:PixelResNGB_ORNL = 0.5
+	////	Variable/G root:myGlobals:PixelResCGB_ORNL = 0.5		// fiction
+	//
+	//	Variable/G root:myGlobals:PixelResDefault = 0.5
+	//
+	//	Variable/G root:myGlobals:DeadtimeNG3_ILL = 3.0e-6		//deadtime in seconds
+	//	Variable/G root:myGlobals:DeadtimeNG5_ILL = 3.0e-6
+	//	Variable/G root:myGlobals:DeadtimeNG7_ILL = 3.0e-6
+	//	Variable/G root:myGlobals:DeadtimeNGB_ILL = 4.0e-6		// fictional
+	//	Variable/G root:myGlobals:DeadtimeNG3_ORNL_VAX = 3.4e-6		//pre - 23-JUL-2009 used VAX
+	//	Variable/G root:myGlobals:DeadtimeNG3_ORNL_ICE = 1.5e-6		//post - 23-JUL-2009 used ICE
+	//	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
+	//	Variable/G root:myGlobals:DeadtimeNG7_ORNL_VAX = 3.4e-6		//pre 25-FEB-2010 used VAX
+	//	Variable/G root:myGlobals:DeadtimeNG7_ORNL_ICE = 2.3e-6		//post 25-FEB-2010 used ICE
+	//	Variable/G root:myGlobals:DeadtimeNGB_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-2013, best value we have for the oscillating data
+	//
+	////	Variable/G root:myGlobals:DeadtimeCGB_ORNL_ICE = 1.5e-6		// fiction
+	//
+	//	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6
+	//
+	//	//new 11APR07
+	//	Variable/G root:myGlobals:BeamstopXTol = -8			// (cm) is BS Xpos is -5 cm or less, it's a trans measurement
+	//	// sample aperture offset is NOT stored in the VAX header, but it should be
+	//	// - when it is, remove the global and write an accessor AND make a place for
+	//	// it in the RealsRead
+	//	Variable/G root:myGlobals:apOff = 5.0				// (cm) distance from sample aperture to sample position
 
 End
 
@@ -412,7 +392,6 @@ End
 //////////////// everything below needs to be re-written for VSANS
 //
 //////////////////////////////////////////////
-
 
 //
 // do I need to make the protocols any longer for VSANS? (yes -- now 12 points)
@@ -431,20 +410,20 @@ End
 Function V_InitFakeProtocols()
 
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Protocols
-	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;","DRK=none,DRKMODE=0,","","","","",""}
-	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;","DRK=none,DRKMODE=0,","","","","",""}
-	Make/O/T/N=(kNumProtocolSteps) $"root:Packages:NIST:VSANS:Globals:Protocols:CreateNew"			//null wave
+	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base" = {"none", "none", "ask", "ask", "none", "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;", "DRK=none,DRKMODE=0,", "", "", "", "", ""}
+	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll" = {"ask", "ask", "ask", "ask", "ask", "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;", "DRK=none,DRKMODE=0,", "", "", "", "", ""}
+	Make/O/T/N=(kNumProtocolSteps) $"root:Packages:NIST:VSANS:Globals:Protocols:CreateNew" //null wave
 	//Initialize waves to store values in
 
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr=""
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr=""
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;"
+	string/G root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr   = ""
+	string/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr     = ""
+	string/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;"
 
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr=""
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr=""
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr=""
+	string/G root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr = ""
+	string/G root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr = ""
+	string/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr    = ""
 
-	Return(0)
+	return (0)
 End
 
 //simple function to resize the comand window to a nice size, no matter what the resolution
@@ -455,17 +434,19 @@ End
 //
 Function V_ResizeCmdWindow()
 
-	String str=IgorInfo(0),rect="",platform=igorinfo(2)
-	Variable depth,left,top,right,bottom,factor
+	string str      = IgorInfo(0)
+	string rect     = ""
+	string platform = igorinfo(2)
+	variable depth, left, top, right, bottom, factor
 
-	if(cmpstr(platform,"Macintosh")==0)
-		factor=1
+	if(cmpstr(platform, "Macintosh") == 0)
+		factor = 1
 	else
-		factor = 0.6		//fudge factor to get command window on-screen on Windows
+		factor = 0.6 //fudge factor to get command window on-screen on Windows
 	endif
-	rect = StringByKey("SCREEN1", str  ,":",";")
-	sscanf rect,"DEPTH=%d,RECT=%d,%d,%d,%d",depth, left,top,right,bottom
-	MoveWindow/C  (left+3)*factor,(bottom-150)*factor,(right-50)*factor,(bottom-10)*factor
+	rect = StringByKey("SCREEN1", str, ":", ";")
+	sscanf rect, "DEPTH=%d,RECT=%d,%d,%d,%d", depth, left, top, right, bottom
+	MoveWindow/C (left + 3) * factor, (bottom - 150) * factor, (right - 50) * factor, (bottom - 10) * factor
 End
 
 // since the NCNR procedures can't be loaded concurrently with the other facility functions,
@@ -476,10 +457,10 @@ End
 //
 Function UnloadNCNR_VSANS_Procedures()
 
-#if (exists("NCNR_VSANS")==6)			//defined in the main #includes file.
+#if (exists("NCNR_VSANS") == 6) //defined in the main #includes file.
 	//do nothing if an NCNR reduction experiment
 #else
-	if(ItemsInList(WinList("NCNR_Package_Loader.ipf", ";","WIN:128")))
+	if(ItemsInList(WinList("NCNR_Package_Loader.ipf", ";", "WIN:128")))
 		Execute/P "CloseProc /NAME=\"NCNR_Package_Loader.ipf\""
 		Execute/P "COMPILEPROCEDURES "
 	endif
@@ -491,12 +472,12 @@ End
 Function V_IsDemo()
 
 	// create small offscreen graph
-	Display/W=(3000,3000,3010,3010)
+	Display/W=(3000, 3000, 3010, 3010)
 	DoWindow/C IsDemoGraph
 
 	// try to save a PICT or bitmap of it to the clipboard
-	SavePICT/Z  as "Clipboard"
-	Variable isDemo= V_Flag != 0	// if error: must be demo
+	SavePICT/Z as "Clipboard"
+	variable isDemo = V_Flag != 0 // if error: must be demo
 	DoWindow/K IsDemoGraph
 	return isDemo
 End
@@ -505,10 +486,7 @@ End
 //
 // Also, ask if the user wants to delete the event data (to save space and speed)
 //
-Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
-	Variable rN,kind
-	String fileName,path,type,creator
-
+Function BeforeExperimentSaveHook(variable rN, string fileName, string path, string type, string creator, variable kind)
 
 	// if event waves are detected (rescaledTime)
 	// this will ask the user if they want to delete the event waves
@@ -516,20 +494,19 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	// tens of minutes to save
 	V_EventWaveCleanup()
 
-
 	// clean out, so that the file SAVE is not slow due to the large experiment size
 	// DONE -
-//
-//	V_CleanOutRawVSANS()
-// present a progress window
-	V_CleanupData_w_Progress(0,1)
+	//
+	//	V_CleanOutRawVSANS()
+	// present a progress window
+	V_CleanupData_w_Progress(0, 1)
 	Printf "Hook cleaned out RawVSANS, experiment saved\r"
 
 	NVAR/Z gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 	if(gHighResBinning == 1)
-// these KillDF are a bad idea - it wipes out all of the current work
-// whenever a save is done - which is the opposite of what you want
-// to happen when you save!
+		// these KillDF are a bad idea - it wipes out all of the current work
+		// whenever a save is done - which is the opposite of what you want
+		// to happen when you save!
 
 		Printf "Hook cleaned out WORK folders, experiment saved\r"
 
@@ -549,7 +526,7 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 		KillDataFolder/Z root:Packages:NIST:VSANS:VCALC
 
 	endif
-// re-create anthing that was killed
+	// re-create anthing that was killed
 	V_initFolders()
 
 End
