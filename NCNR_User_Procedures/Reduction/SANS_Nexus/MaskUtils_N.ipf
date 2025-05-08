@@ -369,6 +369,7 @@ End
 //
 Function CumulativeMask()
 
+	WAVE M_ROIMask = M_ROIMask
 	//if M_ROIMask does not exist, make a quick exit
 	if(!(WaveExists(M_ROIMask)))
 		return (0)

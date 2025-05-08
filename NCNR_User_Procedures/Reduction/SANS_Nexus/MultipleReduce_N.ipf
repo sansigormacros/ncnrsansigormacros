@@ -725,6 +725,10 @@ Function GetHeaderInfoToSDDWave(string fname, string sname)
 	WAVE   GRunNumber = $"root:myGlobals:MRED:RunNumber"
 	WAVE   GIsTrans   = $"root:myGlobals:MRED:IsTrans"
 
+// FIXME -- verify that GLambda is in this folder with this name
+	DoAlert 0,"FIXME -- verify that GLambda is in this folder with this name"
+
+	WAVE   GLambda   = $"root:myGlobals:MRED:lambda"
 	lastPoint = numpnts(GLambda)
 
 	InsertPoints lastPoint, 1, GFilenames

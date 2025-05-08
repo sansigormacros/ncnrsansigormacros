@@ -670,7 +670,16 @@ End
 //both wave are assumed to exist in the data folder. The SANS_Histogram() marquee
 //operation is responsible for creating them.
 //
+//
+// FIXME -- this may be broken since I don't know what dat folder AvgCounts and Position are stored in
+// (since rtGlobals was updated to 3)
 Function Draw_Histo()
+
+	// this assumes I'm in the right data folder
+	WAVE AvgCounts = AvgCounts
+	WAVE Position = Position
+
+	DoAlert 0,"FIXME -- this may be broken since I don't know what dat folder AvgCounts and Position are stored in"
 
 	Display/W=(197, 329, 567, 461)/K=1 AvgCounts vs Position
 	DoWindow/C SANS_Histo
@@ -804,6 +813,11 @@ Function DoHistogramPair(variable xin, variable yin)
 End
 
 Function Draw_HistoPair()
+
+	WAVE AvgCountsX = AvgCountsX
+	WAVE PositionX = PositionX
+	WAVE AvgCountsY = AvgCountsY
+	WAVE PositionY = PositionY
 
 	PauseUpdate; Silent 1 // building window...
 	Display/W=(432.75, 431.75, 903, 698.75)/K=2 AvgCountsX vs PositionX as "Histogram Pair"

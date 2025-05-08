@@ -2056,6 +2056,11 @@ Function GetHeaderInfoToCombineWave(string fname, string sname)
 	WAVE   GRunNumber = $"root:myGlobals:CombineTable:RunNumber"
 	WAVE   GIsTrans   = $"root:myGlobals:CombineTable:IsTrans"
 
+// FIXME -- verify that GLambda is in this folder with this name
+
+	DoAlert 0, "FIXME -- verify that GLambda is in this folder with this name"
+
+	WAVE   GLambda   = $"root:myGlobals:CombineTable:lambda"
 	lastPoint = numpnts(GLambda)
 
 	InsertPoints lastPoint, 1, GFilenames
