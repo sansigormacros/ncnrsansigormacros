@@ -1,4 +1,5 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma TextEncoding = "UTF-8"
+#pragma rtGlobals=3		// Use modern global access method.
 #pragma Version=2.20
 #pragma IgorVersion=6.1
 
@@ -6,7 +7,7 @@
 // Igor conversion:	03 FEB 06 SRK
 //			Revision:	03 MAR 06 SRK
 //
-//	Program uses Lake's iterative technique, J. A. Lake, Acta Cryst. 23 (1967) 191-4. 
+//	Program uses Lake's iterative technique, J. A. Lake, Acta Cryst. 23 (1967) 191-4.
 //	to DESMEAR Infinite slit smeared USANS DATA.
 //
 //	TO SEE DESCRIPTION, CHECK COMPUTER SOFTWARE LOGBOOK, P13,41-46, 50
@@ -60,14 +61,14 @@ Proc Desmear()
 	if(DataFolderExists(USANSFolder+":DSM") == 0)
 		Execute "Init_Desmearing()"
 	endif
-	
+
 	SetDataFolder $(USANSFolder+":DSM")
 	//always initialize these global variables
 	gStr1 = ""
 	gStr2 = ""
 	gIterStr = ""
 	SetDataFolder root:
-	
+
 	DoWindow/F Desmear_Graph
 	if(V_flag==0)
 		Execute "Desmear_Graph()"
@@ -81,14 +82,14 @@ Proc Init_Desmearing()
 	//set up the folder(s) needed
 	NewDataFolder/O $(USANSFolder+":DSM")
 	NewDataFolder/O $(USANSFolder+":myGlobals")		//in case it wasn't created elsewhere
-	
+
 	SetDataFolder $(USANSFolder+":DSM")
-	
+
 	String/G gCurFile=""
-	
+
 	Variable/G gMaxFastIter = 100			//max number of iter in Fast convergence
 	Variable/G gMaxSlowIter = 10000
-	
+
 	Variable/G gNptsExtrap = 15		//points for high q extrapolation
 	Variable/G gChi2Target = 1		//chi^2 target
 	Variable/G gPowerM = -4
@@ -96,17 +97,17 @@ Proc Init_Desmearing()
 	Variable/G gNq = 1
 	Variable/G gS = 0		// global varaible for Midpnt()
 	Variable/G gSmoothFac=0.03
-	
+
 	Variable/G gChi2Final = 0		//chi^2 final
 	Variable/G gIterations = 0		//total number of iterations
-	
+
 	String/G gStr1 = ""				//information strings
 	String/G gStr2 = ""
 	String/G gIterStr = ""
 	Variable/G gChi2Smooth = 0
-	
+
 	Variable/G gFreshMask=1
-	
+
 	SetDataFolder root:
 End
 
@@ -117,7 +118,7 @@ Function DSM_Smear(Y_wave,Ys,NQ,FW)
 	Wave Y_wave,Ys
 	Variable nq
 	Wave FW
-	
+
 	Variable ii,jj,summ
 	for(ii=0;ii<nq;ii+=1)
 		summ=0
@@ -126,11 +127,11 @@ Function DSM_Smear(Y_wave,Ys,NQ,FW)
 		endfor
 		Ys[ii] = summ
 	endfor
-	
+
 	Return (0)
 End
 
-//	CALCULATES CHI^2 
+//	CALCULATES CHI^2
 FUNCTION CHI2(ys_new,ys_exp,w,NQ)
 	Wave ys_new,ys_exp,w
 	Variable nq
@@ -143,9 +144,9 @@ FUNCTION CHI2(ys_new,ys_exp,w,NQ)
 		SUMm=SUMm+W[ii]*(YS_EXP[ii]-YS_NEW[ii])^2
 //		endif
 	endfor
-	
+
 	CHI2=SUMm/(NQ-1)
-	
+
 	RETURN CHI2
 END
 
@@ -175,7 +176,7 @@ Function Weights_L(m,FW,Q_exp)		//changed input w to FW (FW is two dimensional)
 	Wave FW,Q_exp
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	NVAR dqv = $(USANSFolder+":DSM:gDqv")
 	NVAR NN = $(USANSFolder+":DSM:gNq")
 
@@ -183,10 +184,10 @@ Function Weights_L(m,FW,Q_exp)		//changed input w to FW (FW is two dimensional)
 	Variable lower,ii,ss,jj
 	Duplicate/O Q_exp $(USANSFolder+":DSM:R_wave")
 	wave r_wave = $(USANSFolder+":DSM:R_wave")
-	
+
 //	Make/O/D/N=75 root:DSM:SS_save	//debug
 //	wave SS_save = root:DSM:SS_save
-	
+
 	Print "calculating remainders by integration..."
 	for(ii=0;ii<NN-1;ii+=1)
 		lower = sqrt(Q_exp[NN-1]^2-Q_exp[ii]^2)
@@ -195,7 +196,7 @@ Function Weights_L(m,FW,Q_exp)		//changed input w to FW (FW is two dimensional)
 		R_wave[ii] = (Q_exp[NN-1]^(-m)/dqv)*SS
 //		Printf "I = %d R_wave[ii] =%g\r",ii,R_wave[ii]
 	endfor
-	
+
 	lower = 0.0
 	ss = Qromo(lower,dqv,Q_exp[NN-1],m)		//new parameter list for Qromo call
 	R_wave[NN-1] = (Q_exp[NN-1]^(-m)/dqv)*SS
@@ -204,7 +205,7 @@ Function Weights_L(m,FW,Q_exp)		//changed input w to FW (FW is two dimensional)
 
 //	Make/O/D/N=(75,75) root:DSM:IG_save		//debug
 //	wave IG_save=root:DSM:IG_save
-	
+
 //	Zero weight matrix... then fill it
 	FW = 0
 	Print "calculating full weights...."
@@ -215,7 +216,7 @@ Function Weights_L(m,FW,Q_exp)		//changed input w to FW (FW is two dimensional)
 			FW[ii][jj] -= (1.0/(Q_exp[jj+1]-Q_exp[jj]))*IG(ii,jj)
 			FW[ii][jj] -= DU(ii,jj-1)*Q_exp[jj-1]/(Q_exp[jj]-Q_exp[jj-1])
 			FW[ii][jj] += (1.0/(Q_exp[jj]-Q_exp[jj-1]))*IG(ii,jj-1)
-			FW[ii][jj] *= (1.0/dqv)			
+			FW[ii][jj] *= (1.0/dqv)
 //		Printf "FW[%d][%d] = %g\r",ii,jj,FW[ii][jj]
 		endfor
 	endfor
@@ -243,18 +244,18 @@ End
 ////
 Function Integrand_dsm(u,qi,m)
 	Variable u,qi,m
-	
+
 	Variable integrand
 	Integrand = (u^2+qi^2)^(m/2)
 	return integrand
 end
 
-/// 
+///
 Function DU(ii,jj)
 	Variable ii,jj
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	Wave Q_exp = $(USANSFolder+":DSM:Q_exp")
 	Variable DU
 
@@ -264,16 +265,16 @@ Function DU(ii,jj)
 	Else
 	  DU = sqrt(Q_exp[jj+1]^2-Q_exp[ii]^2) - sqrt(Q_exp[jj]^2-Q_exp[ii]^2)
 	EndIf
-	
+
 //	DU_save[ii][jj] = DU
 	Return DU
 End
 
 Function IG(ii,jj)
 	Variable ii,jj
-	
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	Wave Q_exp=$(USANSFolder+":DSM:Q_exp")
 	Variable IG,UL,UU
 
@@ -284,14 +285,14 @@ Function IG(ii,jj)
 	  UL=sqrt(Q_exp[jj]^2-Q_exp[ii]^2)
 	EndIf
 	UU=sqrt(Q_exp[jj+1]^2-Q_exp[ii]^2)
-	
-	//in FORTRAN log = natural log....	
+
+	//in FORTRAN log = natural log....
 	IG = UU*Q_exp[jj+1]+Q_exp[ii]^2*ln(UU+Q_exp[jj+1])
 	IG -= UL*Q_exp[jj]
 	IG -= Q_exp[ii]^2*ln(UL+Q_exp[jj])
 	IG *= 0.5
 //	IG_save[ii][jj] = IG
-	
+
 	Return IG
 End
 
@@ -316,7 +317,7 @@ Function GG(ii,jj)
 
 	Variable GG
 	NVAR dqv = $(USANSFolder+":DSM:gDqv")
-	
+
 	GG = (1.0/dqv)*(0.5-HH(ii,jj))
 	Return	GG
 End
@@ -328,7 +329,7 @@ Function HH(ii,jj)
 
 	Wave Q_exp=$(USANSFolder+":DSM:Q_exp")
 	Variable HH
-	
+
 	HH = 0.5*(Q_exp[jj+1]+Q_exp[jj])/(Q_exp[jj+1]-Q_exp[jj])
 	HH -= (1.0/(Q_exp[jj+1]-Q_exp[jj]))*(CC(ii,jj+1)-CC(ii,jj))
 	return HH
@@ -339,10 +340,10 @@ Function CC(ii,jj)
 	Variable ii,jj
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	wave Q_exp = $(USANSFolder+":DSM:Q_exp")
 	Variable CC
-	
+
 	If (ii == jj)
 	  CC = 0.0
 	Else
@@ -364,24 +365,24 @@ Function QROMO(A,B,qi,m)
 	Variable A,B,qi,m
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	Variable EPS,JMAX,JMAXP,KM,K
 	EPS=1.E-6
 	JMAX=14
 	KM=4
 	K=KM+1
-	
+
 	Make/O/D/N=(JMAX) $(USANSFolder+":DSM:S_wave")
 	Make/O/D/N=(JMAX+1) $(USANSFolder+":DSM:H_wave")
 	wave S_wave=$(USANSFolder+":DSM:S_wave")
 	wave H_wave=$(USANSFolder+":DSM:H_wave")
 	S_wave=0
 	H_wave=0
-	
+
 	H_Wave[0] = 1
-	
+
 	variable jj,SS,DSS
-	
+
 	for(jj=0;jj<jmax;jj+=1)
 		S_wave[jj] = Midpnt(A,B,jj,qi,m)		//remove FUNC, always call Integrand from within Midpnt
 		IF (jj>=KM)		//after 1st 5 points calculated
@@ -393,15 +394,15 @@ Function QROMO(A,B,qi,m)
 //	  S_wave[jj+1]=S_wave[jj]
 	  H_wave[jj+1]=H_wave[jj]/9.
 	endfor
-	
+
 	DoAlert 0,"Too many steps in QROMO"
-	return 1			//error if you get here	
+	return 1			//error if you get here
 END
 
 //
 // see NR pg 109
 // - Given input arrays xa[1..n] and ya[1..n], and a given value x
-// return a value y and an error estimate dy. if P(x) is the polynomial of 
+// return a value y and an error estimate dy. if P(x) is the polynomial of
 // degree N-1 such that P(xai) = yai, then the returned value y=P(x)
 //
 // arrays XA[] and YA[] are passed in with an offset of the index
@@ -409,13 +410,13 @@ END
 Function POLINT(XA,YA,offset,N,X,Y,DY)
 	Wave XA,YA
 	Variable offset,N,X,&Y,&DY
-	
+
 	Variable ii,mm,nmax,ns,dif,den,ho,hp,wi,dift
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	NMAX=10
-	
+
 	Make/O/D/N=(NMAX) $(USANSFolder+":DSM:Ci"),$(USANSFolder+":DSM:Di")
 	wave Ci = $(USANSFolder+":DSM:Ci")
 	wave Di = $(USANSFolder+":DSM:Di")
@@ -431,7 +432,7 @@ Function POLINT(XA,YA,offset,N,X,Y,DY)
 		Ci[ii]=YA[ii+offset]
 		Di[ii]=YA[ii+offset]
 	endfor
-	
+
 	Y=YA[NS+offset]
 	NS=NS-1
 	for(mm=1;mm<n-1;mm+=1)
@@ -463,13 +464,13 @@ END
 // again, see the c-version, NR pg 142
 Function MIDPNT(A,B,N,qi,m)
 	Variable A,B,N,qi,m
-	
+
 	Variable it,tnm,del,ddel,x,summ,jj
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	NVAR S_ret = $(USANSFolder+":DSM:gS")
-	
+
 	IF (N == 0)
 		S_ret=(B-A)*Integrand_dsm(0.5*(A+B),qi,m)
 //		Print "N==0, S_ret = ",s_ret
@@ -481,8 +482,8 @@ Function MIDPNT(A,B,N,qi,m)
 //		for(jj=1;jj<n-1;jj+=1)
 //			it *= 3
 //		endfor
-		//AJJ Equivalent and simpler	
-		it = 3^(N-1)	
+		//AJJ Equivalent and simpler
+		it = 3^(N-1)
 		//
 		TNM=IT
 		DEL=(B-A)/(3.*TNM)
@@ -504,7 +505,7 @@ END
 //////////// end of Lake desmearing routines
 
 // - Almost everything below here is utility routines for data handling, panel
-// controls, and all the fluff that makes this useable. Note that this is 
+// controls, and all the fluff that makes this useable. Note that this is
 // a lot more code than the actual guts of the Lake method!
 // (the guts of the iteration are in the DemsearButtonProc)
 
@@ -518,20 +519,20 @@ END
 Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	String fullpath
 	Variable lo,hi,dialog		//=1 will present dialog for name
-	
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	String termStr="\r\n"
 	String destStr = USANSFolder+":DSM:"
 	String formatStr = "%15.6g %15.6g %15.6g %15.6g %15.6g %15.6g"+termStr
-	
+
 	Variable refNum,integer,realval
-	
+
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
 	WAVE Q_dsm =$(destStr + "Q_dsm")
 	WAVE I_dsm=$(destStr + "I_dsm")
 	WAVE S_dsm=$(destStr + "S_dsm")
-	
+
 	//check each wave
 	If(!(WaveExists(Q_dsm)))
 		Abort "Q_dsm DNExist in WriteUSANSDesmeared()"
@@ -542,14 +543,14 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	If(!(WaveExists(S_dsm)))
 		Abort "S_dsm DNExist in WriteUSANSDesmeared()"
 	Endif
-	
+
 	// 06 FEB 06 SRK
 	// make dummy waves to hold the "fake" resolution, and write it as the last 3 columns
 	//
 	Duplicate/O Q_dsm,res1,res2,res3
 	res3 = 1		// "fake" beamstop shadowing
 	res1 /= 100		//make the sigmaQ so small that there is no smearing
-	
+
 	if(dialog)
 		Open/D refnum as fullpath+".dsm"		//won't actually open the file
 		If(cmpstr(S_filename,"")==0)
@@ -559,7 +560,7 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 		Endif
 		fullpath = S_filename
 	Endif
-	
+
 	//write out partial set?
 	Duplicate/O Q_dsm,tq,ti,te
 	ti=I_dsm
@@ -570,41 +571,41 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 		ti=I_dsm[p+lo]
 		te=S_dsm[p+lo]
 	endif
-	
+
 	//tailor the output given the type of data written out...
 	String samStr="",dateStr="",str1,str2
-	
+
 	NVAR m = $(USANSFolder+":DSM:gPowerM")				// power law exponent
 	NVAR chiFinal = $(USANSFolder+":DSM:gChi2Final")		//chi^2 final
 	NVAR iter = $(USANSFolder+":DSM:gIterations")		//total number of iterations
-	
+
 	//get the number of spline passes from the wave note
 	String noteStr
 	Variable boxPass,SplinePass
 	noteStr=note(I_dsm)
 	BoxPass = NumberByKey("BOX", noteStr, "=", ";")
 	splinePass = NumberByKey("SPLINE", noteStr, "=", ";")
-	
+
 	samStr = fullpath
 	dateStr="CREATED: "+date()+" at  "+time()
 	sprintf str1,"Chi^2 = %g   PowerLaw m = %4.2f   Iterations = %d",chiFinal,m,iter
 	sprintf str2,"%d box smooth passes and %d smoothing spline passes",boxPass,splinePass
 
-	
+
 	//actually open the file
 	Open refNum as fullpath
-	
+
 	fprintf refnum,"%s"+termStr,samStr
 	fprintf refnum,"%s"+termStr,str1
 	fprintf refnum,"%s"+termStr,str2
 	fprintf refnum,"%s"+termStr,dateStr
-	
+
 	wfprintf refnum, formatStr, tq,ti,te,res1,res2,res3
-	
+
 	Close refnum
-	
+
 	Killwaves/Z ti,tq,te,res1,res2,res3
-	
+
 	Return(0)
 End
 
@@ -617,21 +618,21 @@ End
 Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
 	String fullpath
 	Variable lo,hi,dialog		//=1 will present dialog for name
-	
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	String termStr="\r\n"
 	String destStr = USANSFolder+":DSM:"
 	String formatStr = "%15.6g %15.6g %15.6g %15.6g %15.6g %15.6g"+termStr
-	
+
 	Variable refNum,integer,realval
 	NVAR gDQV = root:Packages:NIST:USANS:DSM:gDqv
-	
+
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
 	WAVE Q_smth =$(destStr + "Q_smth")
 	WAVE I_smth=$(destStr + "I_smth")
 	WAVE S_smth=$(destStr + "S_smth")
-	
+
 	//check each wave
 	If(!(WaveExists(Q_smth)))
 		Abort "Q_smth DNExist in WriteUSANS_Smoothed()"
@@ -642,7 +643,7 @@ Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
 	If(!(WaveExists(S_smth)))
 		Abort "S_smth DNExist in WriteUSANS_Smoothed()"
 	Endif
-	
+
 	// 06 FEB 06 SRK
 	// make dummy waves to hold the "fake" resolution, and write it as the last 3 columns
 	//
@@ -650,7 +651,7 @@ Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
 	res1 = -gDQV
 	res2 = -gDQV
 	res3 = -gDQV
-	
+
 	if(dialog)
 		Open/D refnum as fullpath+".smth"		//won't actually open the file
 		If(cmpstr(S_filename,"")==0)
@@ -660,7 +661,7 @@ Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
 		Endif
 		fullpath = S_filename
 	Endif
-	
+
 	//write out partial set?
 	Duplicate/O Q_smth,tq,ti,te
 	ti=I_smth
@@ -671,7 +672,7 @@ Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
 		ti=I_smth[p+lo]
 		te=S_smth[p+lo]
 	endif
-	
+
 	//tailor the output given the type of data written out...
 	String samStr="",dateStr="",str1,str2
 
@@ -681,7 +682,7 @@ Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
 	noteStr=note(I_smth)
 	BoxPass = NumberByKey("BOX", noteStr, "=", ";")
 	splinePass = NumberByKey("SPLINE", noteStr, "=", ";")
-	
+
 
 	samStr = fullpath
 	dateStr="CREATED: "+date()+" at  "+time()
@@ -689,21 +690,21 @@ Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
 	str1 = "smoothed data file, not desmeared"
 	sprintf str2,"%d box smooth passes and %d smoothing spline passes",boxPass,splinePass
 
-	
+
 	//actually open the file
 	Open refNum as fullpath
-	
+
 	fprintf refnum,"%s"+termStr,samStr
 //	fprintf refnum,"%s"+termStr,str1
 	fprintf refnum,"%s"+termStr,str2
 	fprintf refnum,"%s"+termStr,dateStr
-	
+
 	wfprintf refnum, formatStr, tq,ti,te,res1,res2,res3
-	
+
 	Close refnum
-	
+
 	Killwaves/Z ti,tq,te,res1,res2,res3
-	
+
 	Return(0)
 End
 
@@ -719,9 +720,9 @@ Function DSM_SetExtrWaves(w)
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 
 	Variable num_extr=25
-	
+
 	SetDataFolder $(USANSFolder+":DSM")
-	
+
 	Make/O/D/N=(num_extr) extr_hqq,extr_hqi
 	extr_hqi=1		//default values
 
@@ -731,9 +732,9 @@ Function DSM_SetExtrWaves(w)
 
 	num=numpnts(w)
 	qmax=6*w[num-1]
-	
+
 	extr_hqq = w[num-1] + x * (qmax-w[num-1])/num_extr
-	
+
 	SetDataFolder root:
 	return(0)
 End
@@ -750,19 +751,19 @@ Function ExtendToSmooth(qw,iw,sw,nbeg,nend,num_extr)
 	Variable nbeg,nend,num_extr
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	Variable/G V_FitMaxIters=300
 	Variable/G V_fitOptions=4		//suppress the iteration window
 	Variable num_new,qmax,num,qmin
 	num=numpnts(qw)
-	
+
 	num_new = num + 2*num_extr
-	
+
 //	Print "num,num_new",num,num_new
-	
+
 	SetDataFolder $(USANSFolder+":DSM")
 	Make/O/D/N=(num_new) Q_ext,I_ext,S_ext
-	
+
 	if(num_extr == 0)		//the extended waves are the input, get out
 		Q_ext = qw
 		I_ext = iw
@@ -770,7 +771,7 @@ Function ExtendToSmooth(qw,iw,sw,nbeg,nend,num_extr)
 		setDatafolder root:
 		return (0)
 	endif
-	
+
 	//make the extensions
 	Make/O/D/N=(num_extr) hqq,hqi,lqq,lqi
 	hqi=1		//default values
@@ -779,45 +780,45 @@ Function ExtendToSmooth(qw,iw,sw,nbeg,nend,num_extr)
 //	qmin=1e-6
 	qmin= qw[0]*0.5
 	qmax = qw[num-1]*2
-	
+
 	hqq = qw[num-1] + x * (qmax-qw[num-1])/num_extr
 	lqq = qmin + x * (qw[0]-qmin)/num_extr
-	
+
 	//do the fits
 	Duplicate/O iw dummy			//use this as the destination to suppress fit_ from being appended
-	
+
 	//Use simple linear fits	line: y = K0+K1*x
 	CurveFit/Q line iw[0,(nbeg-1)] /X=qw /W=sw /D=dummy
 	Wave W_coef=W_coef
 	lqi=W_coef[0]+W_coef[1]*lqq
-//	
+//
 // Guinier or Power-law fits
-//		
+//
 //	Make/O/D G_coef={100,-100}		//input
-//	FuncFit DSM_Guinier_Fit G_coef iw[0,(nbeg-1)] /X=qw /W=sw /D 
+//	FuncFit DSM_Guinier_Fit G_coef iw[0,(nbeg-1)] /X=qw /W=sw /D
 //	lqi= DSM_Guinier_Fit(G_coef,lqq)
-	
+
 //	Printf "I(q=0) = %g (1/cm)\r",G_coef[0]
 //	Printf "Rg = %g (A)\r",sqrt(-3*G_coef[1])
-		
+
 	Make/O/D P_coef={0,1,-4}			//input  --- (set background to zero and hold fixed)
-	CurveFit/Q/N/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D=dummy 
+	CurveFit/Q/N/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D=dummy
 	hqi=P_coef[0]+P_coef[1]*hqq^P_coef[2]
-	
+
 //	Printf "Power law exponent = %g\r",P_coef[2]
 //	Printf "Pre-exponential = %g\r",P_coef[1]
-	
+
 	// concatenate the extensions
 	Q_ext[0,(num_extr-1)] = lqq[p]
-	Q_ext[num_extr,(num_extr+num-1)] = qw[p-num_extr] 
+	Q_ext[num_extr,(num_extr+num-1)] = qw[p-num_extr]
 	Q_ext[(num_extr+num),(2*num_extr+num-1)] = hqq[p-num_extr-num]
 	I_ext[0,(num_extr-1)] = lqi[p]
-	I_ext[num_extr,(num_extr+num-1)] = iw[p-num_extr] 
+	I_ext[num_extr,(num_extr+num-1)] = iw[p-num_extr]
 	I_ext[(num_extr+num),(2*num_extr+num-1)] = hqi[p-num_extr-num]
 	S_ext[0,(num_extr-1)] = sw[0]
-	S_ext[num_extr,(num_extr+num-1)] = sw[p-num_extr] 
+	S_ext[num_extr,(num_extr+num-1)] = sw[p-num_extr]
 	S_ext[(num_extr+num),(2*num_extr+num-1)] = sw[num-1]
-	
+
 	killwaves/z dummy
 	SetDataFolder root:
 	return(0)
@@ -832,9 +833,9 @@ Function DSM_DoExtrapolate(qw,iw,sw,nend)
 	Variable nend
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	Setdatafolder $(USANSFolder+":DSM")
-	
+
 //	Wave extr_lqi=extr_lqi
 //	Wave extr_lqq=extr_lqq
 	Wave extr_hqi=extr_hqi
@@ -842,35 +843,35 @@ Function DSM_DoExtrapolate(qw,iw,sw,nend)
 	Variable/G V_FitMaxIters=300
 	Variable/G V_fitOptions=4		//suppress the iteration window
 	Variable num=numpnts(iw),retVal
-	
-	
+
+
 	/////////for the fit
 	Make/O/D P_coef={0,1,-4}			//input
 	Make/O/T Constr={"K2<0","K2 > -8"}
 	//(set background to zero and hold fixed)
-	
-	// initial guess 
+
+	// initial guess
 	P_coef[1] = iw[num-1]/qw[num-1]^P_coef[2]
-		
+
 	CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /I=1 /C=constr
 	extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
-	
+
 	// for the case of data with a background
 //	Make/O/D P_coef={0,1,-4}			//input
 //	//(set background to iw[num-1], let it be a free parameter
 //	P_coef[0] = iw[num-1]
-//	CurveFit Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+//	CurveFit Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D
 //	extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
-	
+
 //	if(checked && if(not already displayed))
 //		AppendToGraph extr_hqi vs extr_hqq
 //		ModifyGraph lsize(extr_hqi)=2
 //	endif
-	
-	
+
+
 	Printf "Smeared Power law exponent = %g\r",P_coef[2]
 	Printf "**** For Desmearing, use a Power law exponent of %5.1f\r",P_coef[2]-1
-	
+
 	retVal = P_coef[2]-1
 	SetDataFolder root:
 	return(retVal)
@@ -879,7 +880,7 @@ End
 Function DSM_Guinier_Fit(w,x) //: FitFunc
 	Wave w
 	Variable x
-	
+
 	//fit data to I(q) = A*exp(B*q^2)
 	// (B will be negative)
 	//two parameters
@@ -890,7 +891,7 @@ Function DSM_Guinier_Fit(w,x) //: FitFunc
 	return(ans)
 End
 
-Proc Desmear_Graph() 
+Proc Desmear_Graph()
 	String USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 
 	PauseUpdate; Silent 1		// building window...
@@ -903,7 +904,7 @@ Proc Desmear_Graph()
 	TabControl DSM_Tab,labelBack=(49151,49152,65535),tabLabel(0)="Load"
 	TabControl DSM_Tab,tabLabel(1)="Mask",tabLabel(2)="Extrapolate"
 	TabControl DSM_Tab,tabLabel(3)="Smooth",tabLabel(4)="Desmear",value= 0
-	
+
 	//always visible - revert and save
 	//maybe the wrong place here?
 	Button DSMControlA,pos={225,135},size={80,20},proc=DSM_RevertButtonProc,title="Revert"
@@ -912,7 +913,7 @@ Proc Desmear_Graph()
 	Button DSMControlB,help={"Save the desmeared data set"}
 	Button DSMControlC,pos={25,135},size={50,20},proc=DSM_HelpButtonProc,title="Help"
 	Button DSMControlC,help={"Show the help file for desmearing"}
-	
+
 	// add the controls to each tab ---- all names start with "DSMControl_"
 
 	//tab(0) Load - initially visible
@@ -925,7 +926,7 @@ Proc Desmear_Graph()
 	//second message string not used currently
 //	TitleBox DSMControl_0d,pos={120,57},size={104,19},font="Courier",fSize=10
 //	TitleBox DSMControl_0d,variable= root:DSM:gStr2
-	
+
 	//tab(1) Mask
 	Button DSMControl_1a,pos={20,35},size={90,20},proc=DSM_MyMaskProc,title="Mask Point"		//bMask
 	Button DSMControl_1a,help={"Toggles the masking of the selected data point"}
@@ -941,7 +942,7 @@ Proc Desmear_Graph()
 	Button DSMControl_1d,disable=1
 //	Button DSMControl_1b,pos={144,66},size={110,20},proc=DSM_MaskDoneButton,title="Done Masking"
 //	Button DSMControl_1b,disable=1
-	
+
 	//tab(2) Extrapolate
 	Button DSMControl_2a,pos={31,42},size={90,20},proc=DSM_ExtrapolateButtonProc,title="Extrapolate"
 	Button DSMControl_2a,help={"Extrapolate the high-q region with a power-law"}
@@ -958,7 +959,7 @@ Proc Desmear_Graph()
 	SetVariable DSMControl_2d format="%5.2f"
 	SetVariable DSMControl_2d,limits={-inf,inf,0},value= $(USANSFolder+":DSM:gPowerM")
 	SetVariable DSMControl_2d,disable=1
-	
+
 	//tab(3) Smooth
 	Button DSMControl_3a,pos={34,97},size={70,20},proc=DSM_SmoothButtonProc,title="Smooth"
 	Button DSMControl_3a,disable=1
@@ -990,7 +991,7 @@ Proc Desmear_Graph()
 	ValDisplay DSMControl_3h pos={235,97},title="Chi^2",size={80,20},value=root:Packages:NIST:USANS:DSM:gChi2Smooth
 	ValDisplay DSMControl_3h,help={"This is the Chi^2 value for the smoothed data vs experimental data"}
 	ValDisplay DSMControl_3h,disable=1
-	
+
 	//tab(4) Desmear
 	Button DSMControl_4a,pos={35,93},size={80,20},proc=DSM_DesmearButtonProc,title="Desmear"
 	Button DSMControl_4a,help={"Do the desmearing - the result is in I_dsm"}
@@ -1006,13 +1007,13 @@ Proc Desmear_Graph()
 	TitleBox DSMControl_4d,pos={160,37},size={104,19},font="Courier",fSize=10
 	TitleBox DSMControl_4d,variable= $(USANSFolder+":DSM:gIterStr")
 	TitleBox DSMControl_4d,disable=1
-	
-	
+
+
 	SetDataFolder root:
 EndMacro
 
 // function to control the drawing of buttons in the TabControl on the main panel
-// Naming scheme for the buttons MUST be strictly adhered to... else buttons will 
+// Naming scheme for the buttons MUST be strictly adhered to... else buttons will
 // appear in odd places...
 // all buttons are named DSMControl_NA where N is the tab number and A is the letter denoting
 // the button's position on that particular tab.
@@ -1031,17 +1032,17 @@ Function DSM_TabProc(ctrlName,tab) //: TabControl
 		if(cmpstr(nameStr,"DSMControl_")==0)
 			onTab = str2num(item[11])			//12th is a number
 			ControlInfo $item
-			switch(abs(V_flag))	
+			switch(abs(V_flag))
 				case 1:
 					Button $item,disable=(tab!=onTab)
 					break
-				case 2:	
+				case 2:
 					CheckBox $item,disable=(tab!=onTab)
 					break
-				case 5:	
+				case 5:
 					SetVariable $item,disable=(tab!=onTab)
 					break
-				case 10:	
+				case 10:
 					TitleBox $item,disable=(tab!=onTab)
 					break
 				case 4:
@@ -1049,35 +1050,35 @@ Function DSM_TabProc(ctrlName,tab) //: TabControl
 					break
 				// add more items to the switch if different control types are used
 			endswitch
-			
+
 		endif
-	endfor 
-	
+	endfor
+
 	if(tab==1)
 		DSM_MyMaskProc("")		//start maksing if you click on the tab
 	else
 		DSM_MaskDoneButton("")		//masking is done if you click off the tab
 	endif
-	
+
 	if(tab == 2)
 		//calculate the extrapolation when the tab is selected - this re-fits the data, what we want to avoid
 //		DSM_ExtrapolateButtonProc("")
-		
+
 		// OR
 		// use the coefficients from when it was loaded
-		SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+		SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 		WAVE P_coef = $(USANSFolder+":DSM:P_coef")
 		wave Qw = $(USANSFolder+":DSM:Q_exp")
-		
+
 		DSM_SetExtrWaves(Qw)
 		Wave extr_hqi=$(USANSFolder+":DSM:extr_hqi")
 		Wave extr_hqq=$(USANSFolder+":DSM:extr_hqq")
 		extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
 
 		AppendExtrapolation()
-		
+
 	endif
-	
+
 	return 0
 End
 
@@ -1111,7 +1112,7 @@ Proc AppendMask()
 		AppendToGraph/W=Desmear_Graph MaskData vs Q_exp_orig
 		ModifyGraph mode(MaskData)=3,marker(MaskData)=8,msize(MaskData)=2.5,opaque(MaskData)=1
 		ModifyGraph rgb(MaskData)=(65535,16385,16385)
-		setdatafolder root: 
+		setdatafolder root:
 	endif
 end
 
@@ -1123,7 +1124,7 @@ Proc AppendSmoothed()
 		SetDataFolder $(USANSFolder+":DSM:")
 		AppendToGraph/W=Desmear_Graph I_smth vs Q_smth
 		ModifyGraph/W=Desmear_Graph rgb(I_smth)=(3,52428,1),lsize(I_smth)=2
-		setdatafolder root: 
+		setdatafolder root:
 	endif
 end
 
@@ -1153,7 +1154,7 @@ Proc AppendDesmeared()
 		ModifyGraph mode(I_dsm)=3,marker(I_dsm)=19
 		ModifyGraph rgb(I_dsm)=(1,16019,65535),msize(I_dsm)=2
 		ErrorBars/T=0 I_dsm Y,wave=(S_dsm,S_dsm)
-		setdatafolder root: 
+		setdatafolder root:
 	endif
 end
 
@@ -1199,10 +1200,10 @@ Function DSM_LoadButtonProc(ctrlName) : ButtonControl
 
 	String qStr,iStr,sStr,sqStr
 	Variable nq,dqv,numBad,val
-	
+
 	// remove any of the old traces on the graph and delete the waves
 	CleanUpJunk()
-	
+
 	SetDataFolder root:
 	Execute "A_LoadOneDDataWithName(\"\",0)"
 	SVAR fileStr = root:Packages:NIST:gLastFileName
@@ -1213,46 +1214,46 @@ Function DSM_LoadButtonProc(ctrlName) : ButtonControl
 	SVAR fname = $("root:Packages:NIST:gLastFileName")		//this changes as any data is loaded
 	SVAR curFile = $(USANSFolder+":DSM:gCurFile")					//keep this for title, save
 	curFile = fname
-	
+
 	qStr = CleanupName((fName + "_q"),0)		//the q-wave
 	iStr = CleanupName((fName + "_i"),0)		//the i-wave
 	sStr = CleanupName((fName + "_s"),0)		//the s-wave
 	sqStr = CleanupName((fName + "sq"),0)		//the sq-wave, which should have -dQv as the elements
 
 	String DFStr= CleanupName(fname,0)
-	
-	Duplicate/O $("root:"+DFStr+":"+qStr) $(USANSFolder+":DSM:Q_exp")		
-	Duplicate/O $("root:"+DFStr+":"+iStr) $(USANSFolder+":DSM:I_exp")		
-	Duplicate/O $("root:"+DFStr+":"+sStr) $(USANSFolder+":DSM:S_exp")	
+
+	Duplicate/O $("root:"+DFStr+":"+qStr) $(USANSFolder+":DSM:Q_exp")
+	Duplicate/O $("root:"+DFStr+":"+iStr) $(USANSFolder+":DSM:I_exp")
+	Duplicate/O $("root:"+DFStr+":"+sStr) $(USANSFolder+":DSM:S_exp")
 	wave Q_exp = $(USANSFolder+":DSM:Q_exp")
 	Wave I_exp = $(USANSFolder+":DSM:I_exp")
 	Wave S_exp = $(USANSFolder+":DSM:S_exp")
-	
+
 	// copy over the high q extrapolation information
-	Duplicate/O $("root:"+DFStr+":P_coef") $(USANSFolder+":DSM:P_coef")	
+	Duplicate/O $("root:"+DFStr+":P_coef") $(USANSFolder+":DSM:P_coef")
 	NVAR slope = $("root:"+DFStr+":USANS_m")
 	NVAR powerM = $(USANSFolder+":DSM:gPowerM")
 	powerM = slope
-	
+
 	// remove any negative q-values (and q=0 values!)(and report this)
 	// ? and trim the low q to be >= 3.0e-5 (1/A), below this USANS is not reliable.
 	NumBad = RemoveBadQPoints(Q_exp,I_exp,S_exp,0)
 	SVAR str1 = $(USANSFolder+":DSM:gStr1")
 	sprintf str1,"%d negative q-values were removed",numBad
-	
-// don't trim off any positive q-values	
+
+// don't trim off any positive q-values
 //	val = 3e-5		//lowest "good" q-value from USANS
 //	NumBad = RemoveBadQPoints(Q_exp,I_exp,S_exp,val-1e-8)
 //	SVAR str2 = root:DSM:gStr2
 //	sprintf str2,"%d q-values below q = %g were removed",numBad,val
-	
+
 	Duplicate/O $(USANSFolder+":DSM:Q_exp") $(USANSFolder+":DSM:Q_exp_orig")
 	Duplicate/O $(USANSFolder+":DSM:I_exp") $(USANSFolder+":DSM:I_exp_orig")
 	Duplicate/O $(USANSFolder+":DSM:S_exp") $(USANSFolder+":DSM:S_exp_orig")
 	wave I_exp_orig = $(USANSFolder+":DSM:I_exp_orig")
-	
+
 	nq = numpnts($(USANSFolder+":DSM:Q_exp"))
-	
+
 	dQv = NumVarOrDefault("root:"+DFStr+":USANS_dQv", 0.117 )
 //	if(WaveExists(sigQ))			//try to read dQv
 ////		dqv = -sigQ[0][0]
@@ -1267,14 +1268,14 @@ Function DSM_LoadButtonProc(ctrlName) : ButtonControl
 	//reset the globals
 	gDqv = dqv
 	gNq = nq
-	
+
 	// append the (blank) wave note to the intensity wave
 	Note I_exp,"BOX=0;SPLINE=0;"
 	Note I_exp_orig,"BOX=0;SPLINE=0;"
-	
+
 	//draw the graph
 	Execute "AppendSmeared()"
-	
+
 	SetDataFolder root:
 End
 
@@ -1282,10 +1283,10 @@ End
 Function RemoveBadQPoints(qw,iw,sw,val)
 	Wave qw,iw,sw
 	Variable val
-	
+
 	Variable ii,num,numBad,qval
 	num = numpnts(qw)
-	
+
 	ii=0
 	numBad=0
 	do
@@ -1307,10 +1308,10 @@ end
 // if mw = Nan, keep the point, if a numerical value, delete it
 Function RemoveMaskedPoints(mw,qw,iw,sw)
 	Wave mw,qw,iw,sw
-	
+
 	Variable ii,num,numBad,mask
 	num = numpnts(qw)
-	
+
 	ii=0
 	numBad=0
 	do
@@ -1341,26 +1342,26 @@ Function DSM_MaskDoneButton(ctrlName) : ButtonControl
 	if(!aExists)
 		return(1)		//possibly reverted data, no cursor, no Mask wave
 	endif
-	
+
 	Duplicate/O $(USANSFolder+":DSM:Q_exp_orig"),$(USANSFolder+":DSM:Q_msk")
 	Duplicate/O $(USANSFolder+":DSM:I_exp_orig"),$(USANSFolder+":DSM:I_msk")
 	Duplicate/O $(USANSFolder+":DSM:S_exp_orig"),$(USANSFolder+":DSM:S_msk")
 	Wave Q_msk=$(USANSFolder+":DSM:Q_msk")
 	Wave I_msk=$(USANSFolder+":DSM:I_msk")
 	Wave S_msk=$(USANSFolder+":DSM:S_msk")
-	
+
 	//finish up - trim the data sets and reassign the working set
 	Wave MaskData=$(USANSFolder+":DSM:MaskData")
-	
+
 	RemoveMaskedPoints(MaskData,Q_msk,I_msk,S_msk)
 
 	//reset the number of points
 	NVAR gNq = $(USANSFolder+":DSM:gNq")
 	gNq = numpnts(Q_msk)
-	
+
 	Cursor/K A
 	HideInfo
-	
+
 	return(0)
 End
 
@@ -1368,12 +1369,12 @@ End
 // not quite the same as revert
 Function DSM_ClearMaskProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	Wave MaskData=$(USANSFolder+":DSM:MaskData")
 	MaskData = NaN
-	
+
 	return(0)
 end
 
@@ -1382,23 +1383,23 @@ end
 //
 Function DSM_MyMaskProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
-	
+
 	Wave data=$(USANSFolder+":DSM:I_exp_orig")
-	
+
 //	Variable aExists= strlen(CsrInfo(A)) > 0			//Igor 5
 	Variable aExists= strlen(CsrWave(A)) > 0			//Igor 4
-	
+
 // need to get rid of old smoothed data if data is re-masked
 	Execute "RemoveSmoothed()"
 	SetDataFolder $(USANSFolder+":DSM")
 	Killwaves/Z I_smth,Q_smth,S_smth
-		
+
 	if(aExists)		//mask the selected point
 		// toggle NaN (keep) or Data value (= masked)
 		Wave MaskData
-		MaskData[pcsr(A)] = (numType(MaskData[pcsr(A)])==0) ? NaN : data[pcsr(A)]		//if NaN, doesn't plot 
+		MaskData[pcsr(A)] = (numType(MaskData[pcsr(A)])==0) ? NaN : data[pcsr(A)]		//if NaN, doesn't plot
 	else
 		Cursor /A=1/H=1/L=1/P/W=Desmear_Graph A I_exp_orig leftx(I_exp_orig)
 		ShowInfo
@@ -1407,7 +1408,7 @@ Function DSM_MyMaskProc(ctrlName) : ButtonControl
 			Duplicate/O Q_exp_orig MaskData
 			MaskData = NaN		//use all data
 		endif
-		Execute "AppendMask()"	
+		Execute "AppendMask()"
 	endif
 
 	SetDataFolder root:
@@ -1421,11 +1422,11 @@ End
 Function DSM_MaskLTCursor(ctrlName) : ButtonControl
 	String ctrlName
 
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-		
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 //	Variable aExists= strlen(CsrInfo(A)) > 0			//Igor 5
 	Variable aExists= strlen(CsrWave(A)) > 0			//Igor 4
-	
+
 	if(!aExists)
 		return(1)
 	endif
@@ -1441,7 +1442,7 @@ Function DSM_MaskLTCursor(ctrlName) : ButtonControl
 	for(ii=pt;ii>=0;ii-=1)
 		// toggle NaN (keep) or Data value (= masked)
 		Wave MaskData
-		MaskData[ii] = (numType(MaskData[ii])==0) ? NaN : data[ii]		//if NaN, doesn't plot 
+		MaskData[ii] = (numType(MaskData[ii])==0) ? NaN : data[ii]		//if NaN, doesn't plot
 	endfor
 
 	SetDataFolder root:
@@ -1453,13 +1454,13 @@ End
 //
 Function DSM_MaskGTCursor(ctrlName) : ButtonControl
 	String ctrlName
-	
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
 
-	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+
 //	Variable aExists= strlen(CsrInfo(A)) > 0			//Igor 5
 	Variable aExists= strlen(CsrWave(A)) > 0			//Igor 4
-	
+
 	if(!aExists)
 		return(1)
 	endif
@@ -1476,7 +1477,7 @@ Function DSM_MaskGTCursor(ctrlName) : ButtonControl
 	for(ii=pt;ii<endPt;ii+=1)
 		// toggle NaN (keep) or Data value (= masked)
 		Wave MaskData
-		MaskData[ii] = (numType(MaskData[ii])==0) ? NaN : data[ii]		//if NaN, doesn't plot 
+		MaskData[ii] = (numType(MaskData[ii])==0) ? NaN : data[ii]		//if NaN, doesn't plot
 	endfor
 
 	SetDataFolder root:
@@ -1485,22 +1486,22 @@ Function DSM_MaskGTCursor(ctrlName) : ButtonControl
 End
 
 Function CleanUpJunk()
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 
 	// clean up the old junk on the graph, /Z for no error
 	Execute "RemoveExtrapolation()"
 	Execute "RemoveDesmeared()"
 	Execute "RemoveSmoothed()"
 	Execute "RemoveMask()"
-	
+
 	//remove the cursor
 	Cursor/K A
-	
+
 	//always initialize these
 	String/G $(USANSFolder+":DSM:gStr1") = ""
 	String/G $(USANSFolder+":DSM:gStr2") = ""
 	String/G $(USANSFolder+":DSM:gIterStr") = ""
-	
+
 	// clean up the old waves from smoothing and desmearing steps
 	SetDataFolder $(USANSFolder+":DSM")
 	Killwaves/Z I_smth,I_dsm,I_dsm_sm,Q_smth,Q_dsm,S_smth,S_dsm,Yi_SS,Yq_SS
@@ -1520,11 +1521,11 @@ End
 Function DSM_ExtrapolateButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 
 	NVAR nend = $(USANSFolder+":DSM:gNptsExtrap")
 	NVAR m_pred = $(USANSFolder+":DSM:gPowerM")
-	
+
 	SetDataFolder $(USANSFolder+":DSM")
 //use masked data if it exists
 	if(exists("I_msk")==1 && exists("Q_msk")==1 && exists("S_msk")==1)
@@ -1540,11 +1541,11 @@ Function DSM_ExtrapolateButtonProc(ctrlName) : ButtonControl
 		endif
 	endif
 	SetDataFolder root:
-	
+
 	DSM_SetExtrWaves(Qw)
 	m_pred = DSM_DoExtrapolate(Qw,Iw,Sw,nend)
 	AppendExtrapolation()
-	
+
 	return(0)
 End
 
@@ -1567,17 +1568,17 @@ End
 Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 
-	SetDataFolder $(USANSFolder+":DSM")	
+	SetDataFolder $(USANSFolder+":DSM")
 
 	Variable ii,new_n,pass,nq_ext,offset,doLog=1
 	String noteStr=""
-	
+
 	// want log scaling of intensity during smoothing?
 	ControlInfo DSMControl_3g
 	doLog = V_value
-			
+
 ////	if(exists("I_smth")==1 && exists("Q_smth")==1 && exists("S_smth")==1 && ! freshMask)
 	if(exists("I_smth")==1 && exists("Q_smth")==1 && exists("S_smth")==1)
 		//start from the smoothed waves --- just need the wave references
@@ -1600,7 +1601,7 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 			endif
 		endif
 	endif
-	
+
 	wave Q_smth,I_smth,S_smth
 
 	// extend the data to avoid end effects
@@ -1613,39 +1614,39 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 	else
 		ExtendToSmooth(Q_smth,I_smth,S_smth,15,15,0)		//don't extend, just use the original data
 	endif
-	
+
 	//whether extending or not, the working data is "_ext", set by ExtendToSmooth()
-	SetDataFolder $(USANSFolder+":DSM")	
+	SetDataFolder $(USANSFolder+":DSM")
 	wave Q_ext,I_ext ,S_ext
-	
+
 	noteStr=note(I_smth)
 	Note I_ext , noteStr
-	
+
 	WaveStats/Q I_ext
 	if(V_min<=0)
 		Print "negative itensity found, using linear scale for smoothing"
 		doLog = 0
 	endif
-	
+
 	if(doLog)
 		//convert to log scale
 		Duplicate/O I_ext I_log,I_log_err
 		Wave I_log ,I_log_err
 		I_log = log(I_ext)
 		WaveStats/Q I_log
-		offset = 2*(-V_min)		
+		offset = 2*(-V_min)
 		I_log += offset
 		I_log_err = S_ext/(2.30*I_ext)
 		I_ext = I_log
-	endif	
+	endif
 	//
-	
+
 	ControlInfo/W=Desmear_Graph DSMControl_3b		//BoxCheck
 	if(V_value == 1)
 		//do a simple Box smooth first - number of points does not change
-		// fills ends with neighboring value (E=3) (n=3 points in smoothing window)	
+		// fills ends with neighboring value (E=3) (n=3 points in smoothing window)
 		Smooth/E=3/B 3, I_ext
-		
+
 		noteStr=note(I_ext)
 		pass = NumberByKey("BOX", noteStr, "=", ";")
 		noteStr = ReplaceNumberByKey("BOX", noteStr, pass+1, "=", ";")
@@ -1655,7 +1656,7 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 	endif
 
 	NVAR sParam = gSmoothFac		//already in the right DF
-	
+
 	ControlInfo/W=Desmear_Graph DSMControl_3c		//SSCheck
 	if(V_value == 1)
 		nq_ext = numpnts(Q_ext)
@@ -1664,10 +1665,10 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 //	//Igor 4
 //		String str=""
 //		nq_ext = numpnts(Q_ext)
-//		str = "Interpolate/T=3/N=("+num2str(nq_ext)+")/I=1/F=("+num2str(sParam)+")/Y=Yi_SS/X=Yq_SS I_ext /X=Q_ext"		
+//		str = "Interpolate/T=3/N=("+num2str(nq_ext)+")/I=1/F=("+num2str(sParam)+")/Y=Yi_SS/X=Yq_SS I_ext /X=Q_ext"
 //		Execute str
 //		Print Str
-	// end Igor 4	
+	// end Igor 4
 //		Interpolate2/T=3/N=(nq_ext)/I=1/F=(sParam)/Y=Yi_SS/X=Yq_SS Q_ext, I_ext
 
 		wave yi_ss = yi_ss		// already in the right DF
@@ -1675,7 +1676,7 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 		// reassign the "working" waves with the result of interpolate, which has the same I/Q values
 		I_ext = yi_ss
 		Q_ext = yq_ss
-		
+
 		noteStr=note(I_ext)
 		pass = NumberByKey("SPLINE", noteStr, "=", ";")
 		noteStr = ReplaceNumberByKey("SPLINE", noteStr, pass+1, "=", ";")
@@ -1683,24 +1684,24 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 		Note I_ext , noteStr
 //		Print "spline = ",noteStr
 	endif
-	
+
 	//undo the scaling
 	If(doLog)
 		I_ext -= offset
 		I_ext = 10^I_ext
 	endif
-	
-	// at this point, I_ext has too many points - and we need to just return the 
+
+	// at this point, I_ext has too many points - and we need to just return the
 	// center chunk that is the original q-values
 	// as assign this to the working set for the desmear step
 	// and to the _smth set in case another smoothng pass is desired
 	// Q_smth has not changed, S_smth has not changed
 	I_smth = interp(Q_smth[p], Q_ext, I_ext )
-	
+
 	Note/K I_smth
 	Note I_smth , noteStr
 //	Print "end of smoothed, note = ",note(I_smth)
-	
+
 	Variable nq = numpnts($(USANSFolder+":DSM:Q_smth"))
 //	Print "nq after smoothing = ",nq
 
@@ -1710,9 +1711,9 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 	//report the chi^2 difference between the smoothed curve and the experimental data
 	NVAR chi2 = gChi2Smooth
 	chi2 = SmoothedChi2(I_smth)
-	
+
 	Execute "AppendSmoothed()"
-	
+
 	setDataFolder root:
 	return(0)
 End
@@ -1722,8 +1723,8 @@ End
 Function DSM_SmoothUndoButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	Execute "RemoveSmoothed()"
 	SetDataFolder $(USANSFolder+":DSM")
 	Killwaves/Z I_smth,Q_smth,S_smth,Q_ext,I_ext,S_ext,Yi_SS,Yq_SS
@@ -1734,9 +1735,9 @@ end
 //calculate the chi^2 value for the smoothed data
 Function SmoothedChi2(I_smth)
 	Wave I_smth
-	
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	//start from the "msk", if they exist
 	if(exists("I_msk")==1 && exists("Q_msk")==1 && exists("S_msk")==1)
 		Wave iw = $(USANSFolder+":DSM:I_msk")
@@ -1748,7 +1749,7 @@ Function SmoothedChi2(I_smth)
 			Wave sw = $(USANSFolder+":DSM:S_exp")
 		endif
 	endif
-	
+
 	Variable ii,chi2,num
 	chi2=0
 	num = numpnts(iw)
@@ -1766,7 +1767,7 @@ end
 Function DSM_SaveButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 
 	String saveStr
@@ -1776,24 +1777,24 @@ Function DSM_SaveButtonProc(ctrlName) : ButtonControl
 
 	ControlInfo DSM_Tab
 	Variable curTab = V_Value
-	
+
 	switch(curTab)	// numeric switch
 		case 4:	// data from the desmeared data tab
-			if (useXMLOutput == 1)	
+			if (useXMLOutput == 1)
 				WriteXMLUSANSDesmeared(saveStr,0,0,1)
 			else
 				WriteUSANSDesmeared(saveStr,0,0,1)			//use the full set (lo=hi=0) and present a dialog
 			endif
-			break	
-		case 3:	
+			break
+		case 3:
 				WriteUSANS_Smoothed(saveStr,0,0,1)
 			break
-		default:			
+		default:
 			DoAlert 0,"Can only save data from the smooth or desmeared tabs"
 	endswitch
 
 
-	
+
 	SetDataFolder root:
 	return(0)
 End
@@ -1840,12 +1841,12 @@ End
 //
 Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	SetDataFolder $(USANSFolder+":DSM")
 	if(exists("I_smth")==1 && exists("Q_smth")==1 && exists("S_smth")==1)
-		wave Q_smth , I_smth ,S_smth 
+		wave Q_smth , I_smth ,S_smth
 		Duplicate/O I_smth,I_work,Q_work,S_work
 		I_work = I_smth
 		Q_work = Q_smth
@@ -1861,7 +1862,7 @@ Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 		else
 			//start from the "_exp" waves
 			if(exists("I_exp")==1 && exists("Q_exp")==1 && exists("S_exp")==1)
-				wave Q_exp,I_exp,S_exp 
+				wave Q_exp,I_exp,S_exp
 				Duplicate/O I_exp,I_work,Q_work,S_work
 				I_work = I_exp
 				Q_work = Q_exp
@@ -1870,13 +1871,13 @@ Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 		endif
 	endif
 	//SetDataFolder root:
-	
+
 	NVAR nq = gNq
 	NVAR m = gPowerM
 	NVAR chi2_target = gChi2Target
 	NVAR maxFastIter = gMaxFastIter
 	NVAR maxSlowIter = gMaxSlowIter
-	
+
 	//	SET WEIGHTING OF EXPERIMENTAL DATA.
 	Duplicate/O Q_work weights
 	Wave weights = weights
@@ -1899,11 +1900,11 @@ Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 	Is_old = 0
 	I_dsm = 0
 	I_dsm_sm = 0
-	
+
 //	Smear 0TH iter guess Y --> YS
 	DSM_Smear(I_old,Is_old,NQ,FW)
 	chi2_OLD = chi2(Is_old,I_work,weights,NQ)
-	
+
 	printf "starting chi^2 = %g\r",chi2_old
 	Print "Starting fast convergence..... "
 
@@ -1920,7 +1921,7 @@ Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 		If (chi2_new > chi2_old)
 			Done = 1
 		Endif
-		
+
 //	  Stop iteration if fit is better than target value...
 		If (chi2_new < chi2_target)
 			Done = 1
@@ -1935,14 +1936,14 @@ Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 			CHI2_OLD = CHI2_NEW
 		EndIf
 	while( !done )
-	
+
 	// append I_dsm,I_exp to the graph
 	Execute "AppendDesmeared()"
 	DoUpdate
-	
+
 	SetDataFolder $(USANSFolder+":DSM")
 
-	
+
 // step (6) - refine the desmearing using slow convergence
 	Print "Starting slow convergence..... "
 	done = 0		//  ! reset flag for slow convergence
@@ -1957,13 +1958,13 @@ Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 		If (chi2_new > chi2_old)
 			Done = 1
 		Endif
-		
+
 //	  Stop iteration if fit is better than target value...
 		If (chi2_new < chi2_target)
 			Done = 1
 		Else
 			Iter += 1
-			
+
 			if(mod(iter, 50 ) ==0 )
 				Printf "Iteration %d, Chi^2(new) = %g\r", Iter,chi2_new
 				DoUpdate
@@ -1986,25 +1987,25 @@ Function DSM_DesmearButtonProc(ctrlName) : ButtonControl
 	S_dsm = abs(err/I_work*I_dsm)		//proportional error
 //John simply keeps the same error as was read in from the smeared data set - is this right?
 //	S_dsm = S_Work
-	
+
 	NVAR gChi =  gChi2Final		//chi^2 final
 	NVAR gIter = gIterations		//total number of iterations
 	gChi = chi2_new
 	gIter = Iter
-	
+
 	SVAR str = gIterStr
 	sprintf str,"%d iterations required",iter
-	
+
 	SetDataFolder root:
 	return(0)
 End
 
 Function DSM_RevertButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
-	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+
 	CleanUpJunk()
 
  	SetDataFolder $(USANSFolder+":DSM")
@@ -2019,6 +2020,6 @@ Function DSM_RevertButtonProc(ctrlName) : ButtonControl
 	// re-initialize?
 
 	SetDataFolder root:
-	
+
 	return(0)
 End

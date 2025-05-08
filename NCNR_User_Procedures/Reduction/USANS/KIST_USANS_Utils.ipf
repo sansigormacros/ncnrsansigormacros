@@ -1,4 +1,6 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtFunctionErrors=1
+#pragma TextEncoding="UTF-8"
+#pragma rtGlobals=3 // Use modern global access method.
 #pragma version=2.20
 #pragma IgorVersion=6.1
 
@@ -14,73 +16,64 @@
 //   matrix smearing. Sometimes the matrix fails, but the trapezoidal integration works.
 //
 
-
 //facility-specific constants
 Function Init_USANS_Facility()
 
-	//INSTRUMENTAL CONSTANTS 
+	//INSTRUMENTAL CONSTANTS
 	//Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 3.9e-6		//Darwin FWHM	(pre- NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 7.59e-6		//Horizontal divergence of kist-usans,  mhk--08/2102012
+	variable/G root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 7.59e-6 //Horizontal divergence of kist-usans,  mhk--08/2102012
 	//Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_V = 0.014		//Vertical divergence	(pre- NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_V = 0.057    // KIST-USANS Vertical divergence =0.057 radian (2013) * (ÇÑ¼ö°æ ³ëÆ®ºÏ¿¡¿¡ 2014-06-20  Àû¿ë)
+	variable/G root:Packages:NIST:USANS:Globals:MainPanel:gTheta_V = 0.057 // KIST-USANS Vertical divergence =0.057 radian (2013) * (Â«â€”ÂºË†âˆžÃŠ â‰¥ÃŽâˆ†Ã†âˆ«Å“Ã¸Â°Ã¸Â° 2014-06-20  Â¿ËšÃ¸ÃŽ)
 	//Variable/G  root:Globals:MainPanel:gDomega = 2.7e-7		//Solid angle of detector (pre- NOV 2004)
 	//Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDomega = 7.1e-7		//Solid angle of detector (NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDomega = 1.73e-6		//KIST-USANS Solid angle of detector (mhk----07/18/2013) **(2014-06-20  Àû¿ë)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDefaultMCR= 1e6		//factor for normalization
-	
+	variable/G root:Packages:NIST:USANS:Globals:MainPanel:gDomega     = 1.73e-6 //KIST-USANS Solid angle of detector (mhk----07/18/2013) **(2014-06-20  Â¿ËšÃ¸ÃŽ)
+	variable/G root:Packages:NIST:USANS:Globals:MainPanel:gDefaultMCR = 1e6     //factor for normalization
+
 	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
 	//Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.09		//detector divergence, in terms of Q (1/A), mhk --09-12-2012 
-	
+	variable/G root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.09 //detector divergence, in terms of Q (1/A), mhk --09-12-2012
 
-	String/G root:Packages:NIST:gXMLLoader_Title=""
-	
+	string/G root:Packages:NIST:gXMLLoader_Title = ""
+
 	//November 2010 - deadtime corrections -- see USANS_DetectorDeadtime() below
 	//Only used in BT5_Loader.ipf and dependent on date, so defined there on each file load.
 
+	// is the data file in terms of QValues rather than angle?
+	variable/G root:Packages:NIST:gRawUSANSisQvalues = 0 //== 1 means raw data is in Q, 0 means angle
 
-// is the data file in terms of QValues rather than angle?
-	Variable/G root:Packages:NIST:gRawUSANSisQvalues=0		//== 1 means raw data is in Q, 0 means angle
+	DoAlert 0, "The data loader is set to interpret raw data in ANGLE not Q-Values. If your raw data is different, change this setting using the menu item USANS->NCNR Preferences"
 
-	DoAlert 0,"The data loader is set to interpret raw data in ANGLE not Q-Values. If your raw data is different, change this setting using the menu item USANS->NCNR Preferences"
-	
-	
-// this variable should never be defined for HANARO data
-//	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs=0	
-	
-	
+	// this variable should never be defined for HANARO data
+	//	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs=0
+
 	// Ask the user to set the calibration factor -- MULTIPLICATIVE --
 	// SRK AUG 6 2024
-	Variable gCalibration = NumVarOrDefault("gCalibration", 1.418)			//this is the default value for the calibration
+	variable gCalibration = NumVarOrDefault("gCalibration", 1.418) //this is the default value for the calibration
 	Prompt gCalibration, "Enter the Multiplicative calibration correction"
-	DoPrompt "Calibration",gCalibration
+	DoPrompt "Calibration", gCalibration
 
-	Variable/G root:Packages:NIST:gCalibration = gCalibration			// Save for later use
-// it doesn't matter if the user cancelled -- we need a value for this. so if they cancel,
-// then the value is the default of 1
-	Print "Calibration correction is = ",gCalibration
+	variable/G root:Packages:NIST:gCalibration = gCalibration // Save for later use
+	// it doesn't matter if the user cancelled -- we need a value for this. so if they cancel,
+	// then the value is the default of 1
+	Print "Calibration correction is = ", gCalibration
 
-	
 	// to convert from angle (in degrees) to Q (in 1/Angstrom)
 	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
 	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=2.741557e-2		//motor position in degree unit MHK for KIST ---08/15/2012
 	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=1.5707963e-2	// motor position in mm  MHK for KIST ---07/19/2013
 
-	Variable/G root:Packages:NIST:gDeg2QConv_base = 1.5707963e-4		// motor position in mm (x100) MHK for KIST ---07/19/2013
-	NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base		//base calibration before corrections
-	
-	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = gDeg2QConv_base * gCalibration		//final value used for conversion
+	variable/G root:Packages:NIST:gDeg2QConv_base = 1.5707963e-4                       // motor position in mm (x100) MHK for KIST ---07/19/2013
+	NVAR       gDeg2QConv_base                    = root:Packages:NIST:gDeg2QConv_base //base calibration before corrections
 
-		
+	variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = gDeg2QConv_base * gCalibration //final value used for conversion
+
 	// extension string for the raw data files
 	// -- not that the extension as specified here starts with "."
 	// String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".bt5"
-	String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".kusan"     //mhk--08/15/2012
-		
-	
-	return(0)
-end
+	string/G root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".kusan" //mhk--08/15/2012
 
+	return (0)
+End
 
 // returns the detector dead time for the main detectors, and the transmission detector
 //
@@ -93,28 +86,25 @@ end
 //JGB and AJJ changed pre-amps during shutdown Oct 27 - Nov 7 2010
 //Need different deadtime before and after 8th November 2010
 //
-Function USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
-	String filedt
-	Variable &MainDeadTime,&TransDeadTime
-	
-//	if (BT5Date2Secs(filedt) < date2secs(2010,11,7))
-//			MainDeadTime = 4e-5
-//			TransDeadTime = 1.26e-5
-//			//print "Old Dead Times"
-//			//MainDeadTime = 0
-//			//TransDeadTime = 0
-//	else
-//			MainDeadTime = 7e-6
-//			TransDeadTime = 1.26e-5
-//			//print "New Dead Times"
-//	endif
-	
-	MainDeadTime = 0
+Function USANS_DetectorDeadtime(string filedt, variable &MainDeadTime, variable &TransDeadTime)
+
+	//	if (BT5Date2Secs(filedt) < date2secs(2010,11,7))
+	//			MainDeadTime = 4e-5
+	//			TransDeadTime = 1.26e-5
+	//			//print "Old Dead Times"
+	//			//MainDeadTime = 0
+	//			//TransDeadTime = 0
+	//	else
+	//			MainDeadTime = 7e-6
+	//			TransDeadTime = 1.26e-5
+	//			//print "New Dead Times"
+	//	endif
+
+	MainDeadTime  = 0
 	TransDeadTime = 0
 
-
-	return(0)
-end
+	return (0)
+End
 
 // add a menu item so that this can be accessed
 Menu "USANS"
@@ -132,27 +122,27 @@ End
 //
 Function fEnterCalibrationValue()
 
-	NVAR gCalibration = root:Packages:NIST:gCalibration		// current value
+	NVAR gCalibration = root:Packages:NIST:gCalibration // current value
 
-	Variable newCalibration = gCalibration
+	variable newCalibration = gCalibration
 	Prompt newCalibration, "Enter the Multiplicative calibration correction"
-	DoPrompt "Calibration",newCalibration
+	DoPrompt "Calibration", newCalibration
 
-	if(V_Flag == 1)		//user cancelled
+	if(V_Flag == 1) //user cancelled
 
-		Print "Calibration correction is (unchanged) = ",gCalibration
+		Print "Calibration correction is (unchanged) = ", gCalibration
 
-		return(0)
+		return (0)
 	endif
-	
-	Variable/G root:Packages:NIST:gCalibration = newCalibration			// update and Save for later use
+
+	variable/G root:Packages:NIST:gCalibration = newCalibration // update and Save for later use
 
 	NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base
-	
-	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * newCalibration
 
-	Print "New calibration correction is = ",newCalibration
+	variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = gDeg2QConv_base * newCalibration
 
-	return(0)
+	Print "New calibration correction is = ", newCalibration
+
+	return (0)
 End
 
