@@ -1,3 +1,4 @@
+#pragma TextEncoding="UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
@@ -24,10 +25,10 @@
 // returns the panel translation [cm]
 Function VCALC_getPanelTranslation(type)
 	String type
-	
+
 	Variable sep
-	
-	strswitch(type)	
+
+	strswitch(type)
 		case "FL":
 			ControlInfo/W=VCALC VCALCCtrl_2a
 			sep = V_Value
@@ -38,11 +39,11 @@ Function VCALC_getPanelTranslation(type)
 			break
 		case "FT":
 			ControlInfo/W=VCALC VCALCCtrl_2b
-			sep = V_Value	
+			sep = V_Value
 			break
 		case "FB":
 			ControlInfo/W=VCALC VCALCCtrl_2bb
-			sep = V_Value	
+			sep = V_Value
 			break
 
 		case "ML":
@@ -56,21 +57,21 @@ Function VCALC_getPanelTranslation(type)
 		case "MT":
 			ControlInfo/W=VCALC VCALCCtrl_3b
 			sep = V_Value
-			break	
+			break
 		case "MB":
 			ControlInfo/W=VCALC VCALCCtrl_3bb
 			sep = V_Value
-			break	
-						
-		case "B":		
+			break
+
+		case "B":
 			sep = 0
 			break
-			
+
 		default:
-			Print "Error -- type not found in	 VCALC_getPanelSeparation(type)"					
-			sep = NaN		//no match for type		
+			Print "Error -- type not found in	 VCALC_getPanelSeparation(type)"
+			sep = NaN		//no match for type
 	endswitch
-	
+
 	return(sep)
 end
 
@@ -78,7 +79,7 @@ end
 
 // returns the (mean) wavelength from the panel -- value is angstroms
 Function VCALC_getWavelength()
-	
+
 	ControlInfo/W=VCALC VCALCCtrl_0b
 
 	return(V_Value)
@@ -86,7 +87,7 @@ end
 
 // returns the wavelength spread from the panel -- value is fraction
 Function VCALC_getWavelengthSpread()
-	
+
 	ControlInfo/W=VCALC VCALCCtrl_0d
 
 	return(str2num(S_Value))
@@ -94,7 +95,7 @@ end
 
 // returns the number of neutrons on the sample
 Function VCALC_getImon()
-	
+
 	ControlInfo/W=VCALC VCALCCtrl_5a
 
 	return(V_Value)
@@ -102,7 +103,7 @@ end
 
 // returns the model function to use
 Function/S VCALC_getModelFunctionStr()
-	
+
 	ControlInfo/W=VCALC VCALCCtrl_5b
 
 	return(S_Value)
@@ -128,7 +129,7 @@ Function VCALC_getPixSizeY(type)
 	String type
 
 	Variable pixSizeY = V_getDet_y_pixel_size("VCALC",type)
-	
+
 	return(pixSizeY)
 end
 
@@ -138,7 +139,7 @@ Function VCALC_get_nPix_X(type)
 	String type
 
 	Variable nPix = V_getDet_pixel_num_x("VCALC",type)
-	
+
 	return(nPix)
 end
 
@@ -154,24 +155,24 @@ end
 
 
 // SDD offset of the top/bottom panels
-// value returned is in [cm] 
+// value returned is in [cm]
 //
 Function VCALC_getTopBottomSDDSetback(type)
 	String type
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
-	
-	strswitch(type)	
+
+	strswitch(type)
 		case "FL":
 		case "FR":
 			SetDataFolder root:
-			return(0)		
+			return(0)
 			break		//already zero, do nothing
 		case "FT":
-		case "FB":		
-			NVAR sdd_setback = gFront_SDDsetback 	//T/B are 41 cm farther back 
+		case "FB":
+			NVAR sdd_setback = gFront_SDDsetback 	//T/B are 41 cm farther back
 			break
-			
+
 		case "ML":
 		case "MR":
 			SetDataFolder root:
@@ -180,22 +181,22 @@ Function VCALC_getTopBottomSDDSetback(type)
 		case "MT":
 		case "MB":
 			NVAR sdd_setback = gMiddle_SDDsetback 	//T/B are 41 cm farther back
-			break	
-						
+			break
+
 		case "B":
 		case "B ":
 			SetDataFolder root:
 			return(0)
 			break		//already zero, do nothing
-			
+
 		default:
-			Print "Error -- type not found in	 VCALC_getTopBottomSDDSetback(type)"					
-			sdd_setback = 0		//no match for type		
+			Print "Error -- type not found in	 VCALC_getTopBottomSDDSetback(type)"
+			sdd_setback = 0		//no match for type
 	endswitch
 
 	SetDataFolder root:
-		
-	return(sdd_setback)	
+
+	return(sdd_setback)
 End
 
 
@@ -225,7 +226,7 @@ Function VC_calcSSD()
 
 	ControlInfo/W=VCALC VCALCCtrl_1d
 	samAp_to_GV = V_Value		// [cm]
-	
+
 	switch(ng)
 		case 0:
 				ssd = 2441
@@ -238,31 +239,31 @@ Function VC_calcSSD()
 			break
 		case 3:
 				ssd = 1782
-			break			
+			break
 		case 4:
 				ssd = 1582
-			break			
+			break
 		case 5:
 				ssd = 1381
-			break			
+			break
 		case 6:
 				ssd = 1181
-			break			
+			break
 		case 7:
 				ssd = 980
-			break			
+			break
 		case 8:
 				ssd = 780
-			break			
+			break
 		case 9:
 				ssd = 579
-			break			
+			break
 		default:
 			Print "Error - using default SSD value"
 			ssd = 2441
 	endswitch
 	ssd -= samAp_to_GV
-	
+
 //	print "SSD (cm) = ",ssd
 	return(ssd)
 End
@@ -279,9 +280,9 @@ Function VC_sourceApertureDiam()
 
 	ControlInfo/W=VCALC VCALCCtrl_0f
 	String apStr = S_Value
-	
 
-	if(ng > 0)	
+
+	if(ng > 0)
 		a1 = 6.0		// 60 mm diameter
 	else
 		sscanf apStr, "%g cm", a1
@@ -302,13 +303,13 @@ Function VC_sampleApertureDiam()
 // if Converging Pinholes preset, return 1/2 of source aperture diam
 	ControlInfo popup_a
 	if(cmpstr(S_Value,"Converging Pinholes")==0)
-	
+
 		return(0.5*VC_sourceApertureDiam())
 	endif
-	
-	
+
+
 	ControlInfo VCALCCtrl_1b
-	
+
 	if(cmpstr(S_Value,"circular") == 0)
 
 		ControlInfo/W=VCALC VCALCCtrl_1c
@@ -319,7 +320,7 @@ Function VC_sampleApertureDiam()
 		// report a dummy value of 1.27 cm
 		Print "using a width of 0.125 cm"
 		val = 0.125
-		
+
 	endif
 	return(val)
 End
@@ -348,26 +349,26 @@ End
 // ignore back detector
 // x set plot type to F2-M2xTB-B
 //
-// 
+//
 Function VC_Preset_FrontMiddle_Ng0()
 
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
-	
+
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	// monochromator
-	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"	
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
 
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.12;"
 //	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
-	
+
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
@@ -381,26 +382,26 @@ Function VC_Preset_FrontMiddle_Ng0()
 	pa.popStr="circular"
 	pa.eventCode = 2		//mouse up
 	VC_SourceApShapeSelectPopup(pa)
-		
+
 // source aperture (+new string)
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=3,popvalue="3.0 cm"		//set the 3.0 cm aperture
 
 	// make the Sample tab active
 	TabControl VTab value=1
-	VCALCTabProc("Sample",1)		//tab 1 	
-		
+	VCALCTabProc("Sample",1)		//tab 1
+
 // sample aperture shape/size
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
-	PopupMenu VCALCCtrl_1f,disable=1	
+	PopupMenu VCALCCtrl_1f,disable=1
 
-	
+
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
-	
-	
+
+
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-10.5		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:10.5		//Right offset
@@ -416,11 +417,11 @@ Function VC_Preset_FrontMiddle_Ng0()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-8		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:2000		//SDD
-	
+
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	return(0)
 End
 
@@ -430,20 +431,20 @@ Function VC_Preset_FrontMiddle_Ng2()
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
-	
+
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	// monochromator
-	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"	
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
 
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.12;"
 //	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
-	
+
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
@@ -457,25 +458,25 @@ Function VC_Preset_FrontMiddle_Ng2()
 	pa.popStr="circular"
 	pa.eventCode = 2		//mouse up
 	VC_SourceApShapeSelectPopup(pa)
-		
+
 // source aperture (+new string)
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
-	
+
 	// make the Sample tab active
 	TabControl VTab value=1
-	VCALCTabProc("Sample",1)		//tab 1 	
-		
+	VCALCTabProc("Sample",1)		//tab 1
+
 // sample aperture shape/size
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
-	PopupMenu VCALCCtrl_1f,disable=1	
-	
+	PopupMenu VCALCCtrl_1f,disable=1
+
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
-	
-	
+
+
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-10.5		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:10.5		//Right offset
@@ -491,11 +492,11 @@ Function VC_Preset_FrontMiddle_Ng2()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-8		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:1600		//SDD
-	
+
 	// make the Collim tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
-		
+	VCALCTabProc("Collim",0)		//tab 0
+
 
 	return(0)
 End
@@ -505,20 +506,20 @@ Function VC_Preset_FrontMiddle_Ng7()
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
-	
+
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	// monochromator
-	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"	
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
 
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.12;"
 //	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
-	
+
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
@@ -532,25 +533,25 @@ Function VC_Preset_FrontMiddle_Ng7()
 	pa.popStr="circular"
 	pa.eventCode = 2		//mouse up
 	VC_SourceApShapeSelectPopup(pa)
-		
+
 // source aperture (+new string)
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
-	
+
 	// make the Sample tab active
 	TabControl VTab value=1
-	VCALCTabProc("Sample",1)		//tab 1 	
-		
+	VCALCTabProc("Sample",1)		//tab 1
+
 // sample aperture shape/size
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
-	PopupMenu VCALCCtrl_1f,disable=1	
-	
+	PopupMenu VCALCCtrl_1f,disable=1
+
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
-	
-	
+
+
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-10.5		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:10.5		//Right offset
@@ -569,10 +570,10 @@ Function VC_Preset_FrontMiddle_Ng7()
 
 	// make the Collim tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
-		
+	VCALCTabProc("Collim",0)		//tab 0
+
 // sample aperture shape/size
-	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"	
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 
 	return(0)
 End
@@ -582,20 +583,20 @@ Function VC_Preset_FrontMiddle_Ng9()
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
-	
+
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	// monochromator
-	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"	
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
 
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.12;"
 //	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
-	
+
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
@@ -609,25 +610,25 @@ Function VC_Preset_FrontMiddle_Ng9()
 	pa.popStr="circular"
 	pa.eventCode = 2		//mouse up
 	VC_SourceApShapeSelectPopup(pa)
-		
+
 // source aperture (+new string)
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
-	
+
 	// make the Sample tab active
 	TabControl VTab value=1
-	VCALCTabProc("Sample",1)		//tab 1 	
-		
+	VCALCTabProc("Sample",1)		//tab 1
+
 // sample aperture shape/size
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
-	PopupMenu VCALCCtrl_1f,disable=1	
-	
+	PopupMenu VCALCCtrl_1f,disable=1
+
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
-	
-	
+
+
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-10.5		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:10.5		//Right offset
@@ -643,10 +644,10 @@ Function VC_Preset_FrontMiddle_Ng9()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-8		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:450		//SDD
-	
+
 	// make the Collim tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
+	VCALCTabProc("Collim",0)		//tab 0
 
 	return(0)
 End
@@ -662,11 +663,11 @@ Function VC_Preset_WhiteBeam()
 
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="White Beam"
-	
+
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.40;"
@@ -678,7 +679,7 @@ Function VC_Preset_WhiteBeam()
 
 // number of guides
 	Slider VCALCCtrl_0a,value= 1
-	
+
 // source aperture shape/size
 	STRUCT WMPopupAction pa
 	pa.popStr="circular"
@@ -691,14 +692,14 @@ Function VC_Preset_WhiteBeam()
 
 	// make the Sample tab active
 	TabControl VTab value=1
-	VCALCTabProc("Sample",1)		//tab 1 	
-		
+	VCALCTabProc("Sample",1)		//tab 1
+
 // sample aperture shape/size
-	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"	
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1
-	
+
 	// adjust the front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
@@ -714,23 +715,23 @@ Function VC_Preset_WhiteBeam()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-15		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:1900		//SDD
-	
+
 // binning mode
 	PopupMenu popup_b,mode=6,popValue="F2-M2xTB-B"
 
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
-	
+
 	// make the Collim tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
+	VCALCTabProc("Collim",0)		//tab 0
 
 
 // after all is dont, make the wavelength not editable
 // wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2//	,noedit=0	// allow user editing again
-					
+
 	return(0)
 end
 
@@ -744,11 +745,11 @@ Function VC_Preset_SuperWhiteBeam()
 
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Super White Beam"
-	
+
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.60;"
@@ -760,7 +761,7 @@ Function VC_Preset_SuperWhiteBeam()
 
 // number of guides
 	Slider VCALCCtrl_0a,value= 1
-	
+
 // source aperture shape/size
 	STRUCT WMPopupAction pa
 	pa.popStr="circular"
@@ -773,10 +774,10 @@ Function VC_Preset_SuperWhiteBeam()
 
 	// make the Sample tab active
 	TabControl VTab value=1
-	VCALCTabProc("Sample",1)		//tab 1 	
-		
+	VCALCTabProc("Sample",1)		//tab 1
+
 // sample aperture shape/size
-	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"	
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1
@@ -796,22 +797,22 @@ Function VC_Preset_SuperWhiteBeam()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-15		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:1900		//SDD
-	
+
 // binning mode
 	PopupMenu popup_b,mode=6,popValue="F2-M2xTB-B"
 
 // set preference to not use back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
-	
+
 	// make the Collim tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 	
+	VCALCTabProc("Collim",0)		//tab 0
 
 // after all is dont, make the wavelength not editable
 // wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6.2,disable=2//	,noedit=0	// allow user editing again
-		
+
 	return(0)
 end
 
@@ -824,25 +825,25 @@ Function VC_Preset_GraphiteMono()
 
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Graphite"
-	
+
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.01;"
 //	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01"
-	
+
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=2//	,noedit=0	// allow user editing again
 
 
 // number of guides
 	Slider VCALCCtrl_0a,value= 9
-	
+
 // source aperture shape/size
 	STRUCT WMPopupAction pa
 	pa.popStr="circular"
@@ -851,14 +852,14 @@ Function VC_Preset_GraphiteMono()
 
 	// make the Sample tab active
 	TabControl VTab value=1
-	VCALCTabProc("Sample",1)		//tab 1 	
-		
+	VCALCTabProc("Sample",1)		//tab 1
+
 // sample aperture shape/size
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
 	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1
-	
+
 	// adjust the front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
@@ -874,28 +875,28 @@ Function VC_Preset_GraphiteMono()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-5		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:500		//SDD
-	
+
 // binning mode
 	PopupMenu popup_b,mode=6,popValue="F2-M2xTB-B"
 
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
-	
+
 	// make the Collim tab active
 	TabControl VTab value=0
 	VCALCTabProc("Collim",0)		//tab 0
-		
+
 // after all is dont, make the wavelength not editable
 // wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=2//	,noedit=0	// allow user editing again
-	
+
 	return(0)
 end
 
 
 //
-// 
+//
 Function VC_Preset_ConvergingPinholes()
 
 // set preference to NOT ignore back detector
@@ -905,17 +906,17 @@ Function VC_Preset_ConvergingPinholes()
 
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
-	
+
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.12;"
 //	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
-	
+
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
 
@@ -939,7 +940,7 @@ Function VC_Preset_ConvergingPinholes()
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"		//set the 1.27 cm aperture
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1
-		
+
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
@@ -955,11 +956,11 @@ Function VC_Preset_ConvergingPinholes()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-2.5		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:2136		//SDD
-	
+
 	// back detector
 	SetVariable VCALCCtrl_4b,value=_NUM:2416		//SDD
-	
-	
+
+
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
 
@@ -969,7 +970,7 @@ End
 
 
 
-// 
+//
 // (DONE) x- need to define non-circular aperture shape input on the panel
 //
 Function VC_Preset_NarrowSlit()
@@ -981,18 +982,18 @@ Function VC_Preset_NarrowSlit()
 
 	// make the collimation tab active
 	TabControl VTab value=0
-	VCALCTabProc("Collim",0)		//tab 0 
-	
-	
+	VCALCTabProc("Collim",0)		//tab 0
+
+
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
-	
+
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.12;"
 //	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
-	
+
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
 
@@ -1004,7 +1005,7 @@ Function VC_Preset_NarrowSlit()
 	PopupMenu VCALCCtrl_0e,popValue="rectangular",mode=1
 	PopupMenu VCALCCtrl_0f,title="Aperture Height",mode=1,popValue="15.0 cm"
 	PopupMenu VCALCCtrl_0g,disable=0,title="Aperture Width",mode=1,popValue="0.25 cm"
-	
+
 	STRUCT WMPopupAction pa
 	pa.popStr="rectangular"
 	pa.eventCode = 2		//mouse up
@@ -1022,7 +1023,7 @@ Function VC_Preset_NarrowSlit()
 	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
 
 
-			
+
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
@@ -1038,12 +1039,12 @@ Function VC_Preset_NarrowSlit()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-2.5		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:2136		//SDD
-	
+
 	// back detector
 	SetVariable VCALCCtrl_4b,value=_NUM:2416		//SDD
-	
 
-	
+
+
 // binning mode
 	PopupMenu popup_b,mode=7,popValue="SLIT-F2-M2-B"
 
@@ -1069,7 +1070,7 @@ Function VC_calc_L2(detStr)
 	ControlInfo/W=VCALC VCALCCtrl_1e
 	sam_to_GV = V_Value
 	l2 = sdd - sam_to_GV + a2_to_GV
-	
+
 	return(l2)
 End
 
@@ -1090,20 +1091,20 @@ Function VC_beamDiameter(direction,detStr)
 //		yesLens = 1
 		return(VC_sourceApertureDiam())
 	endif
-   
+
 
 	Variable l1,l2,l2Diff
 	Variable d1,d2,bh,bv,bm,umbra,a1,a2
 	Variable lambda,lambda_width,bs_factor
-    
+
 // TODO: proper value for bs_factor
 	bs_factor = 1.05
-	
+
 	l1 = VC_calcSSD()
 	lambda = VCALC_getWavelength()
 	lambda_width = VCALC_getWavelengthSpread()
-	
-	
+
+
 	Variable a2_to_GV,sam_to_GV,sdd
 	sdd = VC_getSDD(detStr)			//sample pos to detector
 	sdd += VCALC_getTopBottomSDDSetback(detStr)		//returns zero for L/R
@@ -1112,15 +1113,15 @@ Function VC_beamDiameter(direction,detStr)
 	ControlInfo/W=VCALC VCALCCtrl_1e
 	sam_to_GV = V_Value
 	l2 = sdd - sam_to_GV + a2_to_GV
-   
-   
+
+
     // (DONE) verify that these values are in cm
 	a1 = VC_sourceApertureDiam()	// reported in cm
-    
+
 	// sample aperture diam [cm]
 	ControlInfo/W=VCALC VCALCCtrl_1c
 	a2 = V_Value
-    
+
     d1 = a1*l2/l1
     d2 = a2*(l1+l2)/l1
     bh = d1+d2		//beam size in horizontal direction
@@ -1128,7 +1129,7 @@ Function VC_beamDiameter(direction,detStr)
     //vertical spreading due to gravity
     bv = bh + 1.25e-8*(l1+l2)*l2*lambda*lambda*lambda_width
     bm = (bs_factor*bh > bv) ? bs_factor*bh : bv //use the larger of horiz*safety or vertical
-    
+
     strswitch(direction)	// string switch
     	case "vertical":		// execute if case matches expression
     		return(bv)
@@ -1142,9 +1143,9 @@ Function VC_beamDiameter(direction,detStr)
     	default:							// optional default expression executed
     		return(bm)						// when no case matches
     endswitch
-    
+
     return(0)
-    
+
 End
 
 // 1=front
@@ -1155,7 +1156,7 @@ End
 // Top/Bottom setback is included
 Function VC_getSDD(detStr)
 	String detStr
-	
+
 	Variable sdd
 
 	strswitch(detstr)
@@ -1174,21 +1175,21 @@ Function VC_getSDD(detStr)
 		case "FT":
 		case "FB":
 			ControlInfo/W=VCALC VCALCCtrl_2d
-			break		
+			break
 		default:
 			Print "no case matched in VC_getSDD()"
 	endswitch
 
 	// this is gate valve to detector distance
 	sdd = V_Value
-	
+
 	// MAR 2020 -- don't add in the setback, ask for it when needed
 //	sdd += VCALC_getTopBottomSDDSetback(detStr)
-	
+
 	// VCALCCtrl_1e is Sample Pos to Gate Valve (cm)
 	ControlInfo/W=VCALC VCALCCtrl_1e
 	sdd += V_Value
-	
+
 	return(sdd)
 end
 
@@ -1197,14 +1198,14 @@ end
 Function V_sampleToGateValve()
 	// VCALCCtrl_1e is Sample Pos to Gate Valve (cm)
 	ControlInfo/W=VCALC VCALCCtrl_1e
-	return(V_Value)	
+	return(V_Value)
 end
 
 
 Function V_sampleApertureToGateValve()
 	// VCALCCtrl_1d is Sample Aperture to Gate Valve (cm)
 	ControlInfo/W=VCALC VCALCCtrl_1d
-	return(V_Value)	
+	return(V_Value)
 end
 
 
@@ -1217,7 +1218,7 @@ end
 // Top/Bottom setback is NOT included
 Function VC_getGateValveToDetDist(detStr)
 	String detStr
-	
+
 	Variable sdd
 
 	strswitch(detstr)
@@ -1236,16 +1237,16 @@ Function VC_getGateValveToDetDist(detStr)
 		case "FT":
 		case "FB":
 			ControlInfo/W=VCALC VCALCCtrl_2d
-			break		
+			break
 		default:
 			Print "no case matched in VC_getGateValveToDetDistance()"
 	endswitch
 
 	// this is gate valve to detector distance
 	sdd = V_Value
-	
+
 	return(sdd)
-end	
+end
 
 // TODO
 // -- verify all of the numbers, constants, and "empirical" transmission corrections
@@ -1253,17 +1254,20 @@ end
 //
 Function V_beamIntensity()
 
-	Variable as,solid_angle,l1,d2_phi
-	Variable a1,a2,retVal
+	Variable solid_angle,l1,d2_phi
+
+	Variable a1
+	Variable a2
+	Variable retVal
 	Variable ng
 	Variable lambda_t
 	Variable lambda,phi_0
 	Variable lambda_width
 	Variable guide_loss,t_guide,t_filter,t_total,t_special
 	Variable a1Area,a2Area
-	
+
 	NVAR gBeamInten = root:Packages:NIST:VSANS:VCALC:gBeamIntensity
- 
+
 // TODO
 // -- verify these numbers
 	lambda_t = 6.20
@@ -1273,21 +1277,21 @@ Function V_beamIntensity()
 
  	ControlInfo/W=VCALC VCALCCtrl_0a
 	ng = V_Value
- 
+
  	lambda = VCALC_getWavelength()
  	lambda_width = VCALC_getWavelengthSpread()
 	l1 = VC_calcSSD()
-    
-    
+
+
    a1Area = VC_SourceApArea()
    a2Area = VC_SampleApArea()
-   
+
     // TODO verify that these values are in cm
 //	a1 = VC_sourceApertureDiam()
-    
+
 	// sample aperture diam [cm]
 //	a2 = VC_sampleApertureDiam()
-    
+
 //	alpha = (a1+a2)/(2*l1)	//angular divergence of beam
 //	f = l_gap*alpha/(2*guide_width)
 //	t4 = (1-f)*(1-f)
@@ -1297,6 +1301,7 @@ Function V_beamIntensity()
 	t_filter = exp(-0.371 - 0.0305*lambda - 0.00352*lambda*lambda)
 	t_total = t_special*t_guide*t_filter
 
+	Variable as
 //	as = pi/4*a2*a2		//area of sample in the beam
 	as = a2Area			//area of sample in the beam
 	d2_phi = phi_0/(2*pi)
@@ -1310,7 +1315,7 @@ Function V_beamIntensity()
 
 	// set the global for display
 	gBeamInten = retVal
-	
+
 	return (retVal)
 end
 
@@ -1320,8 +1325,8 @@ end
 Function VC_SourceApArea()
 
 	Variable apArea,diam,ht,wid
-	
-	
+
+
 	ControlInfo VCALCCtrl_0e
 	String popStr = S_Value
 
@@ -1329,31 +1334,31 @@ Function VC_SourceApArea()
 		case "circular":
 			ControlInfo VCALCCtrl_0f
 			sscanf S_Value,"%g cm",diam
-			
+
 			apArea = pi/4*diam*diam
-						
+
 			break
 		case "rectangular":
 			ControlInfo VCALCCtrl_0f
 			sscanf S_Value,"%g cm",ht
-			
+
 			ControlInfo VCALCCtrl_0g
 			sscanf S_Value,"%g cm",wid
-			
+
 			apArea = ht*wid		//correctly in cm^2
-		
+
 			break
 //		case "converging pinholes":
 //			ControlInfo VCALCCtrl_0f
 //			sscanf S_Value,"%g cm",diam
-//			
+//
 //			apArea = pi/4*diam*diam
-//			
+//
 //			break
-			
-	endswitch	
-	
-	
+
+	endswitch
+
+
 	return(apArea)
 End
 
@@ -1362,7 +1367,7 @@ End
 Function VC_SampleApArea()
 
 	Variable apArea,diam,ht,wid
-	
+
 	ControlInfo VCALCCtrl_1b
 	String popStr = S_Value
 
@@ -1371,9 +1376,9 @@ Function VC_SampleApArea()
 		case "circular":
 			ControlInfo VCALCCtrl_1c
 			diam = str2num(S_Value)
-			
+
 			apArea = pi/4*diam*diam
-			
+
 			break
 		case "rectangular":
 			ControlInfo VCALCCtrl_1c
@@ -1382,20 +1387,20 @@ Function VC_SampleApArea()
 			ControlInfo VCALCCtrl_1f
 			sscanf S_Value,"%g cm",wid
 
-			apArea = ht*wid		//correctly in cm^2			
+			apArea = ht*wid		//correctly in cm^2
 
 
 			break
 //		case "converging pinholes":
 //			ControlInfo VCALCCtrl_1c
 //			diam = str2num(S_Value)
-//			
+//
 //			apArea = pi/4*diam*diam
 //
 //			break
-			
-	endswitch	
-	
+
+	endswitch
+
 	return(apArea)
 End
 
@@ -1406,23 +1411,23 @@ Function VC_figureOfMerit()
 
 	Variable bi = V_beamIntensity()
 	Variable lambda = VCALC_getWavelength()
-	
+
    return (lambda*lambda*bi)
 End
 
 // return a beamstop diameter (cm) larger than maximum beam dimension
 Function VC_beamstopDiam(detStr)
 	String detStr
-	
+
 	Variable bm=0
 	Variable bs=0.0
    Variable yesLens=0
-   
+
 	ControlInfo popup_a
 	if(cmpstr(S_Value,"Narrow Slit")==0 ||cmpstr(S_Value,"Converging Pinholes")==0)
 		yesLens = 1
 	endif
-   
+
 	if(yesLens)
 //		bs = VC_sourceApertureDiam()		//ideal result, image of source aperture
 		bs = .1								//force the diameter to 1"
@@ -1444,59 +1449,59 @@ Function V_IQ_BeamstopShadow()
 
 	String popStr
 	Variable binType
-	
-	ControlInfo/W=VCALC popup_b
-	popStr = S_Value	
 
-	binType = V_BinTypeStr2Num(popStr)	
-	
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value
+
+	binType = V_BinTypeStr2Num(popStr)
+
 	if(binType == 4)		//Narrow Slit
 		return(0)
 	endif
-	
+
 	String folderStr = "root:Packages:NIST:VSANS:VCALC:"
-	
+
 
 	String extStr =""
-	
+
 	switch(binType)
 		case 1:
-			extStr = ksBinType1		
+			extStr = ksBinType1
 
 			break
 		case 2:
-			extStr = ksBinType2		
+			extStr = ksBinType2
 
 			break
 		case 3:
-			extStr = ksBinType3	
-			
+			extStr = ksBinType3
+
 			break
-		case 4:				/// this is for a tall, narrow slit mode	
+		case 4:				/// this is for a tall, narrow slit mode
 			extStr = ksBinType4
 
 			break
 		case 5:
-			extStr = ksBinType5	
-		
+			extStr = ksBinType5
+
 			break
 		case 6:
-			extStr = ksBinType6	
-		
+			extStr = ksBinType6
+
 			break
 		case 7:
-			extStr = ksBinType7	
-		
+			extStr = ksBinType7
+
 			break
-			
+
 		default:
-			Abort "Binning mode not found in V_IQ_BeamstopShadow"// when no case matches	
+			Abort "Binning mode not found in V_IQ_BeamstopShadow"// when no case matches
 	endswitch
 
 // DONE:
 // x- I had to put a lot of conditions on when not to try to apply the shadow factor
 // to avoid errors when iq had no points in the wave, or incorrectly applying the beamstop to the back panel.
-	
+
 	Variable ii
 	String ext
 //	loop over all of the types of data
@@ -1507,8 +1512,8 @@ Function V_IQ_BeamstopShadow()
 		if(WaveExists(fs) && numpnts(iq) > 0 && cmpstr(ext,"B") != 0)		//don't apply fs if not appropriate
 			iq = (fs < 0.1) ? iq*0.1 : iq*fs
 		endif
-	endfor	
-	
+	endfor
+
 	return(0)
 end
 
@@ -1538,18 +1543,18 @@ Function VC_DrawVCALCMask()
 	VC_DrawVCALCMask_FR()
 	VC_DrawVCALCMask_FT()
 	VC_DrawVCALCMask_FB()
-	
+
 	VC_DrawVCALCMask_ML()
 	VC_DrawVCALCMask_MR()
 	VC_DrawVCALCMask_MT()
 	VC_DrawVCALCMask_MB()
-	
+
 	return(0)
 end
 
 // FL shadows FT, FB, ML
 Function VC_DrawVCALCMask_FL()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_ML,L2_F,L2_M,delta_L,delta_S,D2
@@ -1569,8 +1574,8 @@ Function VC_DrawVCALCMask_FL()
 	delta_L = 33		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of FT, or FB, or ML
 /////
 	target = "FT"
@@ -1600,7 +1605,7 @@ Function VC_DrawVCALCMask_FL()
 		nt = trunc(nPix/2) - delta_x_pix
 		mask[0,nt][] = 1
 	endif
-	
+
 /////
 	target = "FB"
 	L2_M = VC_calc_L2(target)
@@ -1615,7 +1620,7 @@ Function VC_DrawVCALCMask_FL()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -1647,7 +1652,7 @@ Function VC_DrawVCALCMask_FL()
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
 //	delta = delta_Xh
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -1659,7 +1664,7 @@ Function VC_DrawVCALCMask_FL()
 	// at what "pixel" does the shadow start?
 	delta_X_pix = trunc(delta/pixSizeX)
 	nPix = VCALC_get_nPix_X(target)
-	
+
 	//is the delta_x_pix still on the left edge of ML?
 	if(delta_x_pix < 0)		//entire panel is shadowed
 		nt = nPix-1
@@ -1670,13 +1675,13 @@ Function VC_DrawVCALCMask_FL()
 			mask[0,nt][] = 1
 		endif
 	endif
-	
+
 	return(0)
 end
 
 // FR shadows FT, FB, MR
 Function VC_DrawVCALCMask_FR()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_MR,L2_F,L2_M,delta_L,delta_S,D2
@@ -1696,8 +1701,8 @@ Function VC_DrawVCALCMask_FR()
 	delta_L = 33		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of FT, or FB, or MR
 /////
 	target = "FT"
@@ -1727,7 +1732,7 @@ Function VC_DrawVCALCMask_FR()
 		nt = trunc(nPix/2) - delta_x_pix
 		mask[nPix-nt,nPix-1][] = 1
 	endif
-	
+
 /////
 	target = "FB"
 	L2_M = VC_calc_L2(target)
@@ -1742,7 +1747,7 @@ Function VC_DrawVCALCMask_FR()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -1773,7 +1778,7 @@ Function VC_DrawVCALCMask_FR()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -1784,9 +1789,9 @@ Function VC_DrawVCALCMask_FR()
 	//since "target" is ML, use x-position
 	// at what "pixel" does the shadow start?
 	nPix = VCALC_get_nPix_X(target)
-	
+
 	delta_X_pix = trunc(delta/pixSizeX)
-	
+
 	//is the delta_x_pix still on the right edge of MR?
 	if(delta_x_pix < 0)		//entire panel is shadowed
 		nt = nPix-1
@@ -1797,13 +1802,13 @@ Function VC_DrawVCALCMask_FR()
 			mask[nPix-nt,nPix-1][] = 1
 		endif
 	endif
-		
+
 	return(0)
 end
 
 // FT shadows ML, MR, MT
 Function VC_DrawVCALCMask_FT()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_MT,L2_F,L2_M,delta_L,delta_S,D2
@@ -1823,8 +1828,8 @@ Function VC_DrawVCALCMask_FT()
 	delta_L = 61		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of ML, or MR, or MT
 /////
 	target = "ML"
@@ -1870,7 +1875,7 @@ Function VC_DrawVCALCMask_FT()
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
 
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -1884,7 +1889,7 @@ Function VC_DrawVCALCMask_FT()
 		nt = trunc(nPix/2) - delta_y_pix
 		mask[][nPix-nt,nPix-1] = 1
 	endif
-	
+
 ///
 // for MT, there can also be lateral offset of the MT panel
 	target = "MT"
@@ -1901,14 +1906,14 @@ Function VC_DrawVCALCMask_FT()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
 
 // offset of MT, in "pixels" -in Y-direction
 	offset_MT = VCALC_getPanelTranslation(target)/pixSizeY		//[cm]
-	offset_MT = trunc(offset_MT) 
+	offset_MT = trunc(offset_MT)
 	//since "target" is MT, use y-position
 	// at what "pixel" does the shadow start?
 	delta_Y_pix = trunc(delta/pixSizeY)
@@ -1918,14 +1923,14 @@ Function VC_DrawVCALCMask_FT()
 		nt = nPix + offset_MT - delta_y_pix
 		mask[][nPix-nt,nPix-1] = 1
 	endif
-	
-	
+
+
 	return(0)
 end
 
 // FB shadows ML, MR, MB
 Function VC_DrawVCALCMask_FB()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_MB,L2_F,L2_M,delta_L,delta_S,D2
@@ -1937,7 +1942,7 @@ Function VC_DrawVCALCMask_FB()
 
 	//  offset of FB
 	offset = VCALC_getPanelTranslation(type)
-	
+
 	// sample aperture diam [cm]
 	D2 = VC_sampleApertureDiam()
 	// sdd F	 [cm] = sample aperture to detector
@@ -1946,8 +1951,8 @@ Function VC_DrawVCALCMask_FB()
 	delta_L = 61		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of ML, or MR, or MB
 /////
 	target = "ML"
@@ -1964,7 +1969,7 @@ Function VC_DrawVCALCMask_FB()
 	//use the smaller shadow value (this means closer to the center, a larger shadow)
 	delta = min(delta_Xh,delta_Xs)
 
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -1978,7 +1983,7 @@ Function VC_DrawVCALCMask_FB()
 		nt = trunc(nPix/2) - delta_y_pix
 		mask[][0,nt] = 1
 	endif
-	
+
 /////
 	target = "MR"
 	L2_M = VC_calc_L2(target)
@@ -1993,7 +1998,7 @@ Function VC_DrawVCALCMask_FB()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2007,7 +2012,7 @@ Function VC_DrawVCALCMask_FB()
 		nt = trunc(nPix/2) - delta_y_pix
 		mask[][0,nt] = 1
 	endif
-	
+
 ///
 // for MB, there can also be lateral offset of the MT panel
 	target = "MB"
@@ -2024,7 +2029,7 @@ Function VC_DrawVCALCMask_FB()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2041,14 +2046,14 @@ Function VC_DrawVCALCMask_FB()
 		nt = nPix + offset_MB - delta_y_pix
 		mask[][0,nt] = 1
 	endif
-	
+
 
 	return(0)
 end
 
 // ML shadows MT, MB, B
 Function VC_DrawVCALCMask_ML()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
@@ -2068,8 +2073,8 @@ Function VC_DrawVCALCMask_ML()
 	delta_L = 33		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of MT, or MB, or B
 /////
 	target = "MT"
@@ -2099,7 +2104,7 @@ Function VC_DrawVCALCMask_ML()
 		nt = trunc(nPix/2) - delta_x_pix
 		mask[0,nt][] = 1
 	endif
-	
+
 /////
 	target = "MB"
 	L2_M = VC_calc_L2(target)
@@ -2114,7 +2119,7 @@ Function VC_DrawVCALCMask_ML()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2151,7 +2156,7 @@ Function VC_DrawVCALCMask_ML()
 //   if(cmpstr(str,"Converging Pinholes")==0)
 //		delta = max(delta_Xh,delta_Xs)
 //   endif
-		
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2163,7 +2168,7 @@ Function VC_DrawVCALCMask_ML()
 	// at what "pixel" does the shadow start?
 	delta_X_pix = trunc(delta/pixSizeX)
 	nPix = VCALC_get_nPix_X(target)
-	
+
 	//is the delta_x_pix still on the left edge of B?
 	if(delta_x_pix < 0)		//entire panel is shadowed
 		nt = nPix-1
@@ -2175,15 +2180,15 @@ Function VC_DrawVCALCMask_ML()
 			mask[0,delta_x_pix][] = 1
 		endif
 	endif
-	
+
 //	printf "from ML: mask[0,%d][] = 1\r",delta_x_pix
-	
+
 	return(0)
 end
 
 // MR shadows MT, MB, B
 Function VC_DrawVCALCMask_MR()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
@@ -2203,8 +2208,8 @@ Function VC_DrawVCALCMask_MR()
 	delta_L = 33		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of MT, or MB, or B
 /////
 	target = "MT"
@@ -2234,7 +2239,7 @@ Function VC_DrawVCALCMask_MR()
 		nt = trunc(nPix/2) - delta_x_pix
 		mask[nPix-nt,nPix-1][] = 1
 	endif
-	
+
 /////
 	target = "MB"
 	L2_M = VC_calc_L2(target)
@@ -2249,7 +2254,7 @@ Function VC_DrawVCALCMask_MR()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2286,8 +2291,8 @@ Function VC_DrawVCALCMask_MR()
 //   if(cmpstr(str,"Converging Pinholes")==0)
 //		delta = max(delta_Xh,delta_Xs)
 //   endif
-	
-		
+
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2298,9 +2303,9 @@ Function VC_DrawVCALCMask_MR()
 	//since "target" is B, use x-position
 	// at what "pixel" does the shadow start?
 	nPix = VCALC_get_nPix_X(target)
-	
+
 	delta_X_pix = trunc(delta/pixSizeX)
-	
+
 	//is the delta_x_pix still on the right edge of B?
 	if(delta_x_pix < 0)		//entire panel is shadowed
 		nt = nPix-1
@@ -2313,14 +2318,14 @@ Function VC_DrawVCALCMask_MR()
 	endif
 
 //	printf "from MR: mask[%d,%d-1][] = 1\r",nt,nPix
-	
+
 	return(0)
 end
 
 
 // MT shadows B
 Function VC_DrawVCALCMask_MT()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
@@ -2340,8 +2345,8 @@ Function VC_DrawVCALCMask_MT()
 	delta_L = 61		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of ML, or MR, or MT
 ///////
 //	target = "ML"
@@ -2387,7 +2392,7 @@ Function VC_DrawVCALCMask_MT()
 //	//use the smaller shadow value
 //	delta = min(delta_Xh,delta_Xs)
 //
-//	
+//
 //// how many detector tubes to mask?
 //	pixSizeX = VCALC_getPixSizeX(target)
 //	pixSizeY = VCALC_getPixSizeY(target)
@@ -2401,7 +2406,7 @@ Function VC_DrawVCALCMask_MT()
 //		nt = trunc(nPix/2) - delta_y_pix
 //		mask[][nPix-nt,nPix-1] = 1
 //	endif
-	
+
 ///
 // for B, there can also be lateral offset of the B panel
 	target = "B"
@@ -2424,14 +2429,14 @@ Function VC_DrawVCALCMask_MT()
 //   if(cmpstr(str,"Converging Pinholes")==0)
 //		delta = max(delta_Xh,delta_Xs)
 //   endif
-		
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
 
 // offset of B, in "pixels" -in Y-direction
 	offset_B = VCALC_getPanelTranslation(target)/pixSizeY		//[cm]
-	offset_B = trunc(offset_B) 
+	offset_B = trunc(offset_B)
 	//since "target" is B, use y-position
 	// at what "pixel" does the shadow start?
 	delta_Y_pix = trunc(delta/pixSizeY)
@@ -2442,7 +2447,7 @@ Function VC_DrawVCALCMask_MT()
 		nt = nPix - delta_y_pix		//
 		mask[][nt,nPix-1] = 1
 	endif
-	
+
 //	printf "from MT: mask[][%d,%d-1] = 1\r",nt,nPix
 
 	return(0)
@@ -2450,7 +2455,7 @@ end
 
 // MB shadows B
 Function VC_DrawVCALCMask_MB()
-	
+
 	Variable pixSizeX,pixSizeY,nPix,nt
 
 	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
@@ -2462,7 +2467,7 @@ Function VC_DrawVCALCMask_MB()
 
 	//  offset of MB
 	offset = VCALC_getPanelTranslation(type)
-	
+
 	// sample aperture diam [cm]
 	D2 = VC_sampleApertureDiam()
 	// sdd F	 [cm] = sample aperture to detector
@@ -2471,8 +2476,8 @@ Function VC_DrawVCALCMask_MB()
 	delta_L = 61		//[cm]
 	// offset of 80/20 frame
 	delta_S = 2.5		//[cm]
-	
-	
+
+
 	// sdd of ML, or MR, or MB
 /////
 //	target = "ML"
@@ -2489,7 +2494,7 @@ Function VC_DrawVCALCMask_MB()
 //	//use the smaller shadow value (this means closer to the center, a larger shadow)
 //	delta = min(delta_Xh,delta_Xs)
 //
-//	
+//
 //// how many detector tubes to mask?
 //	pixSizeX = VCALC_getPixSizeX(target)
 //	pixSizeY = VCALC_getPixSizeY(target)
@@ -2503,7 +2508,7 @@ Function VC_DrawVCALCMask_MB()
 //		nt = trunc(nPix/2) - delta_y_pix
 //		mask[][0,nt] = 1
 //	endif
-	
+
 /////
 //	target = "MR"
 //	L2_M = VC_calc_L2(target)
@@ -2518,7 +2523,7 @@ Function VC_DrawVCALCMask_MB()
 //
 //	//use the smaller shadow value
 //	delta = min(delta_Xh,delta_Xs)
-//	
+//
 //// how many detector tubes to mask?
 //	pixSizeX = VCALC_getPixSizeX(target)
 //	pixSizeY = VCALC_getPixSizeY(target)
@@ -2532,7 +2537,7 @@ Function VC_DrawVCALCMask_MB()
 //		nt = trunc(nPix/2) - delta_y_pix
 //		mask[][0,nt] = 1
 //	endif
-	
+
 ///
 // for B, there can also be lateral offset of the B panel
 	target = "B"
@@ -2549,13 +2554,13 @@ Function VC_DrawVCALCMask_MB()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	  
+
 //	ControlInfo popup_a
 //   String str=S_Value
 //   if(cmpstr(str,"Converging Pinholes")==0)
 //		delta = max(delta_Xh,delta_Xs)
 //   endif
-	
+
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2588,13 +2593,13 @@ Function VC_ResetVCALCMask()
 
 	Variable ii
 	String detStr
-	
+
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-		mask = 0	
+		mask = 0
 	endfor
-	
+
 	return(0)
 end
 
@@ -2603,7 +2608,7 @@ Function/S V_SetConfigurationText()
 	String str="",temp
 
 //	SetDataFolder root:Packages:NIST:SAS
-//	
+//
 //	NVAR numberOfGuides=gNg
 //	NVAR gTable=gTable		//2=chamber, 1=table
 //	NVAR wavelength=gLambda
@@ -2621,16 +2626,16 @@ Function/S V_SetConfigurationText()
 	NVAR min_b = root:Packages:NIST:VSANS:VCALC:gQmin_B
 	NVAR max_b = root:Packages:NIST:VSANS:VCALC:gQmax_B
 	NVAR realQMin = root:Packages:NIST:VSANS:VCALC:gRealQMin
-	
+
 	if(min_b == 1e6)
 		min_b = 0
 	endif
 	if(max_b == -1e6)
 		max_b = 0
 	endif
-	
+
 	String aStr = "A"
-	
+
 	sprintf temp,"Source Aperture Diameter =\t\t%6.2f cm\r",VC_sourceApertureDiam()
 	str += temp
 	sprintf temp,"Source to Sample =\t\t\t\t%6.0f cm\r",VC_calcSSD()
@@ -2653,7 +2658,7 @@ Function/S V_SetConfigurationText()
 	str += temp
 //	sprintf temp,"Attenuator transmission =\t\t%3.3g = Atten # %d\r"//,attenuatorTransmission(),attenuatorNumber()
 //	str += temp
-////	
+////
 //	// add text of the user-edited values
 //	//
 	sprintf temp,"***************** %s *** %s *****************\r","VSANS","VSANS"
@@ -2676,7 +2681,7 @@ Function/S V_SetConfigurationText()
 //		sprintf temp,"Sample Position is \t\t\t\t\t\tHuber\r"
 //	else
 //		sprintf temp,"Sample Position is \t\t\t\t\t\tChamber\r"
-//	endif 
+//	endif
 //	str += temp
 //	sprintf temp,"Detector Offset =\t\t\t\t\t\t%.1f cm\r", detectorOffset()
 //	str += temp
@@ -2691,15 +2696,15 @@ Function/S V_SetConfigurationText()
 //	else
 //		sprintf temp,"Lenses are OUT\r"
 //	endif
-//	str += temp 
-   	
+//	str += temp
+
    setDataFolder root:
-   return str			 
+   return str
 End
 
 //Write String representing NICE VSANS configuration
 Function/S V_SetNICEConfigText()
-	
+
 	string temp_s
 
 	String titleStr
@@ -2725,23 +2730,23 @@ Function/S V_SetNICEConfigText()
 	temp_s = "[\r  {\r    \"key\": {\r      \"class\": \"java.lang.String\",\r"
 	temp_s += "      \"value\": \""+titleStr+"\"\r    },\r"
 	temp_s += "    \"value\": {\r      \"class\": \"java.util.HashMap\",\r      \"value\": [\r"
-	
+
 //front
 	nameStr = "frontTrans.primaryNode"
 	valStr = num2Str(VC_getGateValveToDetDist("FL")) + "cm"		//nominal distance, any panel will do
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "carriage.frontRight"
 	valStr = num2Str(VCALC_getPanelTranslation("FR")) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "carriage.frontLeft"
 	valStr = num2Str(VCALC_getPanelTranslation("FL")) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
-	temp_s += valueStr + valStr + valueStrEnd	
-		
+	temp_s += valueStr + valStr + valueStrEnd
+
 	nameStr = "carriage.frontTop"
 	valStr = num2Str(VCALC_getPanelTranslation("FT")) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2756,7 +2761,7 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(V_getDet_beam_center_x("VCALC","FR")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-		
+
 	nameStr = "frontRightAreaDetector.beamCenterY"
 	valStr = num2Str(V_getDet_beam_center_y("VCALC","FR")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2766,7 +2771,7 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(V_getDet_beam_center_x("VCALC","FL")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "frontLeftAreaDetector.beamCenterY"
 	valStr = num2Str(V_getDet_beam_center_y("VCALC","FL")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2791,10 +2796,10 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(V_getDet_beam_center_y("VCALC","FB")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
 
-	
-// middle		
+
+
+// middle
 	nameStr = "middleTrans.primaryNode"
 	valStr = num2Str(VC_getGateValveToDetDist("ML")) + "cm"		//nominal distance, any panel will do
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2829,17 +2834,17 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(V_getDet_beam_center_y("VCALC","MR")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "middleLeftAreaDetector.beamCenterX"
 	valStr = num2Str(V_getDet_beam_center_x("VCALC","ML")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
-	temp_s += valueStr + valStr + valueStrEnd		
+	temp_s += valueStr + valStr + valueStrEnd
 
 	nameStr = "middleLeftAreaDetector.beamCenterY"
 	valStr = num2Str(V_getDet_beam_center_y("VCALC","ML")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-		
+
 	nameStr = "middleTopAreaDetector.beamCenterX"
 	valStr = num2Str(V_getDet_beam_center_x("VCALC","MT")) + "cm"
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2861,7 +2866,7 @@ Function/S V_SetNICEConfigText()
 	temp_s += valueStr + valStr + valueStrEnd
 
 	nameStr = "C2BeamStop.beamStop"
-	valStr = num2Str(1) 
+	valStr = num2Str(1)
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
 
@@ -2869,7 +2874,7 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(0) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "C2BeamStopX.X"
 	valStr = num2Str(0) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2896,7 +2901,7 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(V_getDet_beam_center_y_pix("VCALC","B"))
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "C3BeamStop.beamStop"
 	valStr = num2Str(0)
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2920,7 +2925,7 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(VC_getNumGuides())
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "guide.sampleAperture"
 	valStr = num2Str(VC_sampleApertureDiam()) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2930,7 +2935,7 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(VC_sourceApertureDiam()) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "geometry.externalSampleApertureShape"
 	valStr = "CIRCLE"
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2945,12 +2950,12 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(V_sampleToGateValve()) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "geometry.sampleApertureOffset"
 	valStr = num2Str(V_sampleApertureToGateValve()) + "cm"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "attenuator.attenuator"
 	valStr = num2Str(0)
 	temp_s += keyStr + nameStr + keyStrEnd
@@ -2960,13 +2965,13 @@ Function/S V_SetNICEConfigText()
 	valStr = num2Str(VCALC_getWavelength()) + "A"		//no space before unit
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + valueStrEnd
-	
+
 	nameStr = "wavelengthSpread.wavelengthSpread"
 	valStr = num2Str(VCALC_getWavelengthSpread())
-// last one has a different ending sequence	
+// last one has a different ending sequence
 	temp_s += keyStr + nameStr + keyStrEnd
 	temp_s += valueStr + valStr + closingStr
-		
+
 	return temp_s
 end
 

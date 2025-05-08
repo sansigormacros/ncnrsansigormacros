@@ -1,4 +1,5 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma TextEncoding = "UTF-8"
+#pragma rtGlobals=3		// Use modern global access method.
 #pragma IgorVersion=7.0
 
 
@@ -18,7 +19,7 @@
 // -or- parse all of the metadata to try to fill in the table (and then allow it
 // to be copied over to the real table
 //
-// need a whole host of search functions to deliver subsets of run numbers based on 
+// need a whole host of search functions to deliver subsets of run numbers based on
 // which slot they fill in the reduction prcess.
 //
 
@@ -27,7 +28,7 @@
 // Polarized Beam Reduction Procedures
 //
 //
-// input panels to set and calculate polarization parameters necessary for the 
+// input panels to set and calculate polarization parameters necessary for the
 // matrix corrections to the cross sections
 //
 // -1- Fundamental Cell Parameters -- these are constants, generally not editable. (this file)
@@ -42,7 +43,7 @@
 //		---(NEW) "Scan Cell" will scan the metadata of all VSANS files and automaticaly add/update
 //            the table with any cells that it finds. Accidental duplicate cells is not a problem.
 //		- changes are saved per experiment
-//		- important parameters are held in global key=value strings gCell_<name> 
+//		- important parameters are held in global key=value strings gCell_<name>
 //		- cell names and parameters are used by the 2nd panel for calculation of the Decay constant
 //
 // -2- Decay Constant Panel
@@ -52,14 +53,14 @@
 //			and "Calc Sel Row" does the calculation of mu and Pcell (for all rows, actually)
 //		- DimLabels are used for the arrays to make the column identity more readable than simply an index
 //		- (NEW) - the name of the PANEL where the transmission is taken must be entered so that the program
-//           knows where to do the summation (this field is next to the "Do Fit" button). This sets a 
+//           knows where to do the summation (this field is next to the "Do Fit" button). This sets a
 //				global string that is also used for the flipper panel
 //		- time=0 is taken from the first file
 //		- Calculations are based on the count rate of the file, corrected for monitor and attenuation
 //		- alerts are posted for files in any row that are not at the same attenuation or SDD
 //		- if "include" column is == 1, that row will be included in the fit of the decay data
 //		- excluded points are plotted in red
-//		- results of the fit are printed on the panel, and written to the wave note of the Decay_ wave 
+//		- results of the fit are printed on the panel, and written to the wave note of the Decay_ wave
 //			(not DecayCalc_) for use in the next panel
 //		- manual entry of all of the parameters in the wave note is allowed.
 //
@@ -72,7 +73,7 @@
 //		- DimLabels are used for the arrays to make the column identity more readable than simply an index
 //		- Enter the name of the cell in the first column (the cell must be defined and decay calculated)
 // 		- enter transmission run numbers as specified in the table
-//		- (NEW) need to enter the PANEL where the transmssion is taken. This global string is taken from 
+//		- (NEW) need to enter the PANEL where the transmssion is taken. This global string is taken from
 //				the decay panel since the conditions are likely the same.
 //		- Do Average will calculate the Psm and PsmPfl values (and errors) and average if more than
 //			one row of data is present (and included)
@@ -89,7 +90,7 @@
 //		- the same list boxes are duplicated (hidden) for the SAM/EMP/BGD tabs as needed
 //		- on loading of the data, the 2-letter spin state is tagged onto the loaded waves (all of them)
 //		- displayed data is simply re-pointed to the desired data
-//		- on loading, the raw files are added together as ususal, normalized to monitor counts. Then each contribution 
+//		- on loading, the raw files are added together as ususal, normalized to monitor counts. Then each contribution
 //			of the file to the polarization matrix is added (scaling each by mon/1e8)
 //		- loaded data and PolMatrix are stored in the ususal SAM, EMP, BGD folders.
 //		- Polarization correction is done with one click (one per tab). "_pc" tags are added to the resulting names,
@@ -104,7 +105,7 @@
 //		- (NEW) Even though the protocol is built on the normal panel, the "Reduce" button on the Pol Panel
 //					must be used to reduce all 4 XS. Otherwise, a standard (incorrect) reduction will be done
 //		- reduction will always ask for a protocol rather than using what's on the panel.
-//		- closing the panel will save the state (except the protocol). NOT initializing when re-opening will restore the 
+//		- closing the panel will save the state (except the protocol). NOT initializing when re-opening will restore the
 //			state of the entered runs and the popups of conditions.
 //
 //
@@ -139,7 +140,7 @@ End
 //
 // Panel -1-
 //
-// Fundamental He cell parameters. Most of these are pre-defined, so that they are supplied as a 
+// Fundamental He cell parameters. Most of these are pre-defined, so that they are supplied as a
 // static table, only edited as parameters are refined.
 //
 // work with this as kwString
@@ -155,7 +156,7 @@ End
 // all of the strings start w/ "gCell_"
 //
 Proc V_ShowCellParamPanel()
-	
+
 	// init folders
 	// ASK before initializing cell constants
 	// open the panel
@@ -180,7 +181,7 @@ Function V_InitPolarizationFolders()
 
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Polarization
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Polarization:Cells			//holds the cell constants and waves
-	
+
 	SetDataFolder root:
 	return(0)
 End
@@ -193,7 +194,7 @@ End
 Function V_InitPolarizationGlobals()
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
-	
+
 	String listStr=StringList("gCell_*",";"),item
 	Variable	ii,num=ItemsInList(listStr,";")
 
@@ -202,15 +203,15 @@ Function V_InitPolarizationGlobals()
 		SVAR gStr = $item
 		KillStrings/Z gStr
 	endfor
-	
+
 	//rebuild the list
 	// cell constants
 	String/G gCell_Maverick = "cell=Maverick,lambda=5.0,Te=0.87,err_Te=0.01,mu=3.184,err_mu=0.02,"
 	String/G gCell_Burgundy = "cell=Burgundy,lambda=5.0,Te=0.86,err_Te=0.01,mu=3.138,err_mu=0.015,"
 	String/G gCell_Olaf = "cell=Olaf,lambda=7.5,Te=0.86,err_Te=0.005,mu=2.97,err_mu=0.018,"
 
-	String/G gDecayTransPanel = "none"	
-	
+	String/G gDecayTransPanel = "none"
+
 	SetDataFolder root:
 	return(0)
 End
@@ -222,22 +223,22 @@ End
 Function V_Make_HeCell_ParamWaves()
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
-	
+
 	String listStr,item
 	Variable num,ii
-	
+
 	// get a list of the strings
 	listStr=StringList("gCell_*",";")
 	num=ItemsInList(listStr,";")
 	print listStr
-	
+
 	Make/O/T/N=0 CellName
 	Make/O/D/N=0 lambda,Te,err_Te,mu,err_mu
 
 // when the values are reverted, necessary to get back to zero elements
 	Redimension/N=0 CellName
 	Redimension/N=0 lambda,Te,err_Te,mu,err_mu
-		
+
 	// parse the strings to fill the table
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, listStr,";")
@@ -249,10 +250,10 @@ Function V_Make_HeCell_ParamWaves()
 		err_Te[ii] = NumberByKey("err_Te", gStr, "=", ",", 0)
 		mu[ii] = NumberByKey("mu", gStr, "=", ",", 0)
 		err_mu[ii] = NumberByKey("err_mu", gStr, "=", ",", 0)
-		
+
 	endfor
 
-	
+
 	SetDataFolder root:
 	return(0)
 End
@@ -262,35 +263,35 @@ End
 Function V_Save_HeCell_ParamWaves()
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
-	
+
 	String listStr,item,dummyStr
 	Variable num,ii
-	
+
 	// get a list of the strings
 	listStr=StringList("gCell_*",";")
 	num=ItemsInList(listStr,";")
 	KillStrings/Z listStr
-	
+
 	Wave/T CellName
 	Wave lambda,Te,err_Te,mu,err_mu
-	
+
 	dummyStr = "cell=Maverick,lambda=5.0,Te=0.87,err_Te=0.01,mu=3.184,err_mu=0.2,"
-	
+
 	num=numpnts(CellName)
-	
+
 	// parse the table to fill the Strings
 	for(ii=0;ii<num;ii+=1)
 		item = "gCell_"+CellName[ii]
 		String/G $item = dummyStr
 		SVAR kwListStr = $item
-		
+
 		kwListStr = ReplaceStringByKey("cell", kwListStr, CellName[ii], "=", ",", 0)
 		kwListStr = ReplaceNumberByKey("lambda", kwListStr, lambda[ii], "=", ",", 0)
 		kwListStr = ReplaceNumberByKey("Te", kwListStr, Te[ii], "=", ",", 0)
 		kwListStr = ReplaceNumberByKey("err_Te", kwListStr, err_Te[ii], "=", ",", 0)
 		kwListStr = ReplaceNumberByKey("mu", kwListStr, mu[ii], "=", ",", 0)
 		kwListStr = ReplaceNumberByKey("err_mu", kwListStr, err_mu[ii], "=", ",", 0)
-		
+
 	endfor
 
 	SetDataFolder root:
@@ -313,7 +314,7 @@ Function V_DrawCellParamPanel()
 	endif
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
-	
+
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(150*sc,44*sc,750*sc,377*sc)/N=V_CellParamPanel/K=1 as "Fundamental Cell Parameters"
 	ModifyPanel cbRGB=(65535,49151,55704)
@@ -329,7 +330,7 @@ Function V_DrawCellParamPanel()
 	Button button_5,pos={sc*324,35*sc},size={sc*100,20*sc},proc=V_RestoreCellPanelButton,title="Restore State"
 
 	Button button_6,pos={sc*10,10*sc},size={sc*90,20*sc},proc=V_ScanForCellsButtonProc,title="Scan Cells"
-	
+
 	Edit/W=(14*sc,60*sc,582*sc,318*sc)/HOST=#
 	ModifyTable width(Point)=0
 	RenameWindow #,T0
@@ -399,8 +400,8 @@ Function V_CellHelpParButtonProc(ba) : ButtonControl
 End
 
 
-// new (2020) function that will scan the metadata for any 
-// cells present, plus their parameters. Results are put in a 
+// new (2020) function that will scan the metadata for any
+// cells present, plus their parameters. Results are put in a
 // table where the rows can be copied and added to the master table
 //
 Function V_ScanForCellsButtonProc(ba) : ButtonControl
@@ -410,24 +411,24 @@ Function V_ScanForCellsButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			V_ScanCellParams()
-			
+
 			// now add the new cell parameters to the table
 			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
 
 			WAVE/T CellName
 			WAVE lambda,Te,err_Te,mu,err_mu
-			
+
 			Variable num,numCells,ii
-			
-			
+
+
 			Wave/T foundCells =foundCells
 			numCells=DimSize(foundCells,0)
-			
+
 			for(ii=0;ii<numCells;ii+=1)
 				// insert a new row in the table
 				num=numpnts(CellName)
 				InsertPoints  num, 1, CellName,lambda,Te,err_Te,mu,err_mu
-				
+
 				// fill this row
 				CellName[num] = foundCells[ii][0]
 				lambda[num] = str2num(foundCells[ii][1])
@@ -436,15 +437,15 @@ Function V_ScanForCellsButtonProc(ba) : ButtonControl
 				mu[num] = str2num(foundCells[ii][4])
 				err_mu[num] = str2num(foundCells[ii][5])
 			endfor
-			
-			
+
+
 			SetDataFolder root:
-			
+
 			// and then update the parameters
 			V_Save_HeCell_ParamWaves()
-			
 
-			
+
+
 			break
 		case -1: // control being killed
 			break
@@ -464,9 +465,9 @@ Function V_AddCellButtonProc(ba) : ButtonControl
 			WAVE/T CellName
 			WAVE lambda,Te,err_Te,mu,err_mu
 			Variable ii= numpnts(CellName)
-			
+
 			InsertPoints  ii, 1, CellName,lambda,Te,err_Te,mu,err_mu
-			
+
 			SetDataFolder root:
 			break
 		case -1: // control being killed
@@ -532,7 +533,7 @@ End
 // all of the strings start w/ "gDecay_"
 //
 Proc V_ShowCellDecayPanel()
-	
+
 	// init folders
 	// ASK before initializing cell constants
 	// open the panel
@@ -549,13 +550,13 @@ end
 Function V_InitDecayGlobals()
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
-	
+
 	String/G gMuPo = "muPo"
 	String/G gPo = "Po"
 	String/G gGamma = "gamma"
 	String/G gT0 = "today's the day"
-	
-	
+
+
 	SetDataFolder root:
 	return(0)
 End
@@ -575,7 +576,7 @@ Function V_DecayParamPanel()
 
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
-	
+
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(200*sc,44*sc,1013*sc,664*sc)/N=V_DecayPanel/K=1 as "Cell Decay Parameters"
 
@@ -583,12 +584,12 @@ Function V_DecayParamPanel()
 //	Button button_3,pos={sc*505,16*sc},size={sc*35,20*sc},proc=DecayHelpParButtonProc,title="?"
 	PopupMenu popup_0,pos={sc*32,8*sc},size={sc*49,20*sc},title="Cell",proc=V_DecayPanelPopMenuProc
 	PopupMenu popup_0,mode=1,value= #"V_D_CellNameList()"
-	
+
 	Button button_0,pos={sc*560,294*sc},size={sc*70,20*sc},proc=V_DecayFitButtonProc,title="Do Fit"
 	SetVariable setvar_4,pos={sc*660,294*sc},size={sc*100,13*sc},title="Panel",fStyle=1
 	SetVariable setvar_4,value=root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
-	
-	
+
+
 	GroupBox group_0,pos={sc*560,329*sc},size={sc*230,149*sc},title="FIT RESULTS",fSize=10
 	GroupBox group_0,fStyle=1
 	SetVariable setvar_0,pos={sc*570,358*sc},size={sc*200,13*sc},title="muPo of 3He"
@@ -602,7 +603,7 @@ Function V_DecayParamPanel()
 	SetVariable setvar_2,value= root:Packages:NIST:VSANS:Globals:Polarization:Cells:gGamma
 	SetVariable setvar_3,pos={sc*570,418*sc},size={sc*200,13*sc},title="T0",fStyle=1
 	SetVariable setvar_3,limits={0,0,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:Cells:gT0
-	
+
 
 	Button button_1,pos={sc*560,262*sc},size={sc*120,20*sc},proc=V_CalcRowParamButton,title="Calculate Rows"
 	Button button_2,pos={sc*307,8*sc},size={sc*110,20*sc},proc=V_ClearDecayWavesButton,title="Clear Table"
@@ -617,12 +618,12 @@ Function V_DecayParamPanel()
 
 
 	// table
-	Edit/W=(14*sc,35*sc,794*sc,240*sc)/HOST=# 
+	Edit/W=(14*sc,35*sc,794*sc,240*sc)/HOST=#
 	ModifyTable format=1,width=60
-	
+
 	RenameWindow #,T0
 	SetActiveSubwindow ##
-	
+
 	// graph
 	Display/W=(15*sc,250*sc,540*sc,610*sc)/HOST=#  //root:yy vs root:xx
 	ModifyGraph frameStyle=2
@@ -633,7 +634,7 @@ Function V_DecayParamPanel()
 
 	Legend
 //	ModifyGraph log(left)=1
-//	ErrorBars yy OFF 
+//	ErrorBars yy OFF
 	RenameWindow #,G0
 	SetActiveSubwindow ##
 
@@ -672,21 +673,21 @@ Function V_DecayTableHook(infoStr)
 	if (CmpStr(activeSubwindow,"V_DecayPanel#T0") != 0)
 		return 0
 	endif
-	
+
 	ControlInfo popup_0
 	Variable ii
 	WAVE/Z dw = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_" + S_Value)
-	
+
 	// the different column labels are:
 	//   	Trans_He_In?
   	//		Trans_He_Out?
   	//		Blocked?
   	// and each of these need a different set of files
   	// if the label doesn't match, present no popup
-  
+
   	Variable state
   	String intent,dimLbl,popList=""
-  	
+
 //	Print "EVENT= ",event
 	strswitch(event)
 		case "mouseup":
@@ -706,9 +707,9 @@ Function V_DecayTableHook(infoStr)
 				popList += V_ListForDecayPanel(state,intent)
 				intent = "Open Beam"
 				popList += V_ListForDecayPanel(state,intent)
-	
-				popList=SortList(popList)				
-				
+
+				popList=SortList(popList)
+
 				PopupContextualMenu "Paste All;"+popList
 
 				if(cmpstr(S_Selection,"Paste All")==0)
@@ -716,8 +717,8 @@ Function V_DecayTableHook(infoStr)
 					PutScrapText popList
 				else
 					PutScrapText S_Selection
-				endif	
-				
+				endif
+
 				DoIgorMenu "Edit", "Paste"
 
 			endif
@@ -730,7 +731,7 @@ Function V_DecayTableHook(infoStr)
 				popList += V_ListForDecayPanel(state,intent)
 				intent = "Open Beam"
 				popList += V_ListForDecayPanel(state,intent)
-				
+
 				popList=SortList(popList)
 
 				PopupContextualMenu "Paste All;"+popList
@@ -740,8 +741,8 @@ Function V_DecayTableHook(infoStr)
 					PutScrapText popList
 				else
 					PutScrapText S_Selection
-				endif	
-				
+				endif
+
 				DoIgorMenu "Edit", "Paste"
 
 			endif
@@ -754,7 +755,7 @@ Function V_DecayTableHook(infoStr)
 				popList += V_ListForDecayPanel(state,intent)
 				popList = SortList(popList)
 				PopupContextualMenu popList
-	
+
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"
 
@@ -789,30 +790,30 @@ Function V_ManualEnterDecayButton(ba) : ButtonControl
 
 			ControlInfo/W=V_DecayPanel popup_0
 			cellStr = S_Value
-				
+
 //			SetDataFolder root:Packages:NIST:Polarization:Cells:
-			
+
 			WAVE decay=$("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_"+cellStr)		//the one that is displayed
 //			WAVE calc=$("root:Packages:NIST:Polarization:Cells:DecayCalc_"+cellStr)		//with the results
 
 
-			Prompt Po, "Enter Po: "		
-			Prompt err_Po, "Enter err_Po: "		
-			Prompt muPo, "Enter muPo: "		
-			Prompt err_muPo, "Enter err_muPo: "		
-			Prompt gamma_val, "Enter gamma: "		
+			Prompt Po, "Enter Po: "
+			Prompt err_Po, "Enter err_Po: "
+			Prompt muPo, "Enter muPo: "
+			Prompt err_muPo, "Enter err_muPo: "
+			Prompt gamma_val, "Enter gamma: "
 			Prompt err_gamma, "Enter err_gamma: "
 			Prompt t0Str,"Enter the t=0 time DD-MMM-YYYY HH:MM:SS"
-//			Prompt runNum,"Run number for time=0 of decay"	
+//			Prompt runNum,"Run number for time=0 of decay"
 			DoPrompt "Enter Cell Decay Parameters", Po, err_Po, muPo, err_muPo, gamma_val, err_gamma, t0Str
 			if (V_Flag)
 				return -1								// User canceled
 			endif
-	
-	// enter the time as a string now, rather than from a run number		
+
+	// enter the time as a string now, rather than from a run number
 //			fname = FindFileFromRunNumber(runNum)
 //			t0str = getFileCreationDate(fname)
-					
+
 //		for the wave note
 			noteStr = note(decay)
 			noteStr = ReplaceNumberByKey("muP", noteStr, MuPo ,"=", ",", 0)
@@ -829,15 +830,15 @@ Function V_ManualEnterDecayButton(ba) : ButtonControl
 			// for the panel display
 			SVAR gGamma  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gGamma
 			SVAR gMuPo = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gMuPo
-			SVAR gPo  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gPo		
+			SVAR gPo  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gPo
 			SVAR gT0 = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gT0
-			
+
 			gT0 = t0Str		//for display
 			sprintf gMuPo, "%g +/- %g",muPo, err_muPo
 			sprintf gPo, "%g +/- %g",Po,err_Po
 			sprintf gGamma, "%g +/- %g",gamma_val,err_gamma
 
-			
+
 			break
 		case -1: // control being killed
 			break
@@ -860,7 +861,7 @@ Function V_DecayPanelPopMenuProc(pa) : PopupMenuControl
 		case 2: // mouse up
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
-			
+
 			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
 
 			// based on the selected string, display the right set of inputs
@@ -873,7 +874,7 @@ Function V_DecayPanelPopMenuProc(pa) : PopupMenuControl
 				// if not, make it, and the space for the results of the calculation
 				V_MakeDecayResultWaves(popStr)
 				WAVE decay = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_"+popStr)
-			endif			
+			endif
 			// append matrix, clearing the old one first
 			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
 
@@ -883,11 +884,11 @@ Function V_DecayPanelPopMenuProc(pa) : PopupMenuControl
 			AppendtoTable/W=V_DecayPanel#T0 decay.ld			//show the labels
 			ModifyTable width(Point)=0
 			ModifyTable width(decay.l)=20
-			
+
 			SetActiveSubwindow ##
-	
+
 			SetDataFolder root:
-			
+
 			//
 			// now show the fit results, if any, from the wave note
 			//
@@ -896,15 +897,15 @@ Function V_DecayPanelPopMenuProc(pa) : PopupMenuControl
 			SVAR gGamma  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gGamma
 			SVAR gT0  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gT0
 			String nStr=note(decay)
-			
+
 
 			// for the panel display
 			sprintf gMuPo, "%g +/- %g",NumberByKey("muP", nStr, "=",","),NumberByKey("err_muP", nStr, "=",",")
 			sprintf gPo, "%g +/- %g",NumberByKey("P0", nStr, "=",","),NumberByKey("err_P0", nStr, "=",",")
 			sprintf gGamma, "%g +/- %g",NumberByKey("gamma", nStr, "=",","),NumberByKey("err_gamma", nStr, "=",",")
 			gT0 = StringByKey("T0", nStr, "=",",")
-		
-			
+
+
 			// clear the graph - force the user to update it manually
 			// clear old data, and plot the new
 			//
@@ -921,12 +922,12 @@ Function V_DecayPanelPopMenuProc(pa) : PopupMenuControl
 			if(V_flag & 2^2)
 				RemoveFromGraph/W=V_DecayPanel#G0 fit_tmp_muP
 			endif
-			
+
 			// kill the text box (name is hard-wired)
 			TextBox/W=V_DecayPanel#G0/K/N=CF_tmp_muP
-			
+
 			setDataFolder root:
-			
+
 			break
 		case -1: // control being killed
 			break
@@ -953,10 +954,10 @@ Function V_MakeDecayResultWaves(popStr)
 	SetDimLabel 1,7,'Include?',decay			//for a mask wave, non-zero is used in the fit
 	SetDimLabel 1,8,elapsed_hr,decay
 	decay[0][7] = 1			//default to include the point
-	
+
 	// generate the dummy wave note now, change as needed
 	Note decay, "muP=0,err_muP=0,P0=0,err_P0=0,T0=undefined,gamma=0,err_gamma=0,"
-	
+
 	// to hold the results of the calculation
 	Make/O/D/N=(1,14) $("DecayCalc_"+popStr)
 	WAVE decayCalc = $("DecayCalc_"+popStr)
@@ -973,7 +974,7 @@ Function V_MakeDecayResultWaves(popStr)
 	SetDimLabel 1,10,Tmaj,decayCalc
 	SetDimLabel 1,11,err_Tmaj,decayCalc
 	SetDimLabel 1,12,gamm,decayCalc
-	SetDimLabel 1,13,err_gamm,decayCalc	
+	SetDimLabel 1,13,err_gamm,decayCalc
 
 	SetDataFolder root:
 
@@ -998,21 +999,21 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 			Variable cr1,cr2,cr3,err_cr1,err_cr2,err_cr3
 			Variable muPo,err_muPo,Po,err_Po,Pcell,err_Pcell,Tmaj,err_Tmaj
 			//Variable Te,err_Te,mu,err_mu
-			
+
 			SVAR gDetStr = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
 			if(strlen(gDetStr) !=2)
 				Abort "The panel string has not been set"
 			endif
-			
+
 			ControlInfo/W=V_DecayPanel popup_0
 			cellStr = S_Value
 			WAVE w=$("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_"+cellStr)		//the one that is displayed
 			WAVE calc=$("root:Packages:NIST:VSANS:Globals:Polarization:Cells:DecayCalc_"+cellStr)		// behind the scenes
-			
+
 			Variable numRows,ncalc,diff
 			numRows = DimSize(w,0)		//rows in the displayed table
 			ncalc = DimSize(calc,0)
-			
+
 			// add rows to the DecayCalc_ matrix as needed
 			if(numRows != ncalc)
 				if(ncalc > numRows)
@@ -1024,8 +1025,8 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 					InsertPoints/M=0 ncalc, diff, calc
 				endif
 			endif
-			
-			
+
+
 //			GetSelection table, DecayPanel#T0, 1
 //			selRow = V_startRow
 
@@ -1034,10 +1035,10 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 			sum_Po = 0
 			err_avg_muP = 0
 			err_avg_Po = 0
-			
+
 			ControlInfo/W=V_DecayPanel check0
 			overrideT0 = V_Value
-			
+
 			for(selRow=0;selRow<numRows;selRow+=1)
 				Print "calculate the row ",selRow
 
@@ -1053,7 +1054,7 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 					Note w, noteStr
 					Print t0str
 				else
-					// manually entered on the panel to override the 
+					// manually entered on the panel to override the
 					SVAR gT0 = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gT0
 					t0Str = gT0
 					noteStr = note(w)
@@ -1062,16 +1063,16 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 					Note w, noteStr
 					Print t0str
 				endif
-				
+
 				// parse the rows, report errors (there, not here), exit if any found
 				err = V_ParseDecayRow(w,selRow)
 				if(err)
 					return 0
 				endif
-				
+
 				// do the calculations:
 				// 1 for each file, return the count rate and err_CR (normalize to atten or not)
-	
+
 				cr1 = V_TotalCR_FromRun(w[selRow][%'Trans_He_In?'],err_cr1,0)
 				cr2 = V_TotalCR_FromRun(w[selRow][%'Trans_He_Out?'],err_cr2,0)
 //				cr3 = TotalCR_FromRun(w[selRow][%'Blocked?'],err_cr3,1)			//blocked beam is NOT normalized to zero attenuators
@@ -1086,45 +1087,45 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 				calc[selRow][%err_cr_Trans_He_In] = err_cr1
 				calc[selRow][%err_cr_Trans_He_Out] = err_cr2
 				calc[selRow][%err_cr_Blocked] = err_cr3
-	
-	
+
+
 				// 2 find the mu and Te values for cellStr
 				SVAR gCellKW = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:gCell_"+cellStr)
 
-	//			
+	//
 				// 3 Calc muPo and error
 				muPo = V_Calc_muPo(calc,gCellKW,selRow,err_muPo)
 				calc[selRow][%muPo] = muPo
 				calc[selRow][%err_muPo] = err_muPo
 				w[selRow][%mu_star] = muPo
-				
+
 				// 3.5 calc Polarization of cell (no value or error stored in calc wave?)
 				PCell = V_Calc_PCell(muPo,err_muPo,err_PCell)
 				w[selRow][%Effective_Pol] = PCell
-	
+
 				// 4 calc Po and error
 				Po = V_Calc_Po(gCellKW,muPo,err_muPo,err_Po)
 				calc[selRow][%Po] = Po
 				calc[selRow][%err_Po] = err_Po
 				w[selRow][%Atomic_Pol] = Po		//for display
-				
+
 				// 5 calc Tmaj and error
 				Tmaj = V_Calc_Tmaj(gCellKW,Po,err_Po,err_Tmaj)
 				calc[selRow][%Tmaj] = Tmaj
 				calc[selRow][%err_Tmaj] = err_Tmaj
 				w[selRow][%T_major] = Tmaj
-				
+
 				// elapsed hours
 				fname = V_FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
 				t1str = V_getDataStartTime(fname)		//
 				w[selRow][%elapsed_hr] = V_ElapsedHours(t0Str,t1Str)
-				
+
 				// running average of muP and Po
 				sum_muP += muPo
 				sum_Po += Po
 				err_avg_muP += err_muPo^2
 				err_avg_Po += err_Po^2
-				
+
 			endfor		//loop over rows
 
 
@@ -1135,13 +1136,13 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 //			avg_Po = sum_Po/numRows
 //			err_avg_muP = sqrt(err_avg_muP) / numRows
 //			err_avg_Po = sqrt(err_avg_Po) / numRows
-//	
+//
 //
 //			Printf "Average muP = %g +/- %g (%g %%)\r",avg_muP,err_avg_muP,err_avg_muP/avg_muP*100
 //			Printf "Average Po = %g +/- %g (%g %%)\r",avg_Po,err_avg_Po,err_avg_Po/avg_Po*100
-//			
+//
 //		E  26 APR 12
-		
+
 //			str = "muP=2,err_muP=0,P0=0.6,err_P0=0,T0=asdf,gamma=200,err_gamma=0,"
 
 			// Don't put the average values into the wave note, but rather the results of the fit
@@ -1150,20 +1151,20 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 //			noteStr = ReplaceNumberByKey("P0", noteStr, avg_Po ,"=", ",", 0)
 //			noteStr = ReplaceNumberByKey("err_muP", noteStr, err_avg_muP ,"=", ",", 0)
 //			noteStr = ReplaceNumberByKey("err_P0", noteStr, err_avg_Po ,"=", ",", 0)
-//			
+//
 //			// replace the string
 //			Note/K w
 //			Note w, noteStr
-					
 
-			
+
+
 			//update the global values for display (not these, but after the fit)
 //			Print " -- need to add the error to the display on the panel	"
 //			NVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
 //			NVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
 //			gMuPo = avg_muP
 //			gPo = avg_Po
-			
+
 			break
 		case -1: // control being killed
 			break
@@ -1177,24 +1178,24 @@ End
 Function V_Calc_Tmaj(cellStr,Po,err_Po,err_Tmaj)
 	String cellStr
 	Variable Po,err_Po,&err_Tmaj
-	
+
 	Variable Tmaj,arg
 	Variable Te,err_Te,mu,err_mu
-// cell constants	
+// cell constants
 	Te = NumberByKey("Te", cellStr, "=", ",", 0)
 	err_Te = NumberByKey("err_Te", cellStr, "=", ",", 0)
 	mu = NumberByKey("mu", cellStr, "=", ",", 0)
 	err_mu = NumberByKey("err_mu", cellStr, "=", ",", 0)
-	
+
 	Tmaj = Te*exp(-mu*(1-Po))
-	
+
 	//the error
 	err_Tmaj = (Tmaj/Te)^2*err_Te^2 + (Tmaj*(1-Po))^2*err_mu^2 + (Tmaj*mu)^2*err_Po^2
 	err_Tmaj = sqrt(err_Tmaj)
-	
+
 	Printf "Tmaj = %g +/- %g (%g %%)\r",Tmaj,err_Tmaj,err_Tmaj/Tmaj*100
 
-	
+
 	return(Tmaj)
 End
 
@@ -1203,24 +1204,24 @@ End
 Function V_Calc_Tmin(cellStr,Po,err_Po,err_Tmin)
 	String cellStr
 	Variable Po,err_Po,&err_Tmin
-	
+
 	Variable Tmin,arg
 	Variable Te,err_Te,mu,err_mu
-// cell constants	
+// cell constants
 	Te = NumberByKey("Te", cellStr, "=", ",", 0)
 	err_Te = NumberByKey("err_Te", cellStr, "=", ",", 0)
 	mu = NumberByKey("mu", cellStr, "=", ",", 0)
 	err_mu = NumberByKey("err_mu", cellStr, "=", ",", 0)
-	
+
 	Tmin = Te*exp(-mu*(1+Po))
-	
+
 	//the error
 	err_Tmin = (Tmin/Te)^2*err_Te^2 + (Tmin*(1+Po))^2*err_mu^2 + (Tmin*mu)^2*err_Po^2
 	err_Tmin = sqrt(err_Tmin)
-	
+
 	Printf "Tmin = %g +/- %g (%g %%)\r",Tmin,err_Tmin,err_Tmin/Tmin*100
 
-	
+
 	return(Tmin)
 End
 
@@ -1228,17 +1229,17 @@ End
 
 // calculate PCell and its error
 //
-// 
+//
 Function V_Calc_PCell(muPo,err_muPo,err_PCell)
 	Variable muPo,err_muPo,&err_PCell
-	
+
 	Variable PCell,arg
 
 	PCell = tanh(muPo)
-	
+
 	// error (single term, sqrt already done)
 	err_Pcell = (1 - (tanh(muPo))^2) * err_muPo
-	
+
 	Printf "Pcell = %g +/- %g (%g %%)\r",Pcell,err_Pcell,err_Pcell/PCell*100
 
 	return(PCell)
@@ -1248,20 +1249,20 @@ End
 Function V_Calc_Po(cellStr,muPo,err_muPo,err_Po)
 	String cellStr
 	Variable muPo,err_muPo,&err_Po
-	
+
 	Variable Po,tmp
 	Variable mu,err_mu
-// cell constants	
+// cell constants
 	mu = NumberByKey("mu", cellStr, "=", ",", 0)
 	err_mu = NumberByKey("err_mu", cellStr, "=", ",", 0)
-	
+
 	Po = muPo/mu
-	
+
 	tmp = (err_muPo/muPo)^2 + (err_mu/mu)^2
 	err_Po = Po * sqrt(tmp)
 //	tmp = 1/mu^2*err_muPo^2 + muPo^2/mu^4*err_mu^2
 //	err_Po = sqrt(tmp)
-	
+
 	Printf "Po = %g +/- %g (%g %%)\r",Po,err_Po,err_Po/Po*100
 	return(Po)
 End
@@ -1271,15 +1272,15 @@ Function V_Calc_muPo(calc,cellStr,selRow,err_muPo)
 	Wave calc
 	String cellStr
 	Variable selRow,&err_muPo
-	
+
 	Variable muPo,arg
 	Variable Te,err_Te,mu,err_mu
-// cell constants	
+// cell constants
 	Te = NumberByKey("Te", cellStr, "=", ",", 0)
 	err_Te = NumberByKey("err_Te", cellStr, "=", ",", 0)
 	mu = NumberByKey("mu", cellStr, "=", ",", 0)
 	err_mu = NumberByKey("err_mu", cellStr, "=", ",", 0)
-	
+
 	Variable cr1,cr2,cr3,err_cr1,err_cr2,err_cr3
 	// cr1 is He in, 2 is He out, 3 is blocked
 	cr1	 =	calc[selRow][%CR_Trans_He_In]
@@ -1288,25 +1289,25 @@ Function V_Calc_muPo(calc,cellStr,selRow,err_muPo)
 	err_cr1 =	calc[selRow][%err_cr_Trans_He_In]
 	err_cr2 =	calc[selRow][%err_cr_Trans_He_Out]
 	err_cr3 =	calc[selRow][%err_cr_Blocked]
-	
+
 	muPo = acosh( (cr1 - cr3)/(cr2 - cr3) * (1/(Te*exp(-mu))) )
-	
+
 	Variable arg_err, tmp1, tmp2
 	// the error is a big mess to calculate, since it's messy argument inside acosh
 	arg = (cr1 - cr3)/(cr2 - cr3) * (1/(Te*exp(-mu)))
 	tmp2 =  (1/sqrt(arg+1)/sqrt(arg-1))^2					// derivative of acosh(arg) (squared)
-	
+
 	// calculate the error of the argument first, then the error of acosh(arg)
 	// there are 5 partial derivatives
 	arg_err = tmp2 * ( arg/(cr1 - cr3) * err_cr1 )^2		//CR in
 	arg_err += tmp2 * ( arg/(cr2 - cr3) * err_cr2 )^2	//CR out
-	arg_err += tmp2 * ((-arg/(cr1 - cr3) +  arg/(cr2 - cr3) )* err_cr3 )^2//CR bkg 
+	arg_err += tmp2 * ((-arg/(cr1 - cr3) +  arg/(cr2 - cr3) )* err_cr3 )^2//CR bkg
 	arg_err += tmp2 * ( -arg/Te * err_Te )^2					//Te
 	arg_err += tmp2 * ( arg * err_mu )^2						//mu  (probably the dominant relative error)
-	
+
 	err_muPo = sqrt(arg_err)
-	
-	
+
+
 	return(muPo)
 End
 
@@ -1314,10 +1315,10 @@ End
 Function V_testCR(num)
 	Variable num
 	Variable err_cr
-	
+
 	Variable noNorm=0
 	Variable cr = V_TotalCR_FromRun(num,err_cr,noNorm)
-	printf "CR = %g +/- %g (%g %%)\r",cr,err_cr,err_cr/cr*100	
+	printf "CR = %g +/- %g (%g %%)\r",cr,err_cr,err_cr/cr*100
 	return(0)
 End
 
@@ -1344,27 +1345,27 @@ Function V_TotalCR_FromRun(num,err_cr,noNorm)
 
 	SVAR gDetStr = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
 
-	
+
 	fname = V_FindFileFromRunNumber(num)
 	cts = V_getDet_IntegratedCount(fname,gDetStr)		// corrected jun 2020
 	err_cts = sqrt(cts)
-	
-	ctTime = V_getCount_time(fname)		
+
+	ctTime = V_getCount_time(fname)
 	monCts = V_getBeamMonNormData(fname)		//
 //	attenNo = V_getAttenNumber(fname)
 //	instr = V_getAcctName(fname)		//this is 11 characters
 //	lambda = V_getWavelength(fname)
-	attenTrans = V_getAttenuator_transmission(fname)		//	
+	attenTrans = V_getAttenuator_transmission(fname)		//
 	if(noNorm==1)			//don't normalize to attenuation
 		attenTrans=1
 		atten_err=0
 	endif
 	cr = cts/ctTime*1e8/monCts/attenTrans
 	err_cr = cr * sqrt(err_cts^2/cts^2 + atten_err^2/attenTrans^2)
-	
-	printf "CR = %g +/- %g (%g %%)\r",cr,err_cr,err_cr/cr*100	
 
-		
+	printf "CR = %g +/- %g (%g %%)\r",cr,err_cr,err_cr/cr*100
+
+
 	return(cr)
 end
 
@@ -1373,19 +1374,19 @@ end
 //
 Function V_ElapsedHours(t0Str,t1Str)
 	String t0Str,t1Str
-	
+
 	Variable t0,t1,elapsed
 
 
 //
 //	DoAlert 0,"Need to convert times to hours"
-	
+
 	t0 = V_ISO8601_to_IgorTime(t0Str)		//values returned in seconds
 	t1 = V_ISO8601_to_IgorTime(t1Str)
 
 	elapsed = t1-t0
 	elapsed /= 3600			//convert to hours
-	
+
 	return(elapsed)
 End
 
@@ -1400,7 +1401,7 @@ Function V_ShowCalcRowButton(ba) : ButtonControl
 			String cellStr = S_Value
 			WAVE calc=$("root:Packages:NIST:VSANS:Globals:Polarization:Cells:DecayCalc_"+cellStr)		//the one that is displayed
 			edit calc.ld
-						
+
 			break
 		case -1: // control being killed
 			break
@@ -1415,7 +1416,7 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 
 	String cellStr=""
 	Variable num,plot_P
-	
+
 	plot_P = 1		//plot_Pol as Y, or muP if this == 0
 
 	switch( ba.eventCode )
@@ -1424,23 +1425,23 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 
 			ControlInfo/W=V_DecayPanel popup_0
 			cellStr = S_Value
-			
+
 			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells:
-			
+
 			WAVE decay=$("Decay_"+cellStr)		//the one that is displayed
 			WAVE calc=$("DecayCalc_"+cellStr)		//the one that is displayed
-			
+
 //			make temp copies for the fit and plot, extra for mask
 			num = DimSize(calc,0)
 			Make/O/D/N=(num)		tmp_Mask,tmp_hr,tmp_Y,tmp_err_Y,tmp_Y2
-			
+
 			tmp_Mask = decay[p][%'Include?']
 			tmp_hr = decay[p][%elapsed_hr]
-			
+
 			if(plot_P == 1)
 				tmp_Y = calc[p][%Po]
 				tmp_Y2 = tmp_Y
-				tmp_err_Y = calc[p][%err_Po]			
+				tmp_err_Y = calc[p][%err_Po]
 			else		//plot muP as the y-axis
 				tmp_Y = calc[p][%muPo]
 				tmp_Y2 = tmp_Y
@@ -1448,7 +1449,7 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 			endif
 
 			tmp_Y2 = (tmp_Mask == 1) ? NaN : tmp_Y2			//only excluded points will plot
-			
+
 
 
 
@@ -1465,7 +1466,7 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 			if(V_flag & 2^2)
 				RemoveFromGraph/W=V_DecayPanel#G0 fit_tmp_Y
 			endif
-			
+
 			AppendToGraph/W=V_DecayPanel#G0 tmp_Y vs tmp_hr
 			AppendToGraph/W=V_DecayPanel#G0 tmp_Y2 vs tmp_hr
 
@@ -1481,9 +1482,9 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 				Label/W=V_DecayPanel#G0 left "Atomic Polarization, P"
 			else
 				Label/W=V_DecayPanel#G0 left "mu*P"
-			endif			
+			endif
 			Label/W=V_DecayPanel#G0 bottom "time (h)"
-			
+
 // do the fit
 //	 as long as the constant X0 doesn't stray from zero, exp_XOffset is OK, otherwise I'll need to switch to the exp function
 // -- use the /K={0} flag to set the constant to zero
@@ -1498,11 +1499,11 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 
 //			Make/O/D/N=3 fitCoef={0,5,0.05}
 //			CurveFit/H="100"/M=2/W=0/TBOX=(0x310) exp, kwCWave=fitCoef, tmp_Y /X=tmp_hr /D /I=1 /W=tmp_err_Y /M=tmp_Mask
-			
+
 
 			SetActiveSubwindow ##
-			
-			
+
+
 // then report and save the results
 //			the exp function => y = y0 + A*exp(-Bx)
 //			W_coef[0] = y0 should be close to zero (or fixed at zero)
@@ -1512,8 +1513,8 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 			WAVE W_sigma=W_sigma
 			Variable gamma_val,err_gamma,muPo, err_muPo, Po, err_Po
 			String noteStr=""
-	
-			SVAR gCellKW = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:gCell_"+cellStr)	
+
+			SVAR gCellKW = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:gCell_"+cellStr)
 			SVAR gGamma  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gGamma
 			SVAR gMuPo = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gMuPo
 			SVAR gPo  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gPo
@@ -1524,19 +1525,19 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 				Po = fitCoef[1]
 				err_Po = W_sigma[1]
 			// calc muPo inline here, since the Calc_muP function uses a different method
-			// cell constants	
+			// cell constants
 				mu = NumberByKey("mu", gCellKW, "=", ",", 0)
 				err_mu = NumberByKey("err_mu", gCellKW, "=", ",", 0)
-				
+
 				muPo = Po*mu
 				err_muPo = muPo*sqrt( (err_Po/Po)^2 + (err_mu/mu)^2 )
 			else
 				muPo = fitCoef[1]
 				err_muPo = W_sigma[1]
-				
+
 				Po = V_Calc_Po(gCellKW,muPo,err_muPo,err_Po)
 			endif
-			
+
 
 
 			// if exp_XOffset used
@@ -1546,8 +1547,8 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 			// calculating the error using exp is the inverse of coef[2]:
 //			gamma_val  = 1/fitCoef[2]
 //			err_gamma = W_sigma[2]/(fitCoef[2])^2
-		
-			
+
+
 //		for the wave note
 			noteStr = note(decay)
 			noteStr = ReplaceNumberByKey("muP", noteStr, MuPo ,"=", ",", 0)
@@ -1560,17 +1561,17 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 			// replace the string
 			Note/K decay
 			Note decay, noteStr
-			
-			
+
+
 			// for the panel display
 			sprintf gMuPo, "%g +/- %g",muPo,err_muPo
 			sprintf gPo, "%g +/- %g",Po,err_Po
 			sprintf gGamma, "%g +/- %g",gamma_val,err_gamma
 
-			
-			
+
+
 			SetDataFolder root:
-			
+
 			break
 		case -1: // control being killed
 			break
@@ -1587,7 +1588,7 @@ Function V_ClearDecayWavesRowButton(ba) : ButtonControl
 
 	String popStr=""
 	Variable selRow
-	
+
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
@@ -1595,22 +1596,22 @@ Function V_ClearDecayWavesRowButton(ba) : ButtonControl
 			if(V_flag !=1)
 				return(0)
 			endif
-			
+
 			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
 
 			ControlInfo/W=V_DecayPanel popup_0
 			popStr = S_Value
-			
+
 			Wave decay = $("Decay_"+popStr)
 			Wave calc = $("DecayCalc_"+popStr)
 
 			// Delete just those points
-						
+
 			GetSelection table, V_DecayPanel#T0, 1
 			selRow = V_startRow
-			DeletePoints selRow,1,decay,calc			
-			
-			// clear the graph and the results			
+			DeletePoints selRow,1,decay,calc
+
+			// clear the graph and the results
 			SVAR gMuPo = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gMuPo
 			SVAR gPo  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gPo
 			SVAR gGamma  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gGamma
@@ -1619,7 +1620,7 @@ Function V_ClearDecayWavesRowButton(ba) : ButtonControl
 			gPo = "0"
 			gGamma = "0"
 			gT0 = "recalculate"
-			
+
 			SetDataFolder root:
 			break
 		case -1: // control being killed
@@ -1638,7 +1639,7 @@ Function V_ClearDecayWavesButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	String popStr=""
-	
+
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
@@ -1646,25 +1647,25 @@ Function V_ClearDecayWavesButton(ba) : ButtonControl
 			if(V_flag !=1)
 				return(0)
 			endif
-			
+
 			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
 
 			ControlInfo/W=V_DecayPanel popup_0
 			popStr = S_Value
-			
+
 			Wave decay = $("Decay_"+popStr)
 			Wave calc = $("DecayCalc_"+popStr)
-			
+
 //			re-initialize the decay waves, so it appears as a blank, initialized table
 
 			V_MakeDecayResultWaves(popStr)
 			decay = 0
 			calc = 0
-	
-			// clear the graph and the results?	
-			
-			
-					
+
+			// clear the graph and the results?
+
+
+
 			SVAR gMuPo = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gMuPo
 			SVAR gPo  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gPo
 			SVAR gGamma  = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gGamma
@@ -1673,8 +1674,8 @@ Function V_ClearDecayWavesButton(ba) : ButtonControl
 			gPo = "0"
 			gGamma = "0"
 			gT0 = "recalculate"
-			
-			
+
+
 			SetDataFolder root:
 			break
 		case -1: // control being killed
@@ -1751,7 +1752,7 @@ Function V_RestoreDecayPanelButton(ba) : ButtonControl
 	return 0
 End
 
-// null condition is not right. if the loop fails, then the 
+// null condition is not right. if the loop fails, then the
 // retStr will be ";;;;", not zero length. What's the proper test?
 // Does it matter? the list of default gCell_sss should already be there.
 //
@@ -1759,26 +1760,26 @@ Function/S V_D_CellNameList()
 
 	String retStr="",listStr,item
 	Variable num,ii
-	
+
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
 
 	// get a list of the cell strings
 	listStr=StringList("gCell_*",";")
 	num=ItemsInList(listStr,";")
 //	print listStr
-	
+
 	// parse the strings to fill the table
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, listStr,";")
 		SVAR gStr = $item
 		retStr += StringByKey("cell", gStr, "=", ",", 0) + ";"
 	endfor
-	
+
 	if(strlen(retStr) == 0)
 		retStr = "no cells defined;"
 	endif
-	
-	SetDataFolder root:		
+
+	SetDataFolder root:
 	return(retStr)
 End
 
@@ -1794,12 +1795,12 @@ End
 Function V_ParseDecayRow(w,selRow)
 	Wave w
 	Variable selRow
-	
+
 	Variable err=0, atten1,atten2,atten3,sdd1,sdd2,sdd3,tol
 	String fname=""
 	tol = 0.01		//SDDs within 1%
-	
-		
+
+
 	// are all file numbers valid?
 	fname = V_FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
 	if(cmpstr(fname,"")==0)
@@ -1809,36 +1810,36 @@ Function V_ParseDecayRow(w,selRow)
 		atten1 = V_getAtten_number(fname)		// OK
 		sdd1 = V_getDet_ActualDistance(fname,"FL")		//
 	endif
-	
+
 	fname = V_FindFileFromRunNumber(w[selRow][%'Trans_He_Out?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"Trans_He_Out run "+num2str(w[selRow][%'Trans_He_Out?'])+" is not a valid run number"
 		err = 1
 	else
-		atten2 = V_getAtten_number(fname)		
-		sdd2 = V_getDet_ActualDistance(fname,"FL")		
+		atten2 = V_getAtten_number(fname)
+		sdd2 = V_getDet_ActualDistance(fname,"FL")
 	endif
-	
+
 	fname = V_FindFileFromRunNumber(w[selRow][%'Blocked?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"Blocked run "+num2str(w[selRow][%'Blocked?'])+" is not a valid run number"
 		err = 1
 	else
-		atten3 = V_getAtten_number(fname)		
-		sdd3 = V_getDet_ActualDistance(fname,"FL")	
+		atten3 = V_getAtten_number(fname)
+		sdd3 = V_getDet_ActualDistance(fname,"FL")
 	endif
-	
-	
+
+
 	if( (abs(sdd1 - sdd2) > tol) || (abs(sdd2 - sdd3) > tol) || (abs(sdd1 - sdd3) > tol) )
 		DoAlert 0,"Files in row "+num2str(selRow)+" are not all at the same detector distance"
 		err = 1
 	endif
-	
+
 	if( (atten1 != atten2) || (atten2 != atten3) || (atten1 != atten3) )
 		DoAlert 0,"Files in row "+num2str(selRow)+" are not all collected with the same attenuation. Just so you know."
 		err = 0
 	endif
-	
+
 	return(err)
 end
 
@@ -1852,7 +1853,7 @@ end
 //
 
 Proc V_ShowFlippingRatioPanel()
-	
+
 	// init folders
 	// ASK before initializing cell constants
 	// open the panel
@@ -1865,7 +1866,7 @@ end
 
 Proc V_FlippingRatioPanel()
 	Variable sc=1
-	
+
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 		sc = 0.7
 	endif
@@ -1896,36 +1897,36 @@ Function V_CalcFlippingRatioButtonProc(ba) : ButtonControl
 	Variable num0,num1,num2,cr0,cr1,cr2,err_cr0,err_cr1,err_cr2
 	Variable tmp0,tmp1,tmp2,flip,flip_err
 	String str=""
-	
+
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			
+
 			ControlInfo setvar0
 			num0 = V_Value
 			ControlInfo setvar1
 			num1 = V_Value
 			ControlInfo setvar2
 			num2 = V_Value
-			
+
 			cr0 = V_TotalCR_FromRun(num0,err_cr0,0)		//last zero means yes, normalize everything to zero atten
 			cr1 = V_TotalCR_FromRun(num1,err_cr1,0)
 			cr2 = V_TotalCR_FromRun(num2,err_cr2,0)		// this one is the blocked beam
-			
-			
+
+
 			flip = (cr0-cr2)/(cr1-cr2)
 			tmp0 = 1/(cr1-cr2)
 			tmp1 = -1*flip/(cr1-cr2)
 			tmp2 = flip/(cr1-cr2) - 1/(cr1-cr2)
 			flip_err = tmp0^2*err_cr0^2 + tmp1^2*err_cr1^2 +tmp2^2*err_cr2^2
 			flip_err = sqrt(flip_err)
-			
-			
-			
+
+
+
 			Printf "Flipping ratio = %g +/- %g (%g %%)\r",flip,flip_err,flip_err/flip*100
 			str = num2str(flip)+" +/- "+num2str(flip_err)
 			SetVariable setvar3,value=_STR:str
-			
+
 			break
 		case -1: // control being killed
 			break
