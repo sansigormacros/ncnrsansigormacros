@@ -1,13 +1,16 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtFunctionErrors=1
+#pragma TextEncoding="UTF-8"
+#pragma rtGlobals=3 // Use modern global access method and strict wave access.
 #pragma version=5.2
 #pragma IgorVersion=6.1
 
-// to properly set up the template for other facility reduction templates, 
+// to properly set up the template for other facility reduction templates,
 // function NCNR() must exist here in the Includes file.
 //
 Function NCNR_Nexus()
+
 	//does nothing but define NCNR()
-	return(0)
+	return (0)
 End
 
 Menu "NEXUS Ordela SANS MODE"
@@ -19,9 +22,5 @@ End
 // -- for the 10m instrument, ksDetType = "Tubes"
 StrConstant ksDetType = "Ordela"
 
-
-
 #include "NCNR_Includes_Nexus"
-
-
 

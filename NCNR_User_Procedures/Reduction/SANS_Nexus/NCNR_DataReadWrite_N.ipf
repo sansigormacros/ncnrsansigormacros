@@ -1,6 +1,8 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma TextEncoding = "UTF-8"
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=5.0
 #pragma IgorVersion=6.1
+
 
 //**************************
 //
@@ -47,7 +49,7 @@ Function LoadRawSANSData(msgStr)
 ///***** done by a call to UpdateDisplayInformation()
 //	//the calling macro must change the display type
 //	String/G root:myGlobals:gDataDisplayType="RAW"		//displayed data type is raw
-//	
+//
 //	//data is displayed here
 //	fRawWindowHook()
 
@@ -64,7 +66,7 @@ End
 //neutron counts and can be directly operated on
 //
 // header information is put into three waves: integersRead, realsRead, and textRead
-// logicals in the header are currently skipped, since they are no use in the 
+// logicals in the header are currently skipped, since they are no use in the
 // data reduction process.
 //
 // The output is the three R/T/I waves that are filled at least with minimal values
@@ -82,26 +84,26 @@ Function ReadHeaderAndData(fname)
 	String curPath = "root:Packages:NIST:RAW:"
 	SetDataFolder curPath		//use the full path, so it will always work
 	Variable/G root:Packages:NIST:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
-	
+
 	Variable refNum,integer,realval
 	String sansfname,textstr
-	
+
 	Make/O/D/N=23 $"root:Packages:NIST:RAW:IntegersRead"
 	Make/O/D/N=52 $"root:Packages:NIST:RAW:RealsRead"
 	Make/O/T/N=11 $"root:Packages:NIST:RAW:TextRead"
 	Make/O/N=7 $"root:Packages:NIST:RAW:LogicalsRead"
-	
+
 	Wave intw=$"root:Packages:NIST:RAW:IntegersRead"
 	Wave realw=$"root:Packages:NIST:RAW:RealsRead"
 	Wave/T textw=$"root:Packages:NIST:RAW:TextRead"
 	Wave logw=$"root:Packages:NIST:RAW:LogicalsRead"
-	
+
 	//***NOTE ****
 	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
 	// this read routine, after the open dialog is presented
 	// the "--read" waves end up in the correct folder, but the data does not! Why?
 	//must re-set data folder before writing data array (done below)
-	
+
 	//full filename and path is now passed in...
 	//actually open the file
 	Open/R refNum as fname
@@ -136,7 +138,7 @@ Function ReadHeaderAndData(fname)
 	textw[5]= textstr
 	FReadLine/N=60 refNum,textstr
 	textw[6]= textstr
-	
+
 	//3 integers
 	FSetPos refNum,174
 	FBinRead/F=3/B=3 refNum, integer
@@ -145,7 +147,7 @@ Function ReadHeaderAndData(fname)
 	intw[5] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[6] = integer
-	
+
 	//2 integers, 3 text fields
 	FSetPos refNum,194
 	FBinRead/F=3/B=3 refNum, integer
@@ -158,29 +160,29 @@ Function ReadHeaderAndData(fname)
 	textw[8]= textstr
 	FReadLine/N=6 refNum,textstr
 	textw[9]= textstr
-	
+
 	//2 integers
 	FSetPos refNum,244
 	FBinRead/F=3/B=3 refNum, integer
 	intw[9] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[10] = integer
-	
-	
+
+
 	//2 integers
 	FSetPos refNum,308
 	FBinRead/F=3/B=3 refNum, integer
 	intw[11] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[12] = integer
-	
+
 	//2 integers
 	FSetPos refNum,332
 	FBinRead/F=3/B=3 refNum, integer
 	intw[13] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[14] = integer
-	
+
 	//3 integers
 	FSetPos refNum,376
 	FBinRead/F=3/B=3 refNum, integer
@@ -189,17 +191,17 @@ Function ReadHeaderAndData(fname)
 	intw[16] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[17] = integer
-	
+
 	//1 text field - the file association for transmission are the first 4 bytes
 	FSetPos refNum,404
 	FReadLine/N=42 refNum,textstr
 	textw[10]= textstr
-	
+
 	//1 integer
 	FSetPos refNum,458
 	FBinRead/F=3/B=3 refNum, integer
 	intw[18] = integer
-	
+
 	//4 integers
 	FSetPos refNum,478
 	FBinRead/F=3/B=3 refNum, integer
@@ -211,20 +213,20 @@ Function ReadHeaderAndData(fname)
 	FBinRead/F=3/B=3 refNum, integer
 	intw[22] = integer
 
-	//Get Logicals	
+	//Get Logicals
 	//Read logicals as int - ICE is writing integers here
 	FSetPos refNum,304
 	FBinRead/F=3/B=3 refNum, integer
 	logw[0] = integer
 	FSetPos refNum,316
 	FBinRead/F=3/B=3 refNum, integer
-	logw[1] = integer	
+	logw[1] = integer
 	FSetPos refNum,340
 	FBinRead/F=3/B=3 refNum, integer
 	logw[2] = integer
 	FSetPos refNum,344
 	FBinRead/F=3/B=3 refNum, integer
-	logw[3] = integer		
+	logw[3] = integer
 	FSetPos refNum,446
 	FBinRead/F=3/B=3 refNum, integer
 	logw[4] = integer
@@ -233,10 +235,10 @@ Function ReadHeaderAndData(fname)
 	logw[5] = integer
 	FSetPos refNum,466
 	FBinRead/F=3/B=3 refNum, integer
-	logw[6] = integer		
+	logw[6] = integer
 
 	Close refNum
-	
+
 	//now get all of the reals
 	//
 	//Do all the GBLoadWaves at the end
@@ -248,7 +250,7 @@ Function ReadHeaderAndData(fname)
 	//append "/S=offset/U=numofreals" to control the read
 	// then append fname to give the full file path
 	// then execute
-	
+
 	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
 		PathInfo catPathName
 		if(V_flag==1)
@@ -266,11 +268,11 @@ Function ReadHeaderAndData(fname)
 		GBLoadStr += ""
 		tmpfname = fname
 	endif
-	
+
 	Variable a=0,b=0
-	
+
 	SetDataFolder curPath
-	
+
 	// 4 R*4 values
 	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + tmpfname + "\""
 	Execute strToExecute
@@ -278,12 +280,12 @@ Function ReadHeaderAndData(fname)
 	b=4	//num of reals read
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 4 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=4	
+	b=4
 	realw[a,a+b-1] = w[p-a]
 	a+=b
 
@@ -292,7 +294,7 @@ Function ReadHeaderAndData(fname)
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=2	
+	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
 
@@ -300,10 +302,10 @@ Function ReadHeaderAndData(fname)
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=6	
+	b=6
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 13 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + tmpfname + "\""
@@ -311,15 +313,15 @@ Function ReadHeaderAndData(fname)
 	b=13
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 3 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=3	
+	b=3
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 7 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + tmpfname + "\""
@@ -327,15 +329,15 @@ Function ReadHeaderAndData(fname)
 	b=7
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 4 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=4	
+	b=4
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 2 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + tmpfname + "\""
@@ -343,7 +345,7 @@ Function ReadHeaderAndData(fname)
 	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 2 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + tmpfname + "\""
@@ -351,14 +353,14 @@ Function ReadHeaderAndData(fname)
 	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 5 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=5	
+	b=5
 	realw[a,a+b-1] = w[p-a]
-	
+
 	//if the binary VAX data ws transferred to a MAC, all is OK
 	//if the data was trasnferred to an Intel machine (IBM), all the real values must be
 	//divided by 4 to get the correct floating point values
@@ -372,7 +374,7 @@ Function ReadHeaderAndData(fname)
 		//either Windows or Windows NT
 		//realw /= 4
 	//endif
-	
+
 	SetDataFolder curPath
 	//read in the data
 //	strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q/P=catPathName" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
@@ -396,25 +398,25 @@ Function ReadHeaderAndData(fname)
 	Execute strToExecute
 
 	SetDataFolder curPath		//use the full path, so it will always work
-	
+
 	Make/O/D/N=16384 $"root:Packages:NIST:RAW:data"
 	WAVE data=$"root:Packages:NIST:RAW:data"
 	SkipAndDecompressVAX(w,data)
 	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
-	
+
 	Duplicate/O data linear_data			// at this point, the data is still the raw data, and is linear_data
-	
+
 	// proper error for counting statistics, good for low count values too
 	// rather than just sqrt(n)
 	// see N. Gehrels, Astrophys. J., 303 (1986) 336-346, equation (7)
 	// for S = 1 in eq (7), this corresponds to one sigma error bars
 	Duplicate/O linear_data linear_data_error
-	linear_data_error = 1 + sqrt(linear_data + 0.75)				
+	linear_data_error = 1 + sqrt(linear_data + 0.75)
 	//
-	
+
 	//keep a string with the filename in the RAW folder
 	String/G root:Packages:NIST:RAW:fileList = textw[0]
-	
+
 	//set the globals to the detector dimensions (pixels)
 	Variable/G root:myGlobals:gNPixelsX=128		//default for Ordela data (also set in Initialize/NCNR_Utils.ipf)
 	Variable/G root:myGlobals:gNPixelsY=128
@@ -422,13 +424,13 @@ Function ReadHeaderAndData(fname)
 //		Variable/G root:myGlobals:gNPixelsX=64
 //		Variable/G root:myGlobals:gNPixelsY=64
 //	endif
-	
+
 	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
 //	KillWaves/Z w
-	
+
 	//return the data folder to root
 	SetDataFolder root:
-	
+
 	Return 0
 
 End
@@ -446,7 +448,7 @@ End
 //
 Function SkipAndDecompressVAX(in,out)
 	Wave in,out
-	
+
 	Variable skip,ii
 
 	ii=0
@@ -489,7 +491,7 @@ Function Decompress(val)
 	ipw=ib^nd
 	i4=val
 
-	if (i4 <= -ipw) 
+	if (i4 <= -ipw)
 		npw=trunc(-i4/ipw)
 		i4=mod(-i4,ipw)*(ib^npw)
 		return i4
@@ -508,26 +510,26 @@ End
 //
 Proc ReadWork_DIV()
 //	Silent 1
-	
+
 	String fname = PromptForPath("Select detector sensitivity file")
 	ReadHeaderAndWork("DIV",fname)		//puts what is read in work.div
-	
+
 	String waveStr = "root:Packages:NIST:DIV:data"
 //	NewImage/F/K=1/S=2 $waveStr		//this is an experimental IGOR operation
 //	ModifyImage '' ctab= {*,*,YellowHot,0}
 	//Display;AppendImage $waveStr
-	
+
 	//change the title string to WORK.DIV, rather than PLEXnnn_TST_asdfa garbage
 //	String/G root:Packages:NIST:DIV:fileList = "WORK.DIV"
 	ChangeDisplay("DIV")
-	
+
 	SetDataFolder root:		//(redundant)
 //	Silent 0
 End
 
 
 //this function is the guts of reading a binary VAX file of real (4-byte) values
-// (i.e. a WORK.aaa file) 
+// (i.e. a WORK.aaa file)
 // work files have the same header structure as RAW SANS data, just with
 //different data (real, rather than compressed integer data)
 //
@@ -542,7 +544,7 @@ End
 //
 Function ReadHeaderAndWork(type,fname)
 	String type,fname
-	
+
 	//type is the desired folder to read the workfile to
 	//this data will NOT be automatically displayed gDataDisplayType is unchanged
 
@@ -550,27 +552,27 @@ Function ReadHeaderAndWork(type,fname)
 	String cur_folder = type
 	String curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
-	
+
 	Variable refNum,integer,realval
 	String sansfname,textstr
 	Variable/G $(curPath + ":gIsLogScale") = 0		//initial state is linear, keep this in DIV folder
-	
+
 	Make/O/D/N=23 $(curPath + ":IntegersRead")
 	Make/O/D/N=52 $(curPath + ":RealsRead")
 	Make/O/T/N=11 $(curPath + ":TextRead")
-	
+
 	WAVE intw=$(curPath + ":IntegersRead")
 	WAVE realw=$(curPath + ":RealsRead")
 	WAVE/T textw=$(curPath + ":TextRead")
-	
+
 	//***NOTE ****
 	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
 	// this read routine, after the open dialog is presented
 	// the "--read" waves end up in the correct folder, but the data does not! Why?
 	//must re-set data folder before writing data array (done below)
-	
+
 	SetDataFolder curPath
-	
+
 	//actually open the file
 	Open/R refNum as fname
 	//skip first two bytes
@@ -604,7 +606,7 @@ Function ReadHeaderAndWork(type,fname)
 	textw[5]= textstr
 	FReadLine/N=60 refNum,textstr
 	textw[6]= textstr
-	
+
 	//3 integers
 	FSetPos refNum,174
 	FBinRead/F=3/B=3 refNum, integer
@@ -613,7 +615,7 @@ Function ReadHeaderAndWork(type,fname)
 	intw[5] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[6] = integer
-	
+
 	//2 integers, 3 text fields
 	FSetPos refNum,194
 	FBinRead/F=3/B=3 refNum, integer
@@ -626,28 +628,28 @@ Function ReadHeaderAndWork(type,fname)
 	textw[8]= textstr
 	FReadLine/N=6 refNum,textstr
 	textw[9]= textstr
-	
+
 	//2 integers
 	FSetPos refNum,244
 	FBinRead/F=3/B=3 refNum, integer
 	intw[9] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[10] = integer
-	
+
 	//2 integers
 	FSetPos refNum,308
 	FBinRead/F=3/B=3 refNum, integer
 	intw[11] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[12] = integer
-	
+
 	//2 integers
 	FSetPos refNum,332
 	FBinRead/F=3/B=3 refNum, integer
 	intw[13] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[14] = integer
-	
+
 	//3 integers
 	FSetPos refNum,376
 	FBinRead/F=3/B=3 refNum, integer
@@ -656,17 +658,17 @@ Function ReadHeaderAndWork(type,fname)
 	intw[16] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[17] = integer
-	
+
 	//1 text field - the file association for transmission are the first 4 bytes
 	FSetPos refNum,404
 	FReadLine/N=42 refNum,textstr
 	textw[10]= textstr
-	
+
 	//1 integer
 	FSetPos refNum,458
 	FBinRead/F=3/B=3 refNum, integer
 	intw[18] = integer
-	
+
 	//4 integers
 	FSetPos refNum,478
 	FBinRead/F=3/B=3 refNum, integer
@@ -677,9 +679,9 @@ Function ReadHeaderAndWork(type,fname)
 	intw[21] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[22] = integer
-	
+
 	Close refNum
-	
+
 	//now get all of the reals
 	//
 	//Do all the GBLoadWaves at the end
@@ -709,25 +711,25 @@ Function ReadHeaderAndWork(type,fname)
 		GBLoadStr += ""
 		tmpfname = fname
 	endif
-		
+
 	Variable a=0,b=0
-	
+
 	SetDataFolder curPath
 	// 4 R*4 values
 	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	
+
 	SetDataFolder curPath
 	Wave w=$(curPath + ":tempGBWave0")
 	b=4	//num of reals read
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 4 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=4	
+	b=4
 	realw[a,a+b-1] = w[p-a]
 	a+=b
 
@@ -736,7 +738,7 @@ Function ReadHeaderAndWork(type,fname)
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=2	
+	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
 
@@ -744,10 +746,10 @@ Function ReadHeaderAndWork(type,fname)
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=6	
+	b=6
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 13 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + tmpfname + "\""
@@ -755,15 +757,15 @@ Function ReadHeaderAndWork(type,fname)
 	b=13
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 3 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=3	
+	b=3
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 7 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + tmpfname + "\""
@@ -771,15 +773,15 @@ Function ReadHeaderAndWork(type,fname)
 	b=7
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 4 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=4	
+	b=4
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 2 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + tmpfname + "\""
@@ -787,7 +789,7 @@ Function ReadHeaderAndWork(type,fname)
 	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 2 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + tmpfname + "\""
@@ -795,14 +797,14 @@ Function ReadHeaderAndWork(type,fname)
 	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
-	
+
 	// 5 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + tmpfname + "\""
 	Execute strToExecute
-	b=5	
+	b=5
 	realw[a,a+b-1] = w[p-a]
-	
+
 	//if the binary VAX data ws transferred to a MAC, all is OK
 	//if the data was trasnferred to an Intel machine (IBM), all the real values must be
 	//divided by 4 to get the correct floating point values
@@ -816,7 +818,7 @@ Function ReadHeaderAndWork(type,fname)
 		//either Windows or Windows NT
 		//realw /= 4
 	//endif
-	
+
 	//read in the data
 	GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
 
@@ -841,20 +843,20 @@ Function ReadHeaderAndWork(type,fname)
 
 	curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
-	
+
 	Make/O/D/N=16384 $(curPath + ":data")
 	WAVE data = $(curPath + ":data")
-	
+
 	Variable skip,ii,offset
-	
-	//read in a total of 16384 values (ii) 
+
+	//read in a total of 16384 values (ii)
 	//as follows :
 	// skip first 2 bytes
 	// skip 512 byte header
 	// skip first 2 bytes of data
 	//(read 511 reals, skip 2b, 510 reals, skip 2b) -16 times = 16336 values
 	// read the final 48 values in seperately to avoid EOF error
-	
+
 	/////////////
 	SetDataFolder curPath
 	skip = 0
@@ -863,16 +865,16 @@ Function ReadHeaderAndWork(type,fname)
 	a=0
 	do
 		SetDataFolder curPath
-		
+
 		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=511" + "\"" + tmpfname + "\""
 		Execute strToExecute
 		//Print strToExecute
 		b=511
 		data[a,a+b-1] = w[p-a]
 		a+=b
-		
+
 		offset += 511*4 +2
-		
+
 		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=510" + "\"" + tmpfname + "\""
 		SetDataFolder curPath
 		Execute strToExecute
@@ -880,18 +882,18 @@ Function ReadHeaderAndWork(type,fname)
 		b=510
 		data[a,a+b-1] = w[p-a]
 		a+=b
-		
+
 		offset += 510*4 +2
-		
+
 		ii+=1
 		//Print "inside do, data[2] =",data[2]
 		//Print "inside do, tempGBwave0[0] = ",w[0]
 	while(ii<16)
-	
+
 	// 16336 values have been read in --
 	//read in last 64 values
 	strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=48" + "\"" + tmpfname + "\""
-	
+
 	SetDataFolder curPath
 	Execute strToExecute
 	b=48
@@ -903,12 +905,12 @@ Function ReadHeaderAndWork(type,fname)
 	//Print "in workdatareader , data = ", data[1][1]
 
 	Redimension/n=(128,128) data
-	
+
 	Duplicate/O data linear_data			//data read in is on linear scale, copy it now
-	
+
 	//clean up - get rid of w = $"tempGBWave0"
 	KillWaves w
-	
+
 	//divide the FP data by 4 if read from a PC (not since GBLoadWave update)
 	//if(cmpstr("Macintosh",IgorInfo(2)) == 0)
 		//do nothing
@@ -916,13 +918,13 @@ Function ReadHeaderAndWork(type,fname)
 		//either Windows or Windows NT
 		//data /= 4
 	//endif
-	
+
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
-	
+
 	//return the data folder to root
 	SetDataFolder root:
-	
+
 	Return(0)
 End
 
@@ -951,7 +953,7 @@ Function ReadASCData(fname,destPath)
 	Variable/G :gIsLogScale=0
 	Make/O/T/N=(numHdrLines) hdrLines
 	Make/O/D/N=(pixelsX*pixelsY) data			//,linear_data
-	
+
 	//full filename and path is now passed in...
 	//actually open the file
 //	SetDataFolder destPath
@@ -968,36 +970,36 @@ Function ReadASCData(fname,destPath)
 		SetDataFolder root:
 		return(1)
 	Endif
-	// 
+	//
 	for(ii=0;ii<numHdrLines;ii+=1)		//read (or skip) 18 header lines
 		FReadLine refnum,str
 		hdrLines[ii]=str
 	endfor
-	//	
+	//
 	Close refnum
-	
+
 //	SetDataFolder destPath
 	LoadWave/Q/G/D/N=temp fName
 	Wave/Z temp0=temp0
 	data=temp0
 	Redimension/N=(pixelsX,pixelsY) data		//,linear_data
-	
+
 	Duplicate/O data linear_data
 	Duplicate/O data linear_data_error
 	linear_data_error = 1 + sqrt(data + 0.75)
-	
+
 	//just in case there are odd inputs to this, like negative intensities
 	WaveStats/Q linear_data_error
 	linear_data_error = numtype(linear_data_error[p]) == 0 ? linear_data_error[p] : V_avg
 	linear_data_error = linear_data_error[p] != 0 ? linear_data_error[p] : V_avg
-	
+
 	//linear_data = data
-	
-	KillWaves/Z temp0 
-	
+
+	KillWaves/Z temp0
+
 	//return the data folder to root
 	SetDataFolder root:
-	
+
 	Return(0)
 End
 
@@ -1015,11 +1017,11 @@ Function FillFakeHeader_ASC(destFolder)
 	Make/O/D/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
 	Make/O/D/N=52 $("root:Packages:NIST:"+destFolder+":RealsRead")
 	Make/O/T/N=11 $("root:Packages:NIST:"+destFolder+":TextRead")
-	
+
 	Wave intw=$("root:Packages:NIST:"+destFolder+":IntegersRead")
 	Wave realw=$("root:Packages:NIST:"+destFolder+":RealsRead")
 	Wave/T textw=$("root:Packages:NIST:"+destFolder+":TextRead")
-	
+
 	//Put in appropriate "fake" values
 	//parse values as needed from headerLines
 	Wave/T hdr=$("root:Packages:NIST:"+destFolder+":hdrLines")
@@ -1035,7 +1037,7 @@ Function FillFakeHeader_ASC(destFolder)
 	tempStr=hdr[5]
 	sscanf tempStr,formatStr,xCtr,yCtr,a1,a2,a1a2Dist,dlam,bsDiam,detTyp
 //	Print xCtr,yCtr,a1,a2,a1a2Dist,dlam,bsDiam,detTyp
-	
+
 	realw[16]=xCtr		//xCtr(pixels)
 	realw[17]=yCtr	//yCtr (pixels)
 	realw[18]=sdd		//SDD (m)
@@ -1066,8 +1068,8 @@ Function FillFakeHeader_ASC(destFolder)
 	// fake values to get valid deadtime and detector constants
 	//
 	textw[9]=detTyp+"  "		//6 characters 4+2 spaces
-	textw[3]="[NGxSANS00]"	//11 chars, NGx will return default values for atten trans, deadtime... 
-	
+	textw[3]="[NGxSANS00]"	//11 chars, NGx will return default values for atten trans, deadtime...
+
 	//set the string values
 	formatStr="FILE: %s CREATED: %s"
 	sscanf hdr[0],formatStr,tempStr,junkStr
@@ -1076,13 +1078,13 @@ Function FillFakeHeader_ASC(destFolder)
 	String/G $("root:Packages:NIST:"+destFolder+":fileList") = tempStr
 	textw[0] = tempStr		//filename
 	textw[1] = junkStr		//run date-time
-	
+
 	//file label = hdr[1]
 	tempStr = hdr[1]
 	tempStr = tempStr[0,strlen(tempStr)-2]		//clean off the last LF
 //	Print tempStr
 	textW[6] = tempStr	//sample label
-	
+
 	return(0)
 End
 
@@ -1092,14 +1094,14 @@ End
 //Proc TestReWriteReal()
 //	String Path
 //	Variable value,start
-//	
+//
 //	GetFileAndPath()
 //	Path = S_Path + S_filename
-//	
+//
 //	value = 0.2222
 //	start = 158		//trans starts at byte 159
 //	ReWriteReal(path,value,start)
-//	
+//
 //	SetDataFolder root:
 //End
 
@@ -1121,31 +1123,31 @@ End
 Function WriteVAXReal(path,value,start)
 	String path
 	Variable value,start
-	
+
 	//Print " in F(), path = " + path
 	Variable refnum,int1,int2, value4
 
 //////
 	value4 = 4*value
-	
+
 	Open/A/T="????TEXT" refnum as path
 	//write IEEE FP, 4*desired value
 	FSetPos refnum,start
 	FBinWrite/B=3/F=4 refnum,value4		//write out as little endian
 	//move to the end of the file
 	FStatus refnum
-	FSetPos refnum,V_logEOF	
+	FSetPos refnum,V_logEOF
 	Close refnum
-	
+
 ///////
 	Open/R refnum as path
 	//read back as two 16-bit integers
 	FSetPos refnum,start
 	FBinRead/B=2/F=2 refnum,int1	//read as big-endian
-	FBinRead/B=2/F=2 refnum,int2	
-	//file was opened read-only, no need to move to the end of the file, just close it	
+	FBinRead/B=2/F=2 refnum,int2
+	//file was opened read-only, no need to move to the end of the file, just close it
 	Close refnum
-	
+
 ///////
 	Open/A/T="????TEXT" refnum as path
 	//write the two 16-bit integers, reversed
@@ -1155,8 +1157,8 @@ Function WriteVAXReal(path,value,start)
 	//move to the end of the file
 	FStatus refnum
 	FSetPos refnum,V_logEOF
-	Close refnum		//at this point, it is as the VAX would have written it. 
-	
+	Close refnum		//at this point, it is as the VAX would have written it.
+
 	Return(0)
 End
 
@@ -1164,7 +1166,7 @@ End
 Function WriteTransmissionToHeader(fname,trans)
 	String fname
 	Variable trans
-	
+
 	WriteVAXReal(fname,trans,158)		//transmission start byte is 158
 	return(0)
 End
@@ -1173,7 +1175,7 @@ End
 Function WriteTransmissionErrorToHeader(fname,transErr)
 	String fname
 	Variable transErr
-	
+
 	WriteVAXReal(fname,transErr,396)		//transmission start byte is 396
 	return(0)
 End
@@ -1183,7 +1185,7 @@ End
 Function WriteWholeTransToHeader(fname,trans)
 	String fname
 	Variable trans
-	
+
 	WriteVAXReal(fname,trans,392)		//transmission start byte is 392
 	return(0)
 End
@@ -1192,7 +1194,7 @@ End
 Function WriteBoxCountsToHeader(fname,counts)
 	String fname
 	Variable counts
-	
+
 	WriteVAXReal(fname,counts,494)		// start byte is 494
 	return(0)
 End
@@ -1201,7 +1203,7 @@ End
 Function WriteBoxCountsErrorToHeader(fname,rel_err)
 	String fname
 	Variable rel_err
-	
+
 	WriteVAXReal(fname,rel_err,400)		// start byte is 400
 	return(0)
 End
@@ -1210,7 +1212,7 @@ End
 Function WriteBSXPosToHeader(fname,xpos)
 	String fname
 	Variable xpos
-	
+
 	WriteVAXReal(fname,xpos,368)
 	return(0)
 End
@@ -1219,7 +1221,7 @@ End
 Function WriteThicknessToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,162)
 	return(0)
 End
@@ -1228,7 +1230,7 @@ End
 Function WriteBeamCenterXToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,252)
 	return(0)
 End
@@ -1237,7 +1239,7 @@ End
 Function WriteBeamCenterYToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,256)
 	return(0)
 End
@@ -1246,7 +1248,7 @@ End
 Function WriteAttenNumberToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,51)
 	return(0)
 End
@@ -1255,7 +1257,7 @@ End
 Function WriteMonitorCountToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,39)
 	return(0)
 End
@@ -1264,7 +1266,7 @@ End
 Function WriteDetectorCountToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,47)
 	return(0)
 End
@@ -1273,7 +1275,7 @@ End
 Function WriteTransDetCountToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,388)
 	return(0)
 End
@@ -1282,7 +1284,7 @@ End
 Function WriteWavelengthToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,292)
 	return(0)
 End
@@ -1291,7 +1293,7 @@ End
 Function WriteWavelengthDistrToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,296)
 	return(0)
 End
@@ -1300,7 +1302,7 @@ End
 Function WriteTemperatureToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,186)
 	return(0)
 End
@@ -1309,7 +1311,7 @@ End
 Function WriteMagnFieldToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,190)
 	return(0)
 End
@@ -1318,7 +1320,7 @@ End
 Function WriteSourceApDiamToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,280)
 	return(0)
 End
@@ -1327,7 +1329,7 @@ End
 Function WriteSampleApDiamToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,284)
 	return(0)
 End
@@ -1336,7 +1338,7 @@ End
 Function WriteSrcToSamDistToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,288)
 	return(0)
 End
@@ -1345,7 +1347,7 @@ End
 Function WriteDetectorOffsetToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,264)
 	return(0)
 End
@@ -1354,7 +1356,7 @@ End
 Function WriteBeamStopDiamToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,272)
 	return(0)
 End
@@ -1363,7 +1365,7 @@ End
 Function WriteSDDToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,260)
 	return(0)
 End
@@ -1372,7 +1374,7 @@ End
 Function WriteDetPixelXToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,220)
 	return(0)
 End
@@ -1381,7 +1383,7 @@ End
 Function WriteDetPixelYToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,232)
 	return(0)
 End
@@ -1390,7 +1392,7 @@ End
 Function WriteDeadtimeToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	WriteVAXReal(fname,num,498)
 	return(0)
 End
@@ -1404,7 +1406,7 @@ End
 Function WriteTextToHeader(fname,str,start)
 	String fname,str
 	Variable start
-	
+
 	Variable refnum
 	Open/A/T="????TEXT" refnum as fname      //Open for writing! Move to EOF before closing!
 	FSetPos refnum,start
@@ -1413,7 +1415,7 @@ Function WriteTextToHeader(fname,str,start)
 	FStatus refnum
 	FSetPos refnum,V_logEOF
 	Close refnum
-		
+
 	return(0)
 end
 
@@ -1421,7 +1423,7 @@ end
 // limit to 60 characters
 Function WriteSamLabelToHeader(fname,str)
 	String fname,str
-	
+
 	if(strlen(str) > 60)
 		str = str[0,59]
 	endif
@@ -1433,16 +1435,16 @@ End
 // limit to 11 characters
 Function WriteAcctNameToHeader(fname,str)
 	String fname,str
-	
+
 	if(strlen(str) > 9)
 		str = str[0,8]
 	endif
 	str = "["+str+"]"
-	
+
 	if(strlen(str) < 11)		//pad to 11 characters if the account number is only one digit
 		str = PadString(str,11,0x20)
 	endif
-		
+
 	WriteTextToHeader(fname,str,78)
 	return(0)
 End
@@ -1453,7 +1455,7 @@ End
 // be sure that any white space to pad to 21 characters is at the front of the string
 Function WriteFileNameToHeader(fname,str)
 	String fname,str
-	
+
 	Variable i
 	String newStr=""
 //	printf "\"%s\"\t%d\r",str,strlen(str)
@@ -1485,7 +1487,7 @@ End
 Function RewriteIntegerToHeader(fname,val,start)
 	String fname
 	Variable val,start
-	
+
 	Variable refnum
 	Open/A/T="????TEXT" refnum as fname      //Open for writing! Move to EOF before closing!
 	FSetPos refnum,start
@@ -1494,14 +1496,14 @@ Function RewriteIntegerToHeader(fname,val,start)
 	FStatus refnum
 	FSetPos refnum,V_logEOF
 	Close refnum
-		
+
 	return(0)
 end
 
 Function WriteCountTimeToHeader(fname,num)
 	String fname
 	Variable num
-	
+
 	RewriteIntegerToHeader(fname,num,31)
 	return(0)
 End
@@ -1512,56 +1514,56 @@ End
 Function/S getStringFromHeader(fname,start,num)
 	String fname				//full path:name
 	Variable start,num		//starting byte and number of characters to read
-	
+
 	String str
 	Variable refnum
 	Open/R refNum as fname
 	FSetPos refNum,start
 	FReadLine/N=(num) refNum,str
 	Close refnum
-	
+
 	return(str)
 End
 
 // file suffix (4 characters @ byte 19)
 Function/S getSuffix(fname)
 	String fname
-	
+
 	return(getStringFromHeader(fname,19,4))
 End
 
 // associated file suffix (for transmission) (4 characters @ byte 404)
 Function/S getAssociatedFileSuffix(fname)
 	String fname
-	
+
 	return(getStringFromHeader(fname,404,4))
 End
 
 // sample label (60 characters @ byte 98)
 Function/S getSampleLabel(fname)
 	String fname
-	
+
 	return(getStringFromHeader(fname,98,60))
 End
 
 // file creation date (20 characters @ byte 55)
 Function/S getFileCreationDate(fname)
 	String fname
-	
+
 	return(getStringFromHeader(fname,55,20))
 End
 
 // user account (11 characters @ byte 78)
 Function/S getAcctName(fname)
 	String fname
-	
+
 	return(getStringFromHeader(fname,78,11))
 End
 
 // file name (21 characters @ byte 2)
 Function/S getFileName(fname)
 	String fname
-	
+
 	return(getStringFromHeader(fname,2,21))
 End
 
@@ -1574,8 +1576,8 @@ Function getRealValueFromHeader(fname,start)
 	String fname
 	Variable start
 
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"	
-	
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+
 	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
 		PathInfo catPathName
 		if(V_flag==1)
@@ -1591,69 +1593,69 @@ Function getRealValueFromHeader(fname,start)
 	// original case, fname is the full path:name and is Mac (or a mapped drive)
 		GBLoadStr += "/S="+num2str(start)+"/U=1" + "\"" + fname + "\""
 	endif
-	
-	
+
+
 	Execute GBLoadStr
 	Wave w=$"tempGBWave0"
-	
+
 	KillPath/Z tmpUNCPath
-	
+
 	return(w[0])
 End
 
 //monitor count is at byte 39
 Function getMonitorCount(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,39))
 end
 
 //saved monitor count is at byte 43
 Function getSavMon(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,43))
 end
 
 //detector count is at byte 47
 Function getDetCount(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,47))
 end
 
 //Attenuator number is at byte 51
 Function getAttenNumber(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,51))
 end
 
 //transmission is at byte 158
 Function getSampleTrans(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,158))
 end
 
 //transmission error (one sigma) is at byte 396
 Function getSampleTransError(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,396))
 end
 
 //box counts are stored at byte 494
 Function getBoxCounts(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,494))
 end
 
 //box counts error are stored at byte 400
 Function getBoxCountsError(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,400))
 end
 
@@ -1661,44 +1663,44 @@ end
 //whole detector trasmission is at byte 392
 Function getSampleTransWholeDetector(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,392))
 end
 
 //SampleThickness is at byte 162
 Function getSampleThickness(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,162))
 end
 
 //Sample Rotation Angle is at byte 170
 Function getSampleRotationAngle(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,170))
 end
 
 //Sample position in changer
 Function getSamplePosition(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,166))
 end
 
 //temperature is at byte 186
 Function getTemperature(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,186))
 end
 
 //field strength is at byte 190
-// 190 is not the right location, 348 looks to be correct for the electromagnets, 450 for the 
+// 190 is not the right location, 348 looks to be correct for the electromagnets, 450 for the
 // superconducting magnet. Although each place is only the voltage, it is correct
 Function getFieldStrength(fname)
 	String fname
-	
+
 //	return(getRealValueFromHeader(fname,190))
 	return(getRealValueFromHeader(fname,348))
 end
@@ -1706,91 +1708,91 @@ end
 //beam xPos is at byte 252
 Function getBeamXPos(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,252))
 end
 
 //beam Y pos is at byte 256
 Function getBeamYPos(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,256))
 end
 
 //sample to detector distance is at byte 260
 Function getSDD(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,260))
 end
 
 //detector offset is at byte 264
 Function getDetectorOffset(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,264))
 end
 
 //Beamstop diameter is at byte 272
 Function getBSDiameter(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,272))
 end
 
 //source aperture diameter is at byte 280
 Function getSourceApertureDiam(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,280))
 end
 
 //sample aperture diameter is at byte 284
 Function getSampleApertureDiam(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,284))
 end
 
 //source AP to Sample AP distance is at byte 288
 Function getSourceToSampleDist(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,288))
 end
 
 //wavelength is at byte 292
 Function getWavelength(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,292))
 end
 
 //wavelength spread is at byte 296
 Function getWavelengthSpread(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,296))
 end
 
 //transmission detector count is at byte 388
 Function getTransDetectorCounts(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,388))
 end
 
 //detector pixel X size is at byte 220
 Function getDetectorPixelXSize(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,220))
 end
 
 //detector pixel Y size is at byte 232
 Function getDetectorPixelYSize(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,232))
 end
 
@@ -1805,7 +1807,7 @@ end
 // read the detector deadtime (in seconds)
 Function getDetectorDeadtime(fname)
 	String fname
-	
+
 	return(getRealValueFromHeader(fname,498))
 end
 
@@ -1817,17 +1819,17 @@ end
 Function getIntegerFromHeader(fname,start)
 	String fname				//full path:name
 	Variable start		//starting byte
-	
+
 	Variable refnum,val
 	Open/R refNum as fname
 	FSetPos refNum,start
 	FBinRead/B=3/F=3 refnum,val
 	Close refnum
-	
+
 	return(val)
 End
 
-//total count time is at byte 31	
+//total count time is at byte 31
 Function getCountTime(fname)
 	String fname
 	return(getIntegerFromHeader(fname,31))
@@ -1840,7 +1842,7 @@ end
 //
 Function GetLambdaFromReducedData(tempName)
 	String tempName
-	
+
 	String junkString
 	Variable lambdaFromFile, fileVar
 	lambdaFromFile = 6.0
@@ -1854,20 +1856,20 @@ Function GetLambdaFromReducedData(tempName)
 		lambdaFromFile = str2num(junkString)
 	endif
 	Close fileVar
-	
+
 	return(lambdaFromFile)
 End
 
 /////   TRANSMISSION RELATED FUNCTIONS    ////////
 //box coordinate are returned by reference
-// filename is the full path:name 
+// filename is the full path:name
 Function getXYBoxFromFile(filename,x1,x2,y1,y2)
 	String filename
 	Variable &x1,&x2,&y1,&y2
-	
+
 	Variable refnum
 //	String tmpFile = FindValidFilename(filename)
-		
+
 //	Open/R/P=catPathName refnum as tmpFile
 	Open/R refnum as filename
 	FSetPos refnum,478
@@ -1876,7 +1878,7 @@ Function getXYBoxFromFile(filename,x1,x2,y1,y2)
 	FBinRead/F=3/B=3 refnum, y1
 	FBinRead/F=3/B=3 refnum, y2
 	Close refnum
-	
+
 	return(0)
 End
 
@@ -1885,7 +1887,7 @@ End
 Function WriteXYBoxToHeader(filename,x1,x2,y1,y2)
 	String filename
 	Variable x1,x2,y1,y2
-	
+
 	Variable refnum
 	Open/A/T="????TEXT" refnum as filename
 	FSetPos refnum,478
@@ -1897,7 +1899,7 @@ Function WriteXYBoxToHeader(filename,x1,x2,y1,y2)
 	FStatus refnum
 	FSetPos refnum,V_logEOF
 	Close refnum
-	
+
 	return(0)
 End
 
@@ -1907,10 +1909,10 @@ End
 //
 Function WriteAssocFileSuffixToHeader(fname,suffix)
 	String fname,suffix
-		
+
 	suffix = suffix[0,3]		//limit to 4 characters
 	WriteTextToHeader(fname,suffix,404)
-	
+
 	return(0)
 end
 
@@ -1929,7 +1931,7 @@ End
 
 Proc ReadDetectorPixelSize(firstFile,lastFile)
 	Variable firstFile=1,lastFile=100
-	
+
 	fReadDetectorPixelSize(firstFile,lastFile)
 End
 
@@ -1940,10 +1942,10 @@ End
 //
 Function fPatchDetectorPixelSize(lo,hi,xdim,ydim)
 	Variable lo,hi,xdim,ydim
-	
+
 	Variable ii
 	String file
-	
+
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
@@ -1954,17 +1956,17 @@ Function fPatchDetectorPixelSize(lo,hi,xdim,ydim)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
 // simple utility to read the pixel size stored in the file header
 Function fReadDetectorPixelSize(lo,hi)
 	Variable lo,hi
-	
+
 	String file
 	Variable xdim,ydim,ii
-	
+
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
@@ -1975,7 +1977,7 @@ Function fReadDetectorPixelSize(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
@@ -1996,7 +1998,7 @@ End
 
 Proc ConvertToLens(RunNumber)
 	Variable RunNumber
-	HeaderToLensResolution(RunNumber) 
+	HeaderToLensResolution(RunNumber)
 End
 
 Proc ConvertToPinhole(RunNumber)
@@ -2005,12 +2007,12 @@ Proc ConvertToPinhole(RunNumber)
 End
 
 // sets the flag to zero in the file (= 0)
-Function HeaderToPinholeResolution(num) 
-	Variable num	
-	
+Function HeaderToPinholeResolution(num)
+	Variable num
+
 	//Print "UnConvert"
 	String fullname=""
-	
+
 	fullname = FindFileFromRunNumber(num)
 	Print fullname
 	//report error or change the file
@@ -2024,12 +2026,12 @@ Function HeaderToPinholeResolution(num)
 End
 
 // sets the flag to one in the file (= 1)
-Function HeaderToLensResolution(num) 
-	Variable num	
-	
+Function HeaderToLensResolution(num)
+	Variable num
+
 	//Print "UnConvert"
 	String fullname=""
-	
+
 	fullname = FindFileFromRunNumber(num)
 	Print fullname
 	//report error or change the file
@@ -2053,7 +2055,7 @@ Function/S Write_RawData_File(type,fullpath,dialog)
 
 	String filename = ""
 	filename = Write_VAXRaw_Data(type,fullpath,dialog)
-	
+
 	return(filename)
 End
 
@@ -2091,26 +2093,26 @@ End
 Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	String type,fullpath
 	Variable dialog		//=1 will present dialog for name
-	
+
 	String destStr=""
 	Variable refNum,ii,val,err
-	
-	
+
+
 	destStr = "root:Packages:NIST:"+type
-	
+
 	SetDataFolder $destStr
 	WAVE intw=integersRead
 	WAVE rw=realsRead
 	WAVE/T textw=textRead
-	
+
 	WAVE linear_data = linear_data
 	Duplicate/O linear_data tmp_data
-		
+
 	NVAR/Z rawCts = root:Packages:NIST:SAS:gRawCounts
 	if(cmpstr("SAS",type)==0 && !rawCts)		//simulation data, and is not RAW counts, so scale it back
 
 		//use kappa to get back to counts => linear_data = round(linear_data*kappa)
-		String strNote = note(linear_data) 
+		String strNote = note(linear_data)
 		Variable kappa = NumberByKey("KAPPA", strNote , "=", ";")
 		NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
 
@@ -2119,7 +2121,7 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 //		Print kappa, detectorEff
 		Redimension/I tmp_data
 	endif
-	
+
 	WAVE w=tmp_data
 
 	// check for data values that are too large. the maximum VAX compressed data value is 2767000
@@ -2128,7 +2130,7 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	if(V_max > 2767000)
 		Abort "Some individual pixel values are > 2767000 and the data can't be saved in VAX format"
 	Endif
-	
+
 	//check each wave
 	If(!(WaveExists(intw)))
 		Abort "intw DNExist WriteVAXData()"
@@ -2142,8 +2144,8 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	If(!(WaveExists(w)))
 		Abort "linear_data DNExist WriteVAXData()"
 	Endif
-	
-	
+
+
 //	if(dialog)
 //		PathInfo/S catPathName
 //		fullPath = DoSaveFileDialog("Save data as")
@@ -2154,45 +2156,45 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 //		Endif
 //		//Print "dialog fullpath = ",fullpath
 //	Endif
-	
+
 	// save to home, or get out
 	//
 	PathInfo home
 	if(V_flag	== 0)
 		Abort "no save path defined. Save the experiment to generate a home path"
 	endif
-	
+
 	fullPath = S_path		//not the full path yet, still need the name, after the header is filled
-	
-	
+
+
 	Make/O/B/U/N=33316 tmpFile		//unsigned integers for a blank data file
 	tmpFile=0
-	
+
 //	Make/O/W/N=16401 dataWRecMarkers			// don't convert to 16 bit here, rather write to file as 16 bit later
 	Make/O/I/N=16401 dataWRecMarkers
 	AddRecordMarkers(w,dataWRecMarkers)
-		
+
 	// need to re-compress?? maybe never a problem, but should be done for the odd case
 	dataWRecMarkers = CompressI4toI2(dataWRecMarkers)		//unless a pixel value is > 32767, the same values are returned
-	
+
 	// fill the last bits of the header information
 	err = SimulationVAXHeader(type)		//if the type != 'SAS', this function does nothing
-	
+
 	if (err == -1)
 		Abort "no sample label entered - no file written"			// User did not fill in header correctly/completely
 	endif
 	fullPath = fullPath + textW[0]
-	
+
 	// lay down a blank file
 	Open refNum as fullpath
 		FBinWrite refNum,tmpFile			//file is the right size, but all zeroes
 	Close refNum
-	
+
 	// fill up the header
 	// text values
 	// elements of textW are already the correct length set by the read, but just make sure
 	String str
-	
+
 	if(strlen(textw[0])>21)
 		textw[0] = (textw[0])[0,20]
 	endif
@@ -2225,8 +2227,8 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	endif
 	if(strlen(textw[10])>42)
 		textw[10] = (textw[10])[0,41]
-	endif	
-	
+	endif
+
 	ii=0
 	Open/A/T="????TEXT" refnum as fullpath      //Open for writing! Move to EOF before closing!
 		str = textW[ii]
@@ -2272,13 +2274,13 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 		str = textW[ii]
 		FSetPos refnum,404						////reserve
 		FBinWrite/F=0 refnum, str
-	
+
 		//move to the end of the file before closing
 		FStatus refnum
 		FSetPos refnum,V_logEOF
 	Close refnum
-	
-	
+
+
 	// integer values (4 bytes)
 	ii=0
 	Open/A/T="????TEXT" refnum as fullpath      //Open for writing! Move to EOF before closing!
@@ -2373,14 +2375,14 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 		val=intw[ii]
 		FSetPos refnum,490							//box y2
 		FBinWrite/B=3/F=3 refnum, val
-		
+
 		//move to the end of the file before closing
 		FStatus refnum
 		FSetPos refnum,V_logEOF
 	Close refnum
-	
-		
-	//VAX 4-byte FP values. No choice here but to write/read/re-write to get 
+
+
+	//VAX 4-byte FP values. No choice here but to write/read/re-write to get
 	// the proper format. there are 52! values to write
 	//WriteVAXReal(fullpath,rw[n],start)
 	// [0]
@@ -2441,8 +2443,8 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	// [50]
 	WriteVAXReal(fullpath,rw[50],506)
 	WriteVAXReal(fullpath,rw[51],510)
-	
-	
+
+
 	// write out the data
 	Open refNum as fullpath
 		FSetPos refnum,514					//  OK
@@ -2450,10 +2452,10 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 		FStatus refNum
 		FSetPos refNum,V_logEOF
 	Close refNum
-	
+
 	// all done
 	Killwaves/Z tmpFile,dataWRecMarkers,tmp_data
-	
+
 	Print "Saved VAX binary data as:  ",textW[0]
 	SetDatafolder root:
 	return(fullpath)
@@ -2462,14 +2464,14 @@ End
 
 Function AddRecordMarkers(in,out)
 	Wave in,out
-	
+
 	Variable skip,ii
 
 //	Duplicate/O in,out
 //	Redimension/N=16401 out
 
 	out=0
-	
+
 	ii=0
 	skip=0
 	out[ii] = 1
@@ -2482,8 +2484,8 @@ Function AddRecordMarkers(in,out)
 		out[ii+skip] = in[ii-1]
 		ii+=1
 	while(ii<=16384)
-	
-	
+
+
 	return(0)
 End
 
@@ -2502,7 +2504,7 @@ End
 //C       the mapped values [-776,-1] and [-13276,-778] are not used
 //C
 //C       I4max should be 2768499, this value will maps to -32768
-//C       and mantissa should be compared  using 
+//C       and mantissa should be compared  using
 //C               IF (R4 .GE. IPW)
 //C       instead of
 //C               IF (R4 .GT. (IPW - 1.0))
@@ -2534,13 +2536,13 @@ Function CompressI4toI2(i4)
 
 	Variable npw,ipw,ib,nd,i4max,i2max,error,i4toi2
 	Variable r4
-	
+
 	ib=10
 	nd=4
 	i4max=2767000
 	i2max=32767
 	error=-777
-	
+
 	if(i4 <= i4max)
 		r4=i4
 		if(r4 > i2max)
@@ -2551,7 +2553,7 @@ Function CompressI4toI2(i4)
 					break
 				endif
 				npw=npw+1
-				r4=r4/ib		
+				r4=r4/ib
 			while (1)
 			i4toi2 = -1*trunc(r4+ipw*npw)
 		else
@@ -2576,17 +2578,17 @@ Function SimulationVAXHeader(folder)
 	if(cmpstr(folder,"SAS")!=0)		//if not the SAS folder passed in, get out now, and return 1 (-1 is the error condition)
 		return(1)
 	endif
-	
+
 	Wave rw=root:Packages:NIST:SAS:realsRead
 	Wave iw=root:Packages:NIST:SAS:integersRead
 	Wave/T tw=root:Packages:NIST:SAS:textRead
 	Wave res=root:Packages:NIST:SAS:results
-	
+
 // integers needed:
 	//[2] count time
 	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
 	iw[2] = ctTime
-	
+
 //reals are partially set in SASCALC initializtion
 	//remaining values are updated automatically as SASCALC is modified
 	// -- but still need:
@@ -2600,7 +2602,7 @@ Function SimulationVAXHeader(folder)
 	rw[4] = res[8]
 	NVAR thick = root:Packages:NIST:SAS:gThick
 	rw[5] = thick
-	
+
 // text values needed:
 // be sure they are padded to the correct length
 	// [0] filename (do I fake a VAX name? probably yes...)
@@ -2613,23 +2615,23 @@ Function SimulationVAXHeader(folder)
 	// [9] det type "ORNL  " (6 chars)
 
 	SVAR gInstStr = root:Packages:NIST:SAS:gInstStr
-		
+
 	tw[1] = Secs2Date(DateTime,-2)+"  "+ Secs2Time(DateTime,3) 		//20 chars, not quite VAX format
 	tw[2] = "SIM"
 	tw[3] = "["+gInstStr+"SANS99]"
 	tw[4] = "C"
 	tw[5] = "01JAN09 "
 	tw[9] = "ORNL  "
-	
-	
+
+
 	//get the run index and the sample label from the optional parameters, or from a dialog
 	NVAR index = root:Packages:NIST:SAS:gSaveIndex
 	SVAR prefix = root:Packages:NIST:SAS:gSavePrefix
 // did the user pass in values?
 	NVAR autoSaveIndex = root:Packages:NIST:SAS:gAutoSaveIndex
 	SVAR autoSaveLabel = root:Packages:NIST:SAS:gAutoSaveLabel
-	
-	String labelStr=""	
+
+	String labelStr=""
 	Variable runNum
 	if( (autoSaveIndex != 0) && (strlen(autoSaveLabel) > 0) )
 		// all is OK, proceed with the save
@@ -2651,7 +2653,7 @@ Function SimulationVAXHeader(folder)
 		endif
 		index += 1
 	endif
-	
+
 
 
 	//make a three character string of the run number
@@ -2674,10 +2676,10 @@ Function SimulationVAXHeader(folder)
 	String monthStr=StringFromList(1, timeStr  ,"/")
 
 	tw[0] = prefix+numstr+".SA2_SIM_"+(num2char(str2num(monthStr)+64))+numStr
-	
+
 	labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
 	tw[6] = labelStr[0,59]
-	
+
 	return(0)
 End
 
@@ -2688,7 +2690,7 @@ Function ExamineHeader(type)
 	String dataPath = "root:Packages:NIST:"+data_folder
 	String cur_folder = "ExamineHeader"
 	String curPath = "root:Packages:NIST:"+cur_folder
-	
+
 	//SetDataFolder curPath
 
 	Wave intw=$(dataPath+":IntegersRead")
@@ -2710,7 +2712,7 @@ Function ExamineHeader(type)
 	print "run.moncnt :\t\t"+num2str(realw[0])
 	print "run.savmon :\t\t"+num2str(realw[1])
 	print "run.detcnt :\t\t"+num2str(realw[2])
-	print "run.atten :\t\t"+num2str(realw[3])	
+	print "run.atten :\t\t"+num2str(realw[3])
 	//
 	print "run.timdat:\t\t"+textw[1]
 	print "run.type:\t\t"+textw[2]
@@ -2729,7 +2731,7 @@ Function ExamineHeader(type)
 	print "sample.blank:\t\t"+num2str(intw[6])
 	//
 	print "sample.temp:\t\t"+num2str(realw[8])
-	print "sample.field:\t\t"+num2str(realw[9])	
+	print "sample.field:\t\t"+num2str(realw[9])
 	//
 	print "sample.tctrlr:\t\t"+num2str(intw[7])
 	print "sample.magnet:\t\t"+num2str(intw[8])
@@ -2760,7 +2762,7 @@ Function ExamineHeader(type)
 	print "resolution.ap12dis:\t\t"+num2str(realw[25])
 	print "resolution.lmda:\t\t"+num2str(realw[26])
 	print "resolution.dlmda:\t\t"+num2str(realw[27])
-	print "resolution.nlenses:\t\t"+num2str(realw[28])	
+	print "resolution.nlenses:\t\t"+num2str(realw[28])
 	//
 	print "tslice.slicing:\t\t"+num2str(logw[0])
 	//
@@ -2786,7 +2788,7 @@ Function ExamineHeader(type)
 	print "magnet.spacer:\t\t"+num2str(realw[36])
 	print "bmstp.xpos:\t\t"+num2str(realw[37])
 	print "bmstop.ypos:\t\t"+num2str(realw[38])
-	//	
+	//
 	print "params.blank1:\t\t"+num2str(intw[15])
 	print "params.blank2:\t\t"+num2str(intw[16])
 	print "params.blank3:\t\t"+num2str(intw[17])
@@ -2795,19 +2797,19 @@ Function ExamineHeader(type)
 	print "params.extra1:\t\t"+num2str(realw[40])
 	print "params.extra2:\t\t"+num2str(realw[41])
 	print "params.extra3:\t\t"+num2str(realw[42])
-	//	
+	//
 	print "params.reserve:\t\t"+textw[10]
 	//
 	print "voltage.printemp:\t\t"+num2str(logw[4])
 	//
 	print "voltage.volts:\t\t"+num2str(realw[43])
 	print "voltage.blank:\t\t"+num2str(realw[44])
-	//	
+	//
 	print "voltage.spacer:\t\t"+num2str(intw[18])
 	//
 	print "polarization.printpol:\t\t"+num2str(logw[5])
 	print "polarization.flipper:\t\t"+num2str(logw[6])
-	//	
+	//
 	print "polarization.horiz:\t\t"+num2str(realw[45])
 	print "polarization.vert:\t\t"+num2str(realw[46])
 	//
@@ -2838,7 +2840,7 @@ End
 
 Proc ReadFileNameInHeader(firstFile,lastFile)
 	Variable firstFile=1,lastFile=100
-	
+
 	fReadFileName(firstFile,lastFile)
 End
 
@@ -2852,10 +2854,10 @@ End
 // beginning of the string, as the VAX does.
 Function fPatchFileName(lo,hi)
 	Variable lo,hi
-	
+
 	Variable ii
 	String file,fileName
-	
+
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
@@ -2866,17 +2868,17 @@ Function fPatchFileName(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
 // simple utility to read the file name stored in the file header (and the suffix)
 Function fReadFileName(lo,hi)
 	Variable lo,hi
-	
+
 	String file,fileName,suffix
 	Variable ii
-	
+
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
@@ -2887,7 +2889,7 @@ Function fReadFileName(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
@@ -2908,7 +2910,7 @@ End
 
 Proc ReadUserAccountName(firstFile,lastFile)
 	Variable firstFile=1,lastFile=100
-	
+
 	fReadUserAccountName(firstFile,lastFile)
 End
 
@@ -2920,10 +2922,10 @@ End
 Function fPatchUserAccountName(lo,hi,acctName)
 	Variable lo,hi
 	String acctName
-	
+
 	Variable ii
 	String file
-	
+
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
@@ -2933,17 +2935,17 @@ Function fPatchUserAccountName(lo,hi,acctName)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
 // simple utility to read the user account name stored in the file header
 Function fReadUserAccountName(lo,hi)
 	Variable lo,hi
-	
+
 	String file,acctName
 	Variable ii
-	
+
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
@@ -2953,7 +2955,7 @@ Function fReadUserAccountName(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
@@ -2969,7 +2971,7 @@ End
 
 Proc ReadMonitorCount(firstFile,lastFile)
 	Variable firstFile=1,lastFile=100
-	
+
 	fReadMonitorCount(firstFile,lastFile)
 End
 
@@ -2980,31 +2982,31 @@ End
 //
 Function fPatchMonitorCount(lo,hi,monCtRate)
 	Variable lo,hi,monCtRate
-	
+
 	Variable ii,ctTime
 	String file
-	
+
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			ctTime = getCountTime(file)
-			WriteMonitorCountToHeader(file,ctTime*monCtRate)			
+			WriteMonitorCountToHeader(file,ctTime*monCtRate)
 		else
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
 // simple utility to read the user account name stored in the file header
 Function fReadMonitorCount(lo,hi)
 	Variable lo,hi
-	
+
 	String file
 	Variable ii,monitorCount
-	
+
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
@@ -3014,7 +3016,7 @@ Function fReadMonitorCount(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
@@ -3031,7 +3033,7 @@ End
 
 Proc ReadDetectorDeadtime(firstFile,lastFile)
 	Variable firstFile=1,lastFile=100
-	
+
 	fReadDetectorDeadtime(firstFile,lastFile)
 End
 
@@ -3042,30 +3044,30 @@ End
 //
 Function fPatchDetectorDeadtime(lo,hi,deadtime)
 	Variable lo,hi,deadtime
-	
+
 	Variable ii
 	String file
-	
+
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
-			WriteDeadtimeToHeader(file,deadtime)			
+			WriteDeadtimeToHeader(file,deadtime)
 		else
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
 // simple utility to read the detector deadtime stored in the file header
 Function fReadDetectorDeadtime(lo,hi)
 	Variable lo,hi
-	
+
 	String file
 	Variable ii,deadtime
-	
+
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
@@ -3075,7 +3077,7 @@ Function fReadDetectorDeadtime(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
@@ -3084,7 +3086,7 @@ End
 /////
 Proc ReadDetectorCount(firstFile,lastFile)
 	Variable firstFile=1,lastFile=100
-	
+
 	fReadDetectorCount(firstFile,lastFile)
 End
 
@@ -3093,10 +3095,10 @@ End
 // and print out the values
 Function fReadDetectorCount(lo,hi)
 	Variable lo,hi
-	
+
 	String file
 	Variable ii,summed
-	
+
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
@@ -3109,7 +3111,7 @@ Function fReadDetectorCount(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 
@@ -3121,10 +3123,10 @@ End
 //
 Function Write_DIV_File(type)
 	String type
-	
+
 	// Your file writing function here. Don't try to duplicate the VAX binary format...
 	WriteVAXWorkFile(type)
-	
+
 	return(0)
 End
 
@@ -3133,23 +3135,23 @@ End
 // in the files - they are just written as zeros and are meaningless
 //file is:
 //	516 bytes header
-// 128x128=16384 (x4) bytes of data 
+// 128x128=16384 (x4) bytes of data
 // + 2 byte record markers interspersed just for fun
 // = 66116 bytes
 //prompts for name of the output file.
 //
 Function WriteVAXWorkFile(type)
 	String type
-	
+
 	Wave data=$("root:Packages:NIST:"+type+":data")
-	
+
 	Variable refnum,ii=0,hdrBytes=516,a,b,offset
 	String fullpath=""
-	
+
 	Duplicate/O data,tempData
 	Redimension/S/N=(128*128) tempData
 	tempData *= 4
-	
+
 	PathInfo/S catPathName
 	fullPath = DoSaveFileDialog("Save data as")	  //won't actually open the file
 	If(cmpstr(fullPath,"")==0)
@@ -3157,11 +3159,11 @@ Function WriteVAXWorkFile(type)
 	  Close/A
 	  Abort "no data file was written"
 	Endif
-	
+
 	Make/B/O/N=(hdrBytes) hdrWave
 	hdrWave=0
 	FakeDIVHeader(hdrWave)
-	
+
 	Make/Y=2/O/N=(510) bw510		//Y=2 specifies 32 bit (=4 byte) floating point
 	Make/Y=2/O/N=(511) bw511
 	Make/Y=2/O/N=(48) bw48
@@ -3172,9 +3174,9 @@ Function WriteVAXWorkFile(type)
 	Open/C="????"/T="TEXT" refNum as fullpath
 	FSetPos refNum, 0
 	//write header bytes (to be skipped when reading the file later)
-	
+
 	FBinWrite /F=1 refnum,hdrWave
-	
+
 	ii=0
 	a=0
 	do
@@ -3184,32 +3186,32 @@ Function WriteVAXWorkFile(type)
 		a+=511
 		//write a 2-byte record marker
 		FBinWrite refnum,recWave
-		
+
 		//write 510 4-byte values (little-endian) 4* true value
 		bw510[] = tempData[p+a]
 		FBinWrite /B=3/F=4 refnum,bw510
 		a+=510
-		
+
 		//write a 2-byte record marker
 		FBinWrite refnum,recWave
-		
-		ii+=1	
+
+		ii+=1
 	while(ii<16)
 	//write out last 48  4-byte values (little-endian) 4* true value
 	bw48[] = tempData[p+a]
 	FBinWrite /B=3/F=4 refnum,bw48
 	//close the file
 	Close refnum
-	
+
 	//go back through and make it look like a VAX datafile
 	Make/W/U/O/N=(511*2) int511		// /W=16 bit signed integers /U=unsigned
 	Make/W/U/O/N=(510*2) int510
 	Make/W/U/O/N=(48*2) int48
-	
+
 	//skip the header for now
 	Open/A/T="????TEXT" refnum as fullPath
 	FSetPos refnum,0
-	
+
 	offset=hdrBytes
 	ii=0
 	do
@@ -3219,20 +3221,20 @@ Function WriteVAXWorkFile(type)
 		Swap16BWave(int511)
 		FSetPos refnum,offset
 		FBinWrite/B=2/F=2 refnum,int511
-		
+
 		//skip 511 4-byte FP = (511*2)*2 2byte int  + 2 bytes record marker
 		offset += 511*2*2 + 2
-		
+
 		//510*2 integers
 		FSetPos refnum,offset
 		FBinRead/B=2/F=2 refnum,int510
 		Swap16BWave(int510)
 		FSetPos refnum,offset
 		FBinWrite/B=2/F=2 refnum,int510
-		
+
 		//
 		offset += 510*2*2 + 2
-		
+
 		ii+=1
 	while(ii<16)
 	//48*2 integers
@@ -3245,15 +3247,15 @@ Function WriteVAXWorkFile(type)
 	//move to EOF and close
 	FStatus refnum
 	FSetPos refnum,V_logEOF
-	
+
 	Close refnum
-	
+
 	Killwaves/Z hdrWave,bw48,bw511,bw510,recWave,temp16,int511,int510,int48
 End
 
 // given a 16 bit integer wave, read in as 2-byte pairs of 32-bit FP data
 // swap the order of the 2-byte pairs
-// 
+//
 Function Swap16BWave(w)
 	Wave w
 
@@ -3264,24 +3266,24 @@ Function Swap16BWave(w)
 	w[0,*;2] = temp16[p+1]
 	w[1,*;2] = temp16[p-1]
 
-//crude way, using a loop	
+//crude way, using a loop
 //	for(ii=0;ii<num;ii+=2)
 //		w[ii] = temp16[ii+1]
 //		w[ii+1] = temp16[ii]
 //	endfor
-	
-	return(0)	
+
+	return(0)
 End
 
 // writes a fake label into the header of the DIV file
 //
 Function FakeDIVHeader(hdrWave)
 	WAVE hdrWave
-	
+
 	//put some fake text into the sample label position (60 characters=60 bytes)
 	String day=date(),tim=time(),lbl=""
 	Variable start=98,num,ii
-	
+
 	lbl = "Sensitivity (DIV) created "+day +" "+tim
 	num=strlen(lbl)
 	for(ii=0;ii<num;ii+=1)
@@ -3297,9 +3299,9 @@ End
 // JUL 2013
 // Yet another fix for an ICE issue. Here the issue is when the run number gets "magically"
 // reset during an experiment. Then there are duplicate run numbers. When procedures key on the run number,
-// the *first* file in the OS file listing is the one that's found. Simply renaming the file with a 
+// the *first* file in the OS file listing is the one that's found. Simply renaming the file with a
 // different number is not sufficient, as the file name embedded in the header must be used (typically from
-// marquee operations) where there is a disconnect between the file load and the function - leading to 
+// marquee operations) where there is a disconnect between the file load and the function - leading to
 // cases where the current data is "unknown", except for textRead.
 //
 // Hence more patching procedures to re-write files with new file names in the header and the OS.
@@ -3313,7 +3315,7 @@ End
 
 Proc CheckFileNames(firstFile,lastFile)
 	Variable firstFile=1,lastFile=100
-	
+
 	fCheckFileNames(firstFile,lastFile)
 End
 
@@ -3323,14 +3325,14 @@ End
 // beginning of the string, as the VAX does.
 Function fRenumberRunNumber(add)
 	Variable add
-	
+
 	Variable ii,numItems
 	String item,runStr,list
 	String curFile,newRunStr,newFileStr
 	String pathStr
 	PathInfo catPathName
 	pathStr = S_path
-	
+
 // get a list of all of the files in the folder
 	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
 	numItems = ItemsInList(list,";")		//get the new number of items in the list
@@ -3339,32 +3341,32 @@ Function fRenumberRunNumber(add)
 	for(ii=0;ii<numItems;ii+=1)
 		curFile = StringFromList(ii, list  ,";" )
 		runStr = GetRunNumStrFromFile(curFile)
-		
+
 		if(cmpstr(runStr,"ABC") != 0)		// weed out error if run number can't be found
 			newRunStr = num2str( str2num(runStr) + add )
 			newFileStr = ReplaceString(runStr, curFile, newRunStr )
 		// change the file name on disk to have a new number (+add)
 			Printf "Old = %s\t\tNew = %s\r",curFile,newFileStr
-			
+
 		// copy the file, saving with the new name
 			CopyFile/I=0/O/P=catPathName curFile as newFileStr
-			
+
 		// change the run number in the file header to have the new number (writing just the necessary characters)
 			WriteTextToHeader(pathStr+newFileStr,newRunStr,7)		//start at byte 7
 		endif
-					
+
 	endfor
-	
+
 	return(0)
 End
 
 // simple utility to read the file name stored in the file header (and the suffix)
 Function fCheckFileNames(lo,hi)
 	Variable lo,hi
-	
+
 	String file,fileName,suffix,fileInHdr,fileOnDisk
 	Variable ii
-	
+
 	for(ii=lo;ii<=hi;ii+=1)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
@@ -3376,7 +3378,7 @@ Function fCheckFileNames(lo,hi)
 			printf "run number %d not found\r",ii
 		endif
 	endfor
-	
+
 	return(0)
 End
 

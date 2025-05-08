@@ -1,4 +1,5 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma TextEncoding = "UTF-8"
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
@@ -20,7 +21,7 @@
 //
 //
 
-// initializes data folder and waves needed for the panel (contains a listbox) 
+// initializes data folder and waves needed for the panel (contains a listbox)
 Proc Init_Tile()
 	//create the data folder
 	NewDataFolder/O/S root:myGlobals:Tile_2D
@@ -48,7 +49,7 @@ Proc Tile_2D()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(849,337,1248,573) /K=2
 	DoWindow/C Tile_2D
-	
+
 	ListBox fileList,pos={5,4},size={206,226}
 	ListBox fileList,listWave=root:myGlobals:Tile_2D:fileWave
 	ListBox fileList,selWave=root:myGlobals:Tile_2D:selWave,mode= 4
@@ -108,16 +109,16 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 
 	ControlInfo popup0
 	String layoutStr=S_Value	//create new layout or append to old one
-	
+
 	ControlInfo/W=Tile_2D popup1
 	String DataStr=S_Value	//create new layout or append to old one
-	
+
 	ControlInfo check0
 	Variable makeLog=V_Value	//make the images logscale?
-	
+
 	ControlInfo check1
 	Variable fixScale=V_Value	//use fixed, user-defined scale
-	
+
 	Variable minScale,maxScale
 	NVAR mns=root:myGlobals:Tile_2D:minScale
 	NVAR mxs=root:myGlobals:Tile_2D:maxScale
@@ -137,7 +138,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 		minScale = -1
 		maxScale = -1		//if both are equal, autoscale data
 	endif
-	
+
 	//loop through the selected files in the list...
 	Wave/T fileWave=$"root:myGlobals:Tile_2D:fileWave"
 	Wave sel=$"root:myGlobals:Tile_2D:selWave"
@@ -145,28 +146,28 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	Variable num=numpnts(sel),ii=0,err=0,startInd=ind,shift
 	Variable ht=1.5,wd=1.5		//height and width of the graphic (in inches)
 	String fname="",pathStr=""
-	
+
 	PathInfo catPathName			//this is where the files are
 	pathStr=S_path
-	
+
 	// get the current state
 	NVAR defaultScaling = root:Packages:NIST:gLogScalingAsDefault
 	Variable oldState = defaultScaling
 	defaultScaling = 0		//set the scaling to linear
-	
+
 	do
 		fname=pathStr + N_FindValidFilename(fileWave[ii])	//in case of VAX version numbers
-		
+
 		if(sel[ii] == 1)
 			if(stringmatch(fname, "*.ASC"))
 				NewDataFolder/O root:Packages:NIST:ASC
 				Load_NamedASC_File(fname, "ASC")
-		
+
 				MakePNGforLayout(minScale,maxScale,"ASC",ind)
 				ind+=1			//a running count of all of the PNG's
 			else
 				LoadRawSANSData(fname,"RAW")		//fname is the full path
-				String/G root:myGlobals:gDataDisplayType="RAW"	
+				String/G root:myGlobals:gDataDisplayType="RAW"
 				fRawWindowHook()
 
 				MakePNGforLayout(minScale,maxScale,"RAW",ind)
@@ -179,12 +180,12 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	while(ii<num)
 	//close the SANS_Data window
 	DoWindow/K SANS_Data
-	
+
 	//now add to the appropriate layout
 	if(cmpstr(layoutStr,"New Layout")==0)
 		NewLayout
 		DoWindow/C $("PNGLayout"+num2str(ind))
-	else	
+	else
 		DoWindow/F $layoutStr
 	endif
 	for(ii=startInd;ii<ind;ii+=1)
@@ -192,7 +193,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 //		ModifyLayout top($("RAW"+num2str(ii)+"L_PNG"))=(40+mod(30*ii,560))	//separate the graphics (in points)
 //		ModifyLayout/I width($("RAW"+num2str(ii)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 	endfor
-	//careful tiling the objects in the layout - it alters the aspect ratio 
+	//careful tiling the objects in the layout - it alters the aspect ratio
 	Variable totalNumPNGs = itemsinlist(PICTList("*L_PNG", ";", "WIN:"))
 	String rcStr="/A=(4,3)"
 	wd = 2.5
@@ -214,7 +215,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 		wd = 1
 	endif
 	Execute "Tile"+rcStr+"/O=8"
-	
+
 	// pick an appropriate width and height (the same) for the permutations of rows and columns to get the
 	// largest possible images
 	// -- then propogate this change to the Add All to Layout function
@@ -222,7 +223,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	for(ii=startInd;ii<ind;ii+=1)
 		ModifyLayout/I width($(DataStr+num2str(ii)+"L_PNG"))=(wd),height($(DataStr+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 	endfor
-	
+
 	defaultScaling = oldState		//set the scaling back to the previous state
 	return(0)
 End
@@ -241,23 +242,23 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 		DoAlert 0,"You must have the Tile_2D panel open to use this operation"
 		Return(0)
 	endif
-	
+
 	//pop the file list to get a current list
 	GetListButtonProc("")
-	
+
 	//tile_2d will now be the top window, but check anyways, since this is not called from a button control
 	ControlInfo/W=Tile_2D popup0
 	String layoutStr=S_Value	//create new layout or append to old one
-	
+
 	ControlInfo/W=Tile_2D popup1
 	String DataStr=S_Value	//create new layout or append to old one
-	
+
 	ControlInfo/W=Tile_2D check0
 	Variable makeLog=V_Value	//make the images logscale?
-	
+
 	ControlInfo/W=Tile_2D check1
 	Variable fixScale=V_Value	//use fixed, user-defined scale
-	
+
 	Variable minScale,maxScale
 	NVAR mns=root:myGlobals:Tile_2D:minScale
 	NVAR mxs=root:myGlobals:Tile_2D:maxScale
@@ -277,7 +278,7 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 		minScale = -1
 		maxScale = -1		//if both are equal, autoscale data
 	endif
-	
+
 	//loop through the selected files in the list...
 	Wave/T fileWave=$"root:myGlobals:Tile_2D:fileWave"
 	Wave sel=$"root:myGlobals:Tile_2D:selWave"
@@ -286,28 +287,28 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 	Variable ht=1.5,wd=1.5		//height and width of the graphic (in inches)
 	String fname="",pathStr=""
 	Variable numPerLayout=40			//number of images per layout
-	
+
 	num=numpnts(fileWave)		//total number of files
 	startind = ind					//this layout(s) PNG files start with this index
-	
+
 	PathInfo catPathName			//this is where the files are
 	pathStr=S_path
-	
+
 	// get the current state
 	NVAR defaultScaling = root:Packages:NIST:gLogScalingAsDefault
 	Variable oldState = defaultScaling
 	defaultScaling = 0		//set the scaling to linear
-	
+
 	//make all of the PNG files
 	do
 		fname=pathStr + N_FindValidFilename(fileWave[ii])	//in case of VAX version numbers
-		
-		
+
+
 		//Modified for summer student 2014 by mjw
 		//Original is follows
 		//
 		//LoadRawSANSData(fname,"RAW")		//fname is the full path
-		//String/G root:myGlobals:gDataDisplayType="RAW"	
+		//String/G root:myGlobals:gDataDisplayType="RAW"
 		//fRawWindowHook()
 		//if(makeLog)
 		//	err = ConvertFolderToLogScale("RAW")
@@ -315,39 +316,39 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 		//MakePNGforLayout(minScale,maxScale,"RAW",ind)
 		//ind+=1			//a running count of all of the PNG's
 		//
-		
+
 		if(stringmatch(fname, "*.ASC"))
 			NewDataFolder/O root:Packages:NIST:ASC
 			Load_NamedASC_File(fname, "ASC")
-		
+
 			MakePNGforLayout(minScale,maxScale,"ASC",ind)
 			ind+=1			//a running count of all of the PNG's
 		else
 			LoadRawSANSData(fname,"RAW")		//fname is the full path
-			String/G root:myGlobals:gDataDisplayType="RAW"	
+			String/G root:myGlobals:gDataDisplayType="RAW"
 			fRawWindowHook()
 
 			MakePNGforLayout(minScale,maxScale,"RAW",ind)
 			ind+=1			//a running count of all of the PNG's
 		endif
 		//End Modification
-		
+
 		ii+=1
 	while(ii<num)
 	//close the SANS_Data window
 	DoWindow/K SANS_Data
-	
+
 	//now add to the appropriate layout(s)
-	
+
 //	if(cmpstr(layoutStr,"New Layout")==0)
 //		NewLayout
 //		DoWindow/C $("PNGLayout"+num2str(ind))
-//	else	
+//	else
 //		DoWindow/F $layoutStr
 //	endif
 	Variable jj,kk
 	String rcStr=""
-	
+
 	// determine the appropriate scaling for the number of files.
 	// if < 40 files, pick the scaling. if > 40, use wd =1, and the last
 	// layout may be sparse, but will be scaled like the others.
@@ -383,7 +384,7 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 		for(kk=ii;kk<jj;kk+=1)
 			ModifyLayout/I width($(DataStr+num2str(kk)+"L_PNG"))=(wd),height($(DataStr+num2str(kk)+"L_PNG"))=(wd) //(in inches)
 		endfor
-		
+
 		if(jj<ind)		//need another layout
 			NewLayout
 			DoWindow/C $("PNGLayout"+num2str(jj))
@@ -402,27 +403,27 @@ End
 //
 Function GetListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	//make sure that path exists
 	PathInfo catPathName
 	if (V_flag == 0)
 		Abort "Folder path does not exist - use Pick Path button on Main Panel"
 	Endif
-	
+
 	String newList=""
 	Variable num
 
 	ControlInfo/W=Tile_2D popup1
 	String DataStr=S_Value	//create new layout or append to old one
 
-	
+
 	if(stringmatch(DataStr,"RAW"))
 		newList = N_GetRawDataFileList()
 	endif
 	if(stringmatch(DataStr,"ASC"))
 		newList = N_GetASCDataFileList()
 	endif
-	
+
 	num=ItemsInList(newlist,";")
 	WAVE/T fileWave=$"root:myGlobals:Tile_2D:fileWave"
 	WAVE selWave=$"root:myGlobals:Tile_2D:selWave"
@@ -444,18 +445,18 @@ Function TileDoneButtonProc(ctrlName) : ButtonControl
 	if(V_Flag==2)
 		return(0)
 	endif
-	
+
 	String pngList=PICTList("*L_PNG",";",""),item=""
 	String ltList=WinList("PNGLayout*", ";","WIN:4")		//default named layout windows
 	Variable ii,num
-	
+
 	//close the layouts, then kill the PNG's
 	num=ItemsinList(ltList,";")
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii,ltList,";")
 		DoWindow/K $item
 	endfor
-	
+
 	num=ItemsinList(pngList,";")
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii,pngList,";")
@@ -479,11 +480,11 @@ Function MakePNGforLayout(minScale,maxScale,type,ii)
 	Variable minScale,maxScale
 	String type
 	Variable ii
-	
+
 	if(!WaveExists($"root:myGlobals:NIHColors"))
 		NIHColorIndex()
 	Endif
-	
+
 	WAVE NIHColors = $"root:myGlobals:NIHColors"
 	Wave data = getDetectorDataW(type)		//this will be the linear data
 	String nameStr = type +num2str(ii)+ "L_PNG"
@@ -510,10 +511,10 @@ Function MakePNGforLayout(minScale,maxScale,type,ii)
 	ModifyGraph tlOffset=-2
 	SVAR fileStr = $("root:Packages:NIST:"+type+":fileList")
 	Textbox/N=text0/F=0/A=MT/X=0.00/Y=0.00/E fileStr
-	
+
 // comment out the line below for DEMO_MODIFIED version
 	SavePICT/Z/E=-5 as "Clipboard"		//saves as PNG format
-	
+
  	LoadPICT/O/Q "Clipboard",$nameStr
  	DoWindow/K temp_png
   	return(0)
@@ -585,7 +586,7 @@ Function RA_SelectAllCheckProc(ctrlName,checked) : CheckBoxControl
 		w = 0		// deselect all
 		CheckBox check3,value=0
 	endif
-	
+
 
 	return(0)
 End
@@ -627,16 +628,16 @@ End
 //does not check to see if they really are RAW files though...(too slow)
 Function RA_GetListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	//make sure that path exists
 	PathInfo catPathName
 	if (V_flag == 0)
 		Abort "Folder path does not exist - use Pick Path button on Main Panel"
 	Endif
-	
+
 	Variable num
 	String newList = N_GetRawDataFileList()
-	
+
 	num=ItemsInList(newlist,";")
 	WAVE/T fileWave=$"root:myGlobals:RAW2ASCII:fileWave"
 	WAVE selWave=$"root:myGlobals:RAW2ASCII:selWave"
@@ -655,16 +656,16 @@ End
 //
 Function RA_ExportButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	//loop through the selected files in the list...
 	Wave/T fileWave=$"root:myGlobals:RAW2ASCII:fileWave"
 	Wave sel=$"root:myGlobals:RAW2ASCII:selWave"
 	Variable num=numpnts(sel),ii=0,qxqy=0,detCoord=0,GraspASCII=0
 	String fname="",pathStr="",fullPath="",newFileName=""
-	
+
 	PathInfo catPathName			//this is where the files are
 	pathStr=S_path
-	
+
 	//what type of export?
 	// check0 is det coord, check1 is QxQy, check2 is old-style VAX ASCII for Grasp
 	ControlInfo check0
@@ -673,7 +674,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 	qxqy=V_Value		//==1 if qxqy desired
 	ControlInfo check2
 	GraspASCII=V_Value		//==1 if GraspASCII desired
-	
+
 	// get the current state
 	NVAR defaultScaling = root:Packages:NIST:gLogScalingAsDefault
 	Variable oldState = defaultScaling
@@ -682,10 +683,10 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 		if(sel[ii] == 1)
 			fname=pathStr + N_FindValidFilename(fileWave[ii])		//in case of VAX version numbers
 			LoadRawSANSData(fname,"RAW")		//fname is the full path
-			String/G root:myGlobals:gDataDisplayType="RAW"	
+			String/G root:myGlobals:gDataDisplayType="RAW"
 			fRawWindowHook()
 			newFileName = N_FindValidFilename(fileWave[ii])
-			
+
 			if(qxqy)
 				fullPath=pathStr+newFileName+".DAT"
 				QxQy_Export("RAW",fullpath,0)
@@ -702,7 +703,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 		endif
 		ii+=1
 	while(ii<num)
-	
+
 	defaultScaling = oldState		//set the scaling back to what it was
 	return(0)
 End

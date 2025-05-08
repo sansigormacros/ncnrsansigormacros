@@ -1,4 +1,5 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma TextEncoding = "UTF-8"
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
@@ -32,7 +33,7 @@ Proc OpenSubtract1DPanel()
 	endif
 End
 
-// initializes data folder and waves needed for the panel (contains a listbox) 
+// initializes data folder and waves needed for the panel (contains a listbox)
 Proc Init_Subtract1D()
 	//create the data folder
 	NewDataFolder/O/S root:myGlobals:Subtract1D
@@ -46,7 +47,7 @@ Proc Init_Subtract1D()
 	Variable/G gCorrection=1
 	Variable/G gPlotState=0
 	Variable/G gNullSolvent=0
-		
+
 	Make/N=1/D/O w01,w11,w21,w31,w41,w51
 	Make/N=1/D/O w02,w12,w22,w32,w42,w52
 	Duplicate/O w01 xsample
@@ -58,7 +59,7 @@ Proc Init_Subtract1D()
 	Duplicate/O w01 xresult
 	Duplicate/O w11 yresult
 	Duplicate/O w21 sresult
-	
+
 	SetDataFolder root:
 End
 
@@ -118,7 +119,7 @@ Proc Subtract_1D()
 	DrawText 241,223,"f"
 	//draw the fancy text on the panel
 	WriteExpression(0)
-	
+
 EndMacro
 
 Function ShowSub1DHelp(ctrlName) : ButtonControl
@@ -131,7 +132,7 @@ End
 //kills both the panel and the graph, and then the data folder
 Function Sub1D_DoneButton(ctrlName)
 	String ctrlName
-	
+
 	DoWindow/K Subtract_1D_Panel
 	DoWindow/K Plot_Sub1D
 	KillDataFolder root:myGlobals:Subtract1D
@@ -155,7 +156,7 @@ Function Calculate(ctrlName) : ButtonControl
 		DoAlert 0, "Load Sample file!"
 		return(1)
 	endif
-	
+
 	WAVE xsample=root:myGlobals:Subtract1D:xsample
 	WAVE xsolvent=root:myGlobals:Subtract1D:xsolvent
 	//WAVE w01=root:myGlobals:Subtract1D:w01
@@ -163,7 +164,7 @@ Function Calculate(ctrlName) : ButtonControl
 	WAVE ssample=root:myGlobals:Subtract1D:ssample		//w21
 	WAVE ysolvent=root:myGlobals:Subtract1D:ysolvent			//w12
 	WAVE ssolvent=root:myGlobals:Subtract1D:ssolvent			//w22
-	
+
 	NVAR gPresetc = root:myGlobals:Subtract1D:gPresetc
 	NVAR gSolvNormal = root:myGlobals:Subtract1D:gSolvNormal
 	NVAR gCorrection = root:myGlobals:Subtract1D:gCorrection
@@ -174,14 +175,14 @@ Function Calculate(ctrlName) : ButtonControl
 //no interpolation - exit if files are not EXACTLY the same length
 // and have EXACTLY the same q-values
 //
-//////////////	
+//////////////
 //	Variable maxDiff
 //	//check that both files are of the same length
 //	if (numpnts(xsample)!=numpnts(xsolvent))
 //		DoAlert 0, "The lengths of Sample and Solvent files are NOT identical!"
 //		return(1)
 //	endif
-//	
+//
 //	//check that both files have the same q-values
 //	//currently, abort, but could offer to interpolate
 //	Duplicate/O xsample helpwave
@@ -194,7 +195,7 @@ Function Calculate(ctrlName) : ButtonControl
 //		return(1)
 //	endif
 ///////////////
-	
+
 	//set up for interpolation
 	Duplicate/O xsample root:myGlobals:Subtract1D:xsolv_interp	//make the solvent x match the sample
 	Duplicate/O xsample root:myGlobals:Subtract1D:ysolv_interp
@@ -204,14 +205,14 @@ Function Calculate(ctrlName) : ButtonControl
 	WAVE ssolv_interp = root:myGlobals:Subtract1D:ssolv_interp
 	ysolv_interp = interp(xsolv_interp, xsolvent, ysolvent )
 	ssolv_interp = interp(xsolv_interp, xsolvent, ssolvent )
-	
+
 	Duplicate/O xsample root:myGlobals:Subtract1D:xresult
 	Duplicate/O ysample root:myGlobals:Subtract1D:yresult
 	Duplicate/O ssample root:myGlobals:Subtract1D:sresult
 	WAVE xresult = root:myGlobals:Subtract1D:xresult
 	WAVE yresult = root:myGlobals:Subtract1D:yresult
 	WAVE sresult = root:myGlobals:Subtract1D:sresult
-	
+
 	if (gPresetc==0)		//find the constant from the cursor range
 		Duplicate/O ysample helpwave
 		if(gSolvNormal && gNullSolvent)
@@ -240,24 +241,24 @@ End
 
 Proc LoadSample(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	LoadFile_Sub1D(1)
 	SetDataFolder root:myGlobals:Subtract1D
 	Duplicate/O w01 xsample
 	Duplicate/O w11 ysample
 	Duplicate/O w21 ssample
 	SetDataFolder root:
-	
+
 	//allow user to set unity/null background, now that sample data exists
 	CheckBox check_2 win=Subtract_1D_Panel,disable=0
-	//if solvent was set to one (or zero), toggle the box so the 
+	//if solvent was set to one (or zero), toggle the box so the
 	//"solvent" set is updated to reflect the q-values of the newly
 	//loaded sample
 	ControlInfo check_2
 	if(V_Value==1)
 		NullSolventCheck("",1)		//fakes as if the box was checked
 	Endif
-	
+
 End
 
 
@@ -269,7 +270,7 @@ Proc LoadSolvent(ctrlName) : ButtonControl
 	Duplicate/O w02 xsolvent
 	Duplicate/O w12 ysolvent
 	Duplicate/O w22 ssolvent
-	
+
 	if (cmpstr(gName2,"<none>")!=0)
 		Cursor A, ysolvent, leftx(xsolvent)
 		Cursor/A=0 B, ysolvent, rightx(xsolvent)
@@ -320,7 +321,7 @@ Proc Plot_Sub1D()
 	Legend/C/N=text0/J/A=LT/X=2/Y=2 "\\s(ysample) Sample\r\\s(ysolvent) Solvent\r\\s(yresult) Result"
 	ShowInfo
 	Label left "Sample, Solvent I (cm\\S-1\M)"
-	
+
 	String angst = StrVarOrDefault("root:Packages:NIST:gAngstStr", "A" )
 	Label bottom "q ("+angst+"\\S-1\M)"
 //	Label right "Result I/cm\\S-1"
@@ -357,7 +358,7 @@ Proc NullSolventCheck(ctrlName,checked) : CheckBoxControl
 	Variable checked
 
 	SetDataFolder root:myGlobals:Subtract1D
-	
+
 	Variable solvValue
 	String nameStr=""
 	if(gSolvNormal)
@@ -369,7 +370,7 @@ Proc NullSolventCheck(ctrlName,checked) : CheckBoxControl
 		solvValue=1
 		nameStr="Solvent value set to one"
 	endif
-	
+
 	if(checked)
 		//zero/one for the solvent
 		Duplicate/O w01 xsolvent		//duplicate the sample data
@@ -389,7 +390,7 @@ Proc NullSolventCheck(ctrlName,checked) : CheckBoxControl
 		gName2 = "<none>"
 	Endif
 	gNullSolvent=checked
-	
+
 	SetDataFolder root:
 End
 
@@ -421,19 +422,19 @@ End
 //don't try to re-write as a function - not worth the effort
 //
 Proc LoadFile_Sub1D(type)
-	Variable type	
-	
+	Variable type
+
 	String n0,n1,n2,n3,n4,n5,help
-	
+
 	Variable refnum,numLines,numData,numHdr,ii
 	String fileStr="",junkStr=""
-	
+
 	//junkStr = PadString(junkStr, 100, 0 )
 	fileStr=DoOpenFileDialog("pick a 1D data set")
 	if(cmpstr(fileStr,"")==0)
 		return		//no file selected, exit
 	endif
-	
+
 	SetDataFolder root:myGlobals:Subtract1D
 	LoadWave/G/D/A fileStr
 	If (V_flag==6)
@@ -449,7 +450,7 @@ Proc LoadFile_Sub1D(type)
 		Duplicate/O $n3, $("w3" + num2istr(type))
 		Duplicate/O $n4, $("w4" + num2istr(type))
 		Duplicate/O $n5, $("w5" + num2istr(type))
-		if (type==1) 
+		if (type==1)
 			gName1 = S_fileName
 			//read in the header of the sample file
 			// not yet implemented
@@ -468,7 +469,7 @@ Proc LoadFile_Sub1D(type)
 		else
 			gName2 = S_fileName
 		endif
-	
+
 	elseif (V_flag == 4)
 		n0 = StringFromList(0, S_waveNames ,";" )
 		n1 = StringFromList(1, S_waveNames ,";" )
@@ -478,7 +479,7 @@ Proc LoadFile_Sub1D(type)
 		Duplicate/O $n1, $("w1" + num2istr(type))
 		Duplicate/O $n2, $("w2" + num2istr(type))
 		Duplicate/O $n3, $("w3" + num2istr(type))
-		if (type==1) 
+		if (type==1)
 			gName1 = S_fileName
 			//read in the header of the sample file
 			// not yet implemented
@@ -497,7 +498,7 @@ Proc LoadFile_Sub1D(type)
 		else
 			gName2 = S_fileName
 		endif
-		
+
 	elseif (V_flag == 3)
 		n0 = StringFromList(0, S_waveNames ,";" )
 		n1 = StringFromList(1, S_waveNames ,";" )
@@ -505,7 +506,7 @@ Proc LoadFile_Sub1D(type)
 		Duplicate/O $n0, $("w0" + num2istr(type))
 		Duplicate/O $n1, $("w1" + num2istr(type))
 		Duplicate/O $n2, $("w2" + num2istr(type))
-		if (type==1) 
+		if (type==1)
 			gName1 = S_fileName
 			//read in the header of the sample file
 			// not yet implemented
@@ -530,15 +531,15 @@ Proc LoadFile_Sub1D(type)
 		endif
 	endif
 	//do some cleanup
-	
+
 	KillWaves/Z wave0,wave1,wave2,wave3,wave4,wave5,wave6,wave7,wave8,wave9,wave10
-	
+
 	setDataFolder root:
 end
 
 Function CountNumLines(fileStr)
 	String fileStr
-	
+
 	Variable num,refnum
 	num=0
 	Open/R refNum as fileStr
@@ -564,7 +565,7 @@ Function SaveResult(ctrlName) : ButtonControl
 	WAVE w41 = root:myGlobals:Subtract1D:w41
 	WAVE w51 = root:myGlobals:Subtract1D:w51
 	WAVE/T hdr = root:myGlobals:Subtract1D:SampleHeader
-	
+
 	//check each wave for existence
 	Variable err=0,refnum
 	String fileName=""
@@ -586,12 +587,12 @@ Function SaveResult(ctrlName) : ButtonControl
 	//err += 1 - WaveExists(w41)
 	//err += 1 - WaveExists(w51)
 	err += 1 - WaveExists(hdr)
-	
+
 	if(err>0)
 		DoAlert 0,"We need at least 3 column data - I can't write out the file"
 		return(1)
 	endif
-	
+
 	SVAR loadedFile=root:myGlobals:Subtract1D:gName1
 	fileName = DoSaveFileDialog("Save Data as",fname=loadedFile,suffix="b")
 	if(cmpstr(fileName,"")==0)
@@ -607,7 +608,7 @@ Function SaveResult(ctrlName) : ButtonControl
 		wfprintf refnum,formatStr, xresult,yresult,sresult
 	endif
 	Close refnum
-	
+
 	return(0)
 End
 

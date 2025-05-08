@@ -1,4 +1,6 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtFunctionErrors=1
+#pragma TextEncoding="UTF-8"
+#pragma rtGlobals=3 // Use modern global access method.
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
@@ -11,7 +13,7 @@
 // some additional procedures that are called are in WorkFileUtils
 //******************
 
-//toggles the display from linear to log-scale, 
+//toggles the display from linear to log-scale,
 // Does NOT change the data, or "swap" data
 //
 ////
@@ -20,87 +22,80 @@
 //
 // toggle the (z) value of the display log/lin
 //
-Function Log_Lin(ctrlName) : ButtonControl
-	String ctrlName
-	
+Function Log_Lin(string ctrlName) : ButtonControl
+
 	//get the current displayed data (so the correct folder is used)
-	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	Variable err=0
-	
-	String dest = "root:Packages:NIST:"+cur_folder
-	NVAR isLogscale = $(dest + ":gIsLogScale")
-	
-	if (cmpstr(ctrlName,"bisLog") == 0)
+	SVAR     cur_folder = root:myGlobals:gDataDisplayType
+	variable err        = 0
+
+	string dest       = "root:Packages:NIST:" + cur_folder
+	NVAR   isLogscale = $(dest + ":gIsLogScale")
+
+	if(cmpstr(ctrlName, "bisLog") == 0)
 		//	MakeLinear
-//		Wave LookupWave = root:myGlobals:linearLookupWave
-		ModifyImage data ctab= {*,*,ColdWarm,0},lookup= root:myGlobals:linearLookupWave
+		//		Wave LookupWave = root:myGlobals:linearLookupWave
+		ModifyImage data, ctab={*, *, ColdWarm, 0}, lookup=root:myGlobals:linearLookupWave
 		isLogscale = 0
-		
-//		err = ConvertFolderToLinearScale(cur_folder)		//will abort if there is an error
-		
-		if( !err )
+
+		//		err = ConvertFolderToLinearScale(cur_folder)		//will abort if there is an error
+
+		if(!err)
 			//update the button
-			Button $ctrlName,title="isLin",rename=bisLin,win=SANS_Data
-		Endif
+			Button $ctrlName, title="isLin", rename=bisLin, win=SANS_Data
+		endif
 	else
 		//make log-scale
-//		Wave LookupWave = root:myGlobals:logLookupWave
-		ModifyImage data ctab= {*,*,ColdWarm,0},lookup= root:myGlobals:logLookupWave
+		//		Wave LookupWave = root:myGlobals:logLookupWave
+		ModifyImage data, ctab={*, *, ColdWarm, 0}, lookup=root:myGlobals:logLookupWave
 		isLogscale = 1
-		
-//		err = ConvertFolderToLogScale(cur_folder)	//checks for negative values, and will abort if there is an error
-		if( !err )
+
+		//		err = ConvertFolderToLogScale(cur_folder)	//checks for negative values, and will abort if there is an error
+		if(!err)
 			//update the button
-			Button $ctrlName,title="isLog",rename=bisLog,win=SANS_Data
-		Endif
+			Button $ctrlName, title="isLog", rename=bisLog, win=SANS_Data
+		endif
 	endif
 
 	//back to root folder (redundant)
-	
+
 	SetDataFolder root:
 End
-
-
 
 //prints out information about the currently displayed file to the history window
 //
-Function StatusButton(ctrlName) : ButtonControl
-	String ctrlName
-	
+Function StatusButton(string ctrlName) : ButtonControl
+
 	//get the current displayed data (so the correct folder is used)
-	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	String cur = "root:Packages:NIST:"+cur_folder
-	
-	SVAR fileList = $(cur +":fileList")
-	String toPrint
-	
-	
-	Variable xctr=getDet_beam_center_x(cur_folder)
-	Variable yctr=getDet_beam_center_y(cur_folder)
-//	Variable detCts=getDetector_counts(cur_folder)
-	Variable detCts=getDet_IntegratedCount(cur_folder)
-//	Variable monCts=getControlMonitorCount(cur_folder)
-	Variable monCts=getBeamMonNormData(cur_folder)
-	Variable trans=getSampleTransmission(cur_folder)
-	Variable thick=getSampleThickness(cur_folder)
-	
-	
+	SVAR   cur_folder = root:myGlobals:gDataDisplayType
+	string cur        = "root:Packages:NIST:" + cur_folder
+
+	SVAR fileList = $(cur + ":fileList")
+	string toPrint
+
+	variable xctr = getDet_beam_center_x(cur_folder)
+	variable yctr = getDet_beam_center_y(cur_folder)
+	//	Variable detCts=getDetector_counts(cur_folder)
+	variable detCts = getDet_IntegratedCount(cur_folder)
+	//	Variable monCts=getControlMonitorCount(cur_folder)
+	variable monCts = getBeamMonNormData(cur_folder)
+	variable trans  = getSampleTransmission(cur_folder)
+	variable thick  = getSampleThickness(cur_folder)
+
 	Print "\r***Current file status***"
 	Print "FILE(S) : " + fileList
-	Print "LABEL:  "+ getSampleDescription(cur_folder)
-	sprintf toPrint, "Counting time = %g seconds",getCount_time(cur_folder)
+	Print "LABEL:  " + getSampleDescription(cur_folder)
+	sprintf toPrint, "Counting time = %g seconds", getCount_time(cur_folder)
 	Print toPrint
-	sprintf toPrint,"Detector counts = %g for %g monitor counts",detCts,monCts
+	sprintf toPrint, "Detector counts = %g for %g monitor counts", detCts, monCts
 	Print toPrint
-	sprintf toPrint,"Trans = %g , thick = %g cm,  Xcenter = %g, Ycenter = %g",trans,thick,xctr,yctr
+	sprintf toPrint, "Trans = %g , thick = %g cm,  Xcenter = %g, Ycenter = %g", trans, thick, xctr, yctr
 	Print toPrint
-	sprintf toPrint,"%g attenuators used",getAtten_number(cur_folder)
+	sprintf toPrint, "%g attenuators used", getAtten_number(cur_folder)
 	Print toPrint
-	
+
 	//back to root folder (redundant)
 	SetDataFolder root:
 End
-
 
 //Updates the color map used for the SANS data based on the values of the slider bars
 // checks to see which (name) slider was moved and its value. event is ignored
@@ -111,101 +106,98 @@ End
 // but will poll for values
 //
 // when called by a moving slider, all is OK
-// when called manually to force a reset, SANS_Data window must be the target 
-Function MapSliderProc(name, value, event)
-	String name	// name of this slider control
-	Variable value	// value of slider
-	Variable event	// bit field: bit 0: value set; 1: mouse down, 2: mouse up, 3: mouse moved
-	
-//	WAVE NIHColors = $"root:myGlobals:NIHColors"
-	Variable loscale,hiScale,maxData,minData,loRange,hiRange
-	
-//	DoWindow/F SANS_Data
-	if(WinType("SANS_Data")==0)		//check for existence without explicity bringing it to the front
-		return(1)		//no data window, don't do anything
-	Endif
-	
-	StrSwitch(name)
+// when called manually to force a reset, SANS_Data window must be the target
+// name = name of this slider control
+// value = value of slider
+// event = bit field: bit 0: value set; 1: mouse down, 2: mouse up, 3: mouse moved
+Function MapSliderProc(string name, variable value, variable event)
+
+	//	WAVE NIHColors = $"root:myGlobals:NIHColors"
+	variable loscale, hiScale, maxData, minData, loRange, hiRange
+
+	//	DoWindow/F SANS_Data
+	if(WinType("SANS_Data") == 0) //check for existence without explicity bringing it to the front
+		return (1) //no data window, don't do anything
+	endif
+
+	strswitch(name)
 		case "loSlide":
-			loScale=value
+			loScale = value
 			ControlInfo/W=SANS_Data hiSlide
-			hiScale=V_Value
+			hiScale = V_Value
 			break
 		case "hiSlide":
-			hiScale=value
+			hiScale = value
 			ControlInfo/W=SANS_Data loSlide
-			loScale=V_Value
+			loScale = V_Value
 			break
-		case "both":	//poll both of the sliders for their values
+		case "both": //poll both of the sliders for their values
 			ControlInfo/W=SANS_Data hiSlide
-			hiScale=V_Value
+			hiScale = V_Value
 			ControlInfo/W=SANS_Data loSlide
-			loScale=V_Value
+			loScale = V_Value
 			break
-		case "reset":		//reset both of the sliders
-			Slider hiSlide,win=SANS_Data,value=1
-			hiScale=1
-			Slider loSlide,win=SANS_Data,value=0
-			loScale=0
+		case "reset": //reset both of the sliders
+			Slider hiSlide, win=SANS_Data, value=1
+			hiScale = 1
+			Slider loSlide, win=SANS_Data, value=0
+			loScale = 0
 			break
-		default:
-			loScale=0
-			hiScale=1
+		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			loScale = 0
+			hiScale = 1
 	endswitch
-	String result = ImageInfo("SANS_Data","data",0)
-	String fullPath = StringByKey("ZWAVEDF", result, ":", ";")
+	string result   = ImageInfo("SANS_Data", "data", 0)
+	string fullPath = StringByKey("ZWAVEDF", result, ":", ";")
 	fullpath += "data"
 	//Print fullpath
 	WaveStats/Q $fullpath
-	maxData=V_max
-	minData=V_min
-		
-	loRange = (maxData-minData)*loScale + minData
-	hiRange = (maxData-minData)*hiScale + minData
-	
-//	Print loRange,hiRange
-//	ScaleColorsToData((loScale*maxData),(hiScale*maxData),NIHColors)
-//	ScaleColorsToData(loRange,hiRange,NIHColors)
-//	ModifyImage/W=SANS_Data data cindex=NIHColors
+	maxData = V_max
+	minData = V_min
 
+	loRange = (maxData - minData) * loScale + minData
+	hiRange = (maxData - minData) * hiScale + minData
 
-// (DONE)
-// x- figure out whether the display is currently log or lin so I can decide which Lookup to use
-//
-	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	String dest = "root:Packages:NIST:"+cur_folder
-	NVAR isLogscale = $(dest + ":gIsLogScale")
+	//	Print loRange,hiRange
+	//	ScaleColorsToData((loScale*maxData),(hiScale*maxData),NIHColors)
+	//	ScaleColorsToData(loRange,hiRange,NIHColors)
+	//	ModifyImage/W=SANS_Data data cindex=NIHColors
+
+	// (DONE)
+	// x- figure out whether the display is currently log or lin so I can decide which Lookup to use
+	//
+	SVAR   cur_folder = root:myGlobals:gDataDisplayType
+	string dest       = "root:Packages:NIST:" + cur_folder
+	NVAR   isLogscale = $(dest + ":gIsLogScale")
 
 	if(isLogscale)
-		ModifyImage/W=SANS_Data data ctab= {loRange,hiRange,ColdWarm,0},lookup= root:myGlobals:logLookupWave
+		ModifyImage/W=SANS_Data data, ctab={loRange, hiRange, ColdWarm, 0}, lookup=root:myGlobals:logLookupWave
 	else
-		ModifyImage/W=SANS_Data data ctab= {loRange,hiRange,ColdWarm,0},lookup= root:myGlobals:linearLookupWave
+		ModifyImage/W=SANS_Data data, ctab={loRange, hiRange, ColdWarm, 0}, lookup=root:myGlobals:linearLookupWave
 	endif
-				
-	return 0	// other return values reserved
+
+	return 0 // other return values reserved
 End
 
 //button procedure to display previous RAW data file
 //incremented by run number, not dependent on file prefix
-Function BackOneFileButtonProc(ctrlName) : ButtonControl
-	String ctrlName
+Function BackOneFileButtonProc(string ctrlName) : ButtonControl
 
 	LoadPlotAndDisplayRAW(-1)
 	// re-draw the sectors or annulus if this was a step to prev/next raw file
 	MasterAngleDraw()
-	
-	return(0)
+
+	return (0)
 End
 
 //button procedure to display next RAW data file
 //incremented by run number, not dependent on file prefix
-Function ForwardOneFileButtonProc(ctrlName) : ButtonControl
-	String ctrlName
+Function ForwardOneFileButtonProc(string ctrlName) : ButtonControl
 
 	LoadPlotAndDisplayRAW(1)
 	// re-draw the sectors or annulus if this was a step to prev/next raw file
 	MasterAngleDraw()
-	
+
 	return (0)
 End
 
@@ -217,119 +209,115 @@ End
 // trying to find a file (frustrating), don't want to look past the end of the run numbers (waste)
 // -- may find a more elegant solution later.
 //
-Function LoadPlotAndDisplayRAW(increment)
-	Variable increment
+Function LoadPlotAndDisplayRAW(variable increment)
 
-	Variable ii,val
-	String filename,tmp
+	variable ii, val
+	string filename, tmp
 	//take the currently displayed RAW file (there is only one name in fileList)
 	SVAR oldName = root:Packages:NIST:RAW:fileList
-	oldname = N_RemoveAllSpaces(oldname)		// the name in the file list will have 21 chars, thus leading spaces if prefix < 5 chars
-	
-	
+	oldname = N_RemoveAllSpaces(oldname) // the name in the file list will have 21 chars, thus leading spaces if prefix < 5 chars
+
 	filename = oldname
-	
-	ii = 1
+
+	ii  = 1
 	val = increment
 	do
-		filename = N_GetPrevNextRawFile(filename,val)
-//		print "new= ",filename
-		
-		val = ii*increment
-		ii+=1
+		filename = N_GetPrevNextRawFile(filename, val)
+		//		print "new= ",filename
+
+		val = ii * increment
+		ii += 1
 		tmp = ParseFilePath(0, filename, ":", 1, 0)
 
-		if(strlen(tmp) == 0)		//in some cases, a null string can be returned - handle gracefully
-			return(0)
+		if(strlen(tmp) == 0) //in some cases, a null string can be returned - handle gracefully
+			return (0)
 		endif
-		
-	while( (cmpstr(tmp,oldname) == 0) && ii < 11)
-//	print filename
-	
+
+	while((cmpstr(tmp, oldname) == 0) && ii < 11)
+	//	print filename
+
 	// display the specified RAW data file
-	String/G root:myGlobals:gDataDisplayType="RAW"
-	LoadRawSANSData(filename,"RAW")
-	
+	string/G root:myGlobals:gDataDisplayType = "RAW"
+	LoadRawSANSData(filename, "RAW")
+
 	//do the average and plot (either the default, or what is on the panel currently
 	if(!DataFolderExists("root:myGlobals:Drawing"))
 		Execute "InitializeAveragePanel()"
 	endif
-	Panel_DoAverageButtonProc("")		//the avg panel does not need to be open, folders must exist
-	
+	Panel_DoAverageButtonProc("") //the avg panel does not need to be open, folders must exist
+
 	//data is displayed here
 	fRawWindowHook()
-	
-	return(0)
+
+	return (0)
 End
 
 //toggles the overlay of the current mask file
 //no effect if no mask exists
 Proc maskButtonProc(ctrlName) : ButtonControl
-	String ctrlName
-		
-	DoWindow/F SANS_Data		 //do nothing if SANS_Data is not displayed, make it target if it is open
-	if(V_flag==0)
+	string ctrlName
+
+	DoWindow/F SANS_Data //do nothing if SANS_Data is not displayed, make it target if it is open
+	if(V_flag == 0)
 		return
 	endif
-	
-	CheckDisplayed/W=SANS_Data root:Packages:NIST:MSK:overlay
-	if(V_flag==1)		//the overlay is present
-		Button $ctrlName,title="Show Mask",win=SANS_Data
-		OverlayMask(0)		//hide the mask
-	else
-		Button $ctrlName,title="Hide Mask",win=SANS_Data
-		OverlayMask(1)		//show the mask
-	endif
-	
 
-End
+	CheckDisplayed/W=SANS_Data root:Packages:NIST:MSK:overlay
+	if(V_flag == 1) //the overlay is present
+		Button $ctrlName, title="Show Mask", win=SANS_Data
+		OverlayMask(0) //hide the mask
+	else
+		Button $ctrlName, title="Hide Mask", win=SANS_Data
+		OverlayMask(1) //show the mask
+	endif
+
+EndMacro
 
 //I vs. Q button on control bar of SANS_Data window activates this pocedure
 //and simply displays the AvgPanel to solicit input
 //from the user (graphically) before any averaging is done
 //
 Proc ShowAvgPanel_SANSData(ctrlName) : ButtonControl
-	String ctrlName
+	string ctrlName
 
 	ShowAveragePanel()
-End
-
+EndMacro
 
 //invoked by function key, (if menu declared)
 // if no window, or if display type is not RAW, do nothing
 Function NextRawFile()
 
 	DoWindow/F SANS_Data
-	if( V_Flag==0 )
-		return 1			//return error, currently ignored
+	if(V_Flag == 0)
+		return 1 //return error, currently ignored
 	endif
-	SVAR str=root:myGlobals:gDataDisplayType
-	if(cmpstr(str,"RAW")!=0)
+	SVAR str = root:myGlobals:gDataDisplayType
+	if(cmpstr(str, "RAW") != 0)
 		return 1
 	endif
-	
-	LoadPlotAndDisplayRAW(1)		//go to next file
+
+	LoadPlotAndDisplayRAW(1) //go to next file
 
 	return 0
-end
+End
 
 //invoked by function key, (if menu declared)
 // if no window, or if display type is not RAW, do nothing
 Function PreviousRawFile()
 
 	DoWindow/F SANS_Data
-	if( V_Flag==0 )
-		return 1			//do nothing and return error, currently ignored
+	if(V_Flag == 0)
+		return 1 //do nothing and return error, currently ignored
 	endif
-	SVAR str=root:myGlobals:gDataDisplayType
-	if(cmpstr(str,"RAW")!=0)
+	SVAR str = root:myGlobals:gDataDisplayType
+	if(cmpstr(str, "RAW") != 0)
 		return 1
 	endif
-	
-	LoadPlotAndDisplayRAW(-1)		//go to previous file
+
+	LoadPlotAndDisplayRAW(-1) //go to previous file
 
 	return 0
-end
+End
 
 //test function invoked by F5
 // takes the selected file from the file catalog
@@ -338,19 +326,19 @@ end
 //
 Function LoadSelectedData()
 
-	if(WinType("CatVSTable")==0)
-		return(1)
+	if(WinType("CatVSTable") == 0)
+		return (1)
 	endif
-	GetSelection table,CatVSTable,3
-	
-	Wave/T fWave = $"root:myGlobals:CatVSHeaderInfo:Filenames"
-	String filename=fWave[V_StartRow]
+	GetSelection table, CatVSTable, 3
+
+	WAVE/T fWave    = $"root:myGlobals:CatVSHeaderInfo:Filenames"
+	string filename = fWave[V_StartRow]
 	PathInfo catPathName
-	
+
 	// display the specified RAW data file
-	String/G root:myGlobals:gDataDisplayType="RAW"
-	
-	LoadRawSANSData(S_Path+filename,"RAW")
+	string/G root:myGlobals:gDataDisplayType = "RAW"
+
+	LoadRawSANSData(S_Path + filename, "RAW")
 	//data is displayed here
 	fRawWindowHook()
 
@@ -359,7 +347,7 @@ Function LoadSelectedData()
 	if(!DataFolderExists("root:myGlobals:Drawing"))
 		Execute "InitializeAveragePanel()"
 	endif
-	Panel_DoAverageButtonProc("")		//the avg panel does not need to be open, folders must exist
-	
-	return(0)
+	Panel_DoAverageButtonProc("") //the avg panel does not need to be open, folders must exist
+
+	return (0)
 End

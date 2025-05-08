@@ -1,4 +1,6 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma rtFunctionErrors=1
+#pragma TextEncoding="UTF-8"
+#pragma rtGlobals=3 // Use modern global access method and strict wave access.
 #pragma version=5.2
 #pragma IgorVersion=6.1
 
@@ -21,26 +23,20 @@
 //
 //************************
 
-
 // the base data folder path where the raw data is loaded
-Strconstant ksBaseDFPath = "root:Packages:NIST:RawSANS:"
-
+StrConstant ksBaseDFPath = "root:Packages:NIST:RawSANS:"
 
 // the list of WORK Folders
 // RawSANS does not behave as a WORK folder, but it is local. so add it in explicitly to the list if needed
 // SASCALC behaves *almost* as a WORK folder, but it is local. so add it in explicitly to the list if needed
 // WorkMath folders are not truly work folders, but recreated as best as possible from ASC data
-Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;SAS;"
-Strconstant ksWorkFolderListExtra = "SASCALC;RealTime;WorkMath;WorkMath_File_1;WorkMath_File_2;WorkMath_Result;"
-Strconstant ksWorkFolderListPol1 = "SAM_UU;SAM_UD;SAM_DD;SAM_DU;EMP_UU;EMP_UD;EMP_DD;EMP_DU;"
-Strconstant ksWorkFolderListPol2 = "COR_UU;COR_UD;COR_DD;COR_DU;CAL_UU;CAL_UD;CAL_DD;CAL_DU;COR;ABS;CAL;STO;"
-Strconstant ksWorkFolderListPol3 = "ABS_UU;ABS_UD;ABS_DD;ABS_DU;BGD_UU;BGD_DU;BGD_DD;BGD_UD;"
+StrConstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;SAS;"
+StrConstant ksWorkFolderListExtra = "SASCALC;RealTime;WorkMath;WorkMath_File_1;WorkMath_File_2;WorkMath_Result;"
+StrConstant ksWorkFolderListPol1  = "SAM_UU;SAM_UD;SAM_DD;SAM_DU;EMP_UU;EMP_UD;EMP_DD;EMP_DU;"
+StrConstant ksWorkFolderListPol2  = "COR_UU;COR_UD;COR_DD;COR_DU;CAL_UU;CAL_UD;CAL_DD;CAL_DU;COR;ABS;CAL;STO;"
+StrConstant ksWorkFolderListPol3  = "ABS_UU;ABS_UD;ABS_DD;ABS_DU;BGD_UU;BGD_DU;BGD_DD;BGD_UD;"
 
-Constant kBCTR_CM = 0			//set to 1 to use beam center in cm. O to use pixels
-
-
-
-
+Constant kBCTR_CM = 0 //set to 1 to use beam center in cm. O to use pixels
 
 //this is the main initualization procedure that must be the first thing
 //done when opening a new Data reduction experiment
@@ -48,56 +44,56 @@ Constant kBCTR_CM = 0			//set to 1 to use beam center in cm. O to use pixels
 //sets up data folders, globals, protocols, and draws the main panel
 Proc Initialize()
 
-	Variable curVersion = 5.2
-	Variable oldVersion = NumVarOrDefault("root:SANS_RED_VERSION",curVersion)
-	
+	variable curVersion = 5.2
+	variable oldVersion = NumVarOrDefault("root:SANS_RED_VERSION", curVersion)
+
 	//check for really old versions
-	if(itemsinlist(WinList("Includes.ipf", ";","INCLUDE:6"),";") != 0)
+	if(itemsinlist(WinList("Includes.ipf", ";", "INCLUDE:6"), ";") != 0)
 		//must be opening a v4.2 or earlier template
 		oldVersion = 4.2
 	endif
-	
-	if(itemsinlist(WinList("Includes_v510.ipf", ";","INCLUDE:6"),";") != 0)
+
+	if(itemsinlist(WinList("Includes_v510.ipf", ";", "INCLUDE:6"), ";") != 0)
 		oldVersion = 5.10
 	endif
-	if(itemsinlist(WinList("Includes_v500.ipf", ";","INCLUDE:6"),";") != 0)
+	if(itemsinlist(WinList("Includes_v500.ipf", ";", "INCLUDE:6"), ";") != 0)
 		oldVersion = 5.00
 	endif
-	
+
 	if(oldVersion == curVersion)
 		//must just be a new startup with the current version
-		Variable/G root:SANS_RED_VERSION=5.20
+		variable/G root:SANS_RED_VERSION = 5.20
 	endif
-	
+
 	if(oldVersion < curVersion)
-		String str = 	"This experiment was created with version "+num2str(oldVersion)+" of the macros. I'll try to make this work, but please start new work with a current template"
-		DoAlert 0,str
+		string str = "This experiment was created with version " + num2str(oldVersion) + " of the macros. I'll try to make this work, but please start new work with a current template"
+		DoAlert 0, str
 	endif
-	
+
 	InitFolders()
 	InitFakeProtocols()
-	InitGlobals()	
+	InitGlobals()
 	N_InitFacilityGlobals()
 	DoWindow/F Main_Panel
-	If(V_flag == 0)
+	if(V_flag == 0)
 		//draw panel
 		Main_Panel()
-	Endif
-//	ResizeCmdWindow()
-	
+	endif
+	//	ResizeCmdWindow()
+
 	//unload the NCNR_Package_Loader, if NCNR not defined
 	UnloadNCNR_Igor_Procedures()
 
-End
+EndMacro
 
 //creates all the necessary data folders in the root folder
 //does not overwrite any existing folders of the same name
 //it leaves data in them untouched
 Function InitFolders()
-	
+
 	NewDataFolder/O root:Packages
 	NewDataFolder/O root:Packages:NIST
-	
+
 	NewDataFolder/O root:myGlobals
 	NewDataFolder/O root:myGlobals:CatVSHeaderInfo
 	NewDataFolder/O root:Packages:NIST:RAW
@@ -116,9 +112,7 @@ Function InitFolders()
 	NewDataFolder/O root:Packages:NIST:SAS
 	NewDataFolder/O root:Packages:NIST:RawSANS
 
-
-	
-	Return(0)
+	return (0)
 End
 
 //Global folder already exists...
@@ -129,51 +123,50 @@ End
 // and have been moved
 //
 Function InitGlobals()
-	
-	Variable/G root:myGlobals:gIsLogScale = 0
-	String/G root:myGlobals:gDataDisplayType = "RAW"
-	
+
+	variable/G root:myGlobals:gIsLogScale      = 0
+	string/G   root:myGlobals:gDataDisplayType = "RAW"
+
 	//check platform, so Angstrom can be drawn correctly
-	
-	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-//		String/G root:Packages:NIST:gAngstStr = num2char(-127)
-		String/G root:Packages:NIST:gAngstStr = num2char(197)
-		Variable/G root:myGlobals:gIsMac = 1
+
+	if(cmpstr("Macintosh", IgorInfo(2)) == 0)
+		//		String/G root:Packages:NIST:gAngstStr = num2char(-127)
+		string/G   root:Packages:NIST:gAngstStr = num2char(197)
+		variable/G root:myGlobals:gIsMac        = 1
 	else
 		//either Windows or Windows NT
-		String/G root:Packages:NIST:gAngstStr = num2char(-59)
-		Variable/G root:myGlobals:gIsMac = 0
+		string/G   root:Packages:NIST:gAngstStr = num2char(-59)
+		variable/G root:myGlobals:gIsMac        = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
 		// SRK APRIL 2019 - removed this, does not exist in Igor 8 on WIN, and cause an error.
-//		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
+		//		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
-	
+
 	//global to set log scale as the default for display of RAW data
 	//these can be set using the Misc->Preferences panel
-	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
+	//initializes preferences. this includes XML y/n, and SANS Reduction items.
 	// if they already exist, they won't be overwritten
-	Execute "Initialize_Preferences()"	
+	Execute "Initialize_Preferences()"
 
-// when a SANS experiment with tubes is initialized, this preference value is initialized to 2
-// in a separate initializaton step -- using a bin of 1 gives 2x the number of points as
-// was generated on the VAX, with larger per-point error. bin=2 much more closely replicates
-// the VAX reduction
- 	NVAR binWidth = root:Packages:NIST:gBinWidth
+	// when a SANS experiment with tubes is initialized, this preference value is initialized to 2
+	// in a separate initializaton step -- using a bin of 1 gives 2x the number of points as
+	// was generated on the VAX, with larger per-point error. bin=2 much more closely replicates
+	// the VAX reduction
+	NVAR binWidth = root:Packages:NIST:gBinWidth
 	binWidth = 2
 
 	//
 
 	// set the lookup waves for log/lin display of the detector images
-	MakeImageLookupTables(10000,0,1)
-
+	MakeImageLookupTables(10000, 0, 1)
 
 	//set flag if Demo Version is detected
-	Variable/G root:myGlobals:isDemoVersion = isDemo()
-	
+	variable/G root:myGlobals:isDemoVersion = isDemo()
+
 	//set XML globals
-	String/G root:Packages:NIST:gXMLLoader_Title = ""
-	
-	Return(0)
+	string/G root:Packages:NIST:gXMLLoader_Title = ""
+
+	return (0)
 End
 
 //creates the "base" protocols that should be available, after creating the data folder
@@ -181,51 +174,53 @@ End
 //all protocols are kept in the root:myGlobals:Protocols folder, created here
 //
 Function InitFakeProtocols()
-	
-	//*****as of 0901, protocols are 8 points long, [6] is used for work.drk, [7] is unused 
+
+	//*****as of 0901, protocols are 8 points long, [6] is used for work.drk, [7] is unused
 	NewDataFolder/O root:myGlobals:Protocols
-	Make/O/T $"root:myGlobals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,",""}
-	Make/O/T $"root:myGlobals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,",""}
-	Make/O/T/N=8 $"root:myGlobals:Protocols:CreateNew"			//null wave
+	Make/O/T $"root:myGlobals:Protocols:Base" = {"none", "none", "ask", "ask", "none", "AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes", "DRK=none,DRKMODE=0,", ""}
+	Make/O/T $"root:myGlobals:Protocols:DoAll" = {"ask", "ask", "ask", "ask", "ask", "AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes", "DRK=none,DRKMODE=0,", ""}
+	Make/O/T/N=8 $"root:myGlobals:Protocols:CreateNew" //null wave
 	//Initialize waves to store values in
-	
-	String/G root:myGlobals:Protocols:gProtoStr=""
-	String/G root:myGlobals:Protocols:gNewStr=""
-	String/G root:myGlobals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;"
-	
-	Return(0)
+
+	string/G root:myGlobals:Protocols:gProtoStr   = ""
+	string/G root:myGlobals:Protocols:gNewStr     = ""
+	string/G root:myGlobals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;"
+
+	return (0)
 End
 
 //simple function to resize the comand window to a nice size, no matter what the resolution
 //need to test out on several different monitors and both platforms
 //
-// could easily be incorporated into the initialization routines to ensure that the 
+// could easily be incorporated into the initialization routines to ensure that the
 // command window is always visible at startup of the macros. No need for a hook function
 //
 Function ResizeCmdWindow()
 
-	String str=IgorInfo(0),rect="",platform=igorinfo(2)
-	Variable depth,left,top,right,bottom,factor
-	
-	if(cmpstr(platform,"Macintosh")==0)
-		factor=1
+	string str      = IgorInfo(0)
+	string rect     = ""
+	string platform = igorinfo(2)
+	variable depth, left, top, right, bottom, factor
+
+	if(cmpstr(platform, "Macintosh") == 0)
+		factor = 1
 	else
-		factor = 0.6		//fudge factor to get command window on-screen on Windows
+		factor = 0.6 //fudge factor to get command window on-screen on Windows
 	endif
-	rect = StringByKey("SCREEN1", str  ,":",";")	
-	sscanf rect,"DEPTH=%d,RECT=%d,%d,%d,%d",depth, left,top,right,bottom
-	MoveWindow/C  (left+3)*factor,(bottom-150)*factor,(right-50)*factor,(bottom-10)*factor
+	rect = StringByKey("SCREEN1", str, ":", ";")
+	sscanf rect, "DEPTH=%d,RECT=%d,%d,%d,%d", depth, left, top, right, bottom
+	MoveWindow/C (left + 3) * factor, (bottom - 150) * factor, (right - 50) * factor, (bottom - 10) * factor
 End
 
 // since the NCNR procedures can't be loaded concurrently with the other facility functions,
-// unload this procedure file, and add this to the functions that run at initialization of the 
+// unload this procedure file, and add this to the functions that run at initialization of the
 // experiment
 Function UnloadNCNR_Igor_Procedures()
 
-#if (exists("NCNR_Nexus")==6)			//defined in the main #includes file.
+#if (exists("NCNR_Nexus") == 6) //defined in the main #includes file.
 	//do nothing if an NCNR reduction experiment
 #else
-	if(ItemsInList(WinList("NCNR_Package_Loader.ipf", ";","WIN:128")))
+	if(ItemsInList(WinList("NCNR_Package_Loader.ipf", ";", "WIN:128")))
 		Execute/P "CloseProc /NAME=\"NCNR_Package_Loader.ipf\""
 		Execute/P "COMPILEPROCEDURES "
 	endif
@@ -237,16 +232,15 @@ End
 Function IsDemo()
 
 	// create small offscreen graph
-	Display/W=(3000,3000,3010,3010)
+	Display/W=(3000, 3000, 3010, 3010)
 	DoWindow/C IsDemoGraph
 
 	// try to save a PICT or bitmap of it to the clipboard
-	SavePICT/Z  as "Clipboard"
-	Variable isDemo= V_Flag != 0	// if error: must be demo
+	SavePICT/Z as "Clipboard"
+	variable isDemo = V_Flag != 0 // if error: must be demo
 	DoWindow/K IsDemoGraph
 	return isDemo
 End
-
 
 //
 //num = number of points (10000 seeems to be a good number so far)
@@ -258,34 +252,31 @@ End
 // (DONE) hi, lo not used properly here, seems to mangle log display now that
 // I'm switching the lo,hi of the ctab
 //
-Function MakeImageLookupTables(num,lo,hi)
-	Variable num,lo,hi
+Function MakeImageLookupTables(variable num, variable lo, variable hi)
 
-		// lookup waves for log and linear display of images
+	// lookup waves for log and linear display of images
 	// this is used for the main data display. With this, I can use the original
 	// detector data (no copy) and the zeros in the data set are tolerated when displaying
 	// on log scale
 	SetDataFolder root:myGlobals
-	Variable val,offset
-	
-	offset = 1/num		//can't use 1/lo if lo == 0
-	
-	Make/O/D/N=(num) logLookupWave,linearLookupWave
-	
-	linearLookupWave = (p+1)/num
-	
-	
-	logLookupWave = log(linearLookupWave)
-	val = logLookupWave[0]
-	logLookupWave += -val + offset
-	val = logLookupWave[num-1]
-	logLookupWave /= val
-	
-	SetDataFolder root:
-	
-	return(0)
-end
+	variable val, offset
 
+	offset = 1 / num //can't use 1/lo if lo == 0
+
+	Make/O/D/N=(num) logLookupWave, linearLookupWave
+
+	linearLookupWave = (p + 1) / num
+
+	logLookupWave  = log(linearLookupWave)
+	val            = logLookupWave[0]
+	logLookupWave += -val + offset
+	val            = logLookupWave[num - 1]
+	logLookupWave /= val
+
+	SetDataFolder root:
+
+	return (0)
+End
 
 // this special Igor function runs after an experiment file is opened (one that
 // had previously been saved) -- in the case of SANS, the situation may be that
@@ -301,18 +292,17 @@ end
 //	String file,pathName,type,creator
 //
 ////	NVAR/Z gTestGlobal = root:Packages:gTestGlobal
-////	
+////
 ////	if(NVAR_exists(gTestGlobal) == 0)
 ////		Print "global does not exist"
 ////		Variable/G root:Packages:gTestGlobal = 1
 ////	else
-////		Print "global does exist"		
+////		Print "global does exist"
 ////	endif
 //
 //	Execute "Initialize()"		//re-run the initialization, in case anything is new
-//	
+//
 //	return(0)
 //
 //End
-
 
