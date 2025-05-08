@@ -191,7 +191,7 @@ Function AddToLayoutButtonProc(string ctrlName) : ButtonControl
 		DoWindow/F $layoutStr
 	endif
 	for(ii = startInd; ii < ind; ii += 1)
-		AppendLayoutObject/F=1/R=(72, 40, 144, 112) picture, $(DataStr + num2str(ii) + "L_PNG")
+		AppendLayoutObject/F=1/R=(72, 40, 144, 112) picture  $(DataStr + num2str(ii) + "L_PNG")
 		//		ModifyLayout top($("RAW"+num2str(ii)+"L_PNG"))=(40+mod(30*ii,560))	//separate the graphics (in points)
 		//		ModifyLayout/I width($("RAW"+num2str(ii)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 	endfor
@@ -380,7 +380,7 @@ Function AddALLToLayout(string ctrlName) : ButtonControl
 	for(ii = startInd; ii < ind; ii += numPerLayout)
 		jj = ii
 		do
-			AppendLayoutObject/F=1/R=(72, 40, 144, 112) picture, $(DataStr + num2str(jj) + "L_PNG")
+			AppendLayoutObject/F=1/R=(72, 40, 144, 112) picture  $(DataStr + num2str(jj) + "L_PNG")
 			ModifyLayout/I width($(DataStr + num2str(jj) + "L_PNG"))=(wd), height($(DataStr + num2str(ii) + "L_PNG"))=(wd) //(in inches)
 			jj += 1
 		while((jj < (ii + numPerLayout)) && (jj < ind)) //index in batch, keep from running over total number of PNGs
