@@ -421,6 +421,11 @@ End
 //
 //don't try to re-write as a function - not worth the effort
 //
+// May 2025
+// the lint command in the IPT tool (code checker) flagged the elseif statement as incorrect syntax
+// but it is correct - the whole thing may be better written as a switch anyways,
+// but would need to be converted to a function rather than a Proc
+//
 Proc LoadFile_Sub1D(type)
 	Variable type
 
