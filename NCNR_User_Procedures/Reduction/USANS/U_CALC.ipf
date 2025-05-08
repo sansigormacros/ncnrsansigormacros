@@ -1166,6 +1166,14 @@ Function GraphSIM()
 		SetDataFolder root:
 		return (0)
 	endif
+	
+	
+	// these waves may not exist
+	WAVE/Z Smeared_inten = Smeared_inten
+	WAVE/Z Sim_USANS_q = Sim_USANS_q
+	WAVE/Z Sim_USANS_i = Sim_USANS_i
+	WAVE/Z Sim_USANS_s = Sim_USANS_s
+	WAVE/Z setNumber = setNumber
 
 	//append the data if it exists
 	if(waveExists($"Sim_USANS_i") == 1)

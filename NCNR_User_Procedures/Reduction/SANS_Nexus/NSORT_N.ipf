@@ -2378,6 +2378,13 @@ Function TableToCombineAndSave(variable clear)
 	endif
 	SetDataFolder root:myGlobals:CombineTable
 
+	WAVE LowRun = LowRun
+	WAVE MediumRun = MediumRun
+	WAVE HighRun = HighRun
+	WAVE HighestRun = HighestRun
+	WAVE Prefix = Prefix
+	WAVE SaveName = SaveName
+	
 	// make the second table
 	AppendToTable/W=CombinePanel#RunNumbersToCombine LowRun, MediumRun, HighRun, HighestRun, Prefix, SaveName
 

@@ -476,6 +476,20 @@ Function Do_AB_Graph(string type)
 
 	//is it already on the graph?
 	SetDataFolder $(USANSFolder + ":Graph")
+	
+	// not all of these waves may exist
+	WAVE/Z DetCts_TMP_A = DetCts_TMP_A
+	WAVE/Z Angle_TMP_A = Angle_TMP_A
+	WAVE/Z ErrDetCts_TMP_A = ErrDetCts_TMP_A
+	
+	WAVE/Z DetCts_TMP_B = DetCts_TMP_B
+	WAVE/Z Angle_TMP_B = Angle_TMP_B
+	WAVE/Z ErrDetCts_TMP_B = ErrDetCts_TMP_B
+
+	WAVE/Z DetCts_SUM_AB = DetCts_SUM_AB
+	WAVE/Z Angle_SUM_AB = Angle_SUM_AB
+	WAVE/Z ErrDetCts_SUM_AB = ErrDetCts_SUM_AB
+			
 	string list = ""
 	list = Wavelist("DetCts_" + type + "*", ";", "WIN:USANS_Add_Panel")
 	if(strlen(list) != 0)

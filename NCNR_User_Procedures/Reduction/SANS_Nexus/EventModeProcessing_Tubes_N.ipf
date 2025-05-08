@@ -1419,6 +1419,11 @@ Function SortTimeData()
 
 	KillWaves/Z OscSortIndex
 
+	WAVE rescaledTime =  rescaledTime
+	WAVE yLoc = yLoc
+	WAVE xLoc = xLoc
+	WAVE timePt = timePt
+	
 	if(WaveExists($"root:Packages:NIST:Event:OscSortIndex") == 0)
 		Duplicate/O rescaledTime, OscSortIndex
 		MakeIndex rescaledTime, OscSortIndex
@@ -2602,6 +2607,9 @@ Function EC_DoDifferential(STRUCT WMButtonAction &ba) : ButtonControl
 
 				SetDataFolder root:Packages:NIST:Event:
 
+				WAVE rescaledTime_DIF = rescaledTime_DIF
+				WAVE rescaledTime = rescaledTime
+				
 				list = WaveList("*_DIF", ";", "WIN:EventCorrectionPanel")
 				if(WhichListItem("rescaledTime_DIF", list, ";") < 0) // not on the graph
 					AppendToGraph/R rescaledTime_DIF
@@ -2627,6 +2635,9 @@ Function EC_DoDifferential(STRUCT WMButtonAction &ba) : ButtonControl
 				//if trace is not on graph, add it
 				SetDataFolder root:Packages:NIST:Event:
 
+				WAVE onePanel_DIF = onePanel_DIF
+				WAVE onePanel = onePanel
+				
 				list = WaveList("*_DIF", ";", "WIN:EventCorrectionPanel")
 				if(WhichListItem("onePanel_DIF", list, ";") < 0) // not on the graph
 					AppendToGraph/R onePanel_DIF
@@ -2941,6 +2952,8 @@ Function EC_ShowAllButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			SetDataFolder root:Packages:NIST:Event:
+
+			WAVE rescaledTime = rescaledTime
 
 			string list = WaveList("*", ";", "WIN:EventCorrectionPanel")
 			if(strsearch(list, "rescaledTime", 0) >= 0)
@@ -3283,6 +3296,7 @@ Function CB_NumSlicesSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCo
 
 			WAVE timeWidth  = timeWidth
 			WAVE binEndTime = binEndTime
+			WAVE binCount = binCount
 
 			Redimension/N=(dval) timeWidth
 			Redimension/N=(dval + 1) binEndTime, binCount
@@ -3462,6 +3476,9 @@ Function AccumulateSlices(variable mode)
 
 	SetDataFolder root:Packages:NIST:Event:
 
+	WAVE slicedData = slicedData
+	WAVE accumulatedData = accumulatedData
+	
 	switch(mode)
 		case 0:
 			DoAlert 0, "The current data has been copied to the accumulated set. You are now ready to add more data."

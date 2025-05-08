@@ -109,6 +109,11 @@ Function GraphSAM()
 	SetDataFolder $(USANSFolder + ":Graph")
 	string list = ""
 	list = Wavelist("DetCts_SAM*", ";", "WIN:COR_Graph")
+	
+	WAVE DetCts_SAM = DetCts_SAM
+	WAVE Qvals_SAM = Qvals_SAM
+	WAVE ErrDetCts_SAM = ErrDetCts_SAM
+	
 	if(strlen(list) != 0)
 		//Print "SAM already on graph"
 		SetDataFolder root:
@@ -135,6 +140,11 @@ Function GraphEMP()
 	SetDataFolder $(USANSFolder + ":Graph")
 	string list = ""
 	list = Wavelist("DetCts_EMP*", ";", "WIN:COR_Graph")
+	
+	WAVE DetCts_EMP = DetCts_EMP
+	WAVE Qvals_EMP = Qvals_EMP
+	WAVE ErrDetCts_EMP = ErrDetCts_EMP
+	
 	if(strlen(list) != 0)
 		//	Print "EMP already on graph"
 		SetDataFolder root:
@@ -163,6 +173,11 @@ Function GraphCOR()
 
 	string list = ""
 	list = Wavelist("DetCts_COR*", ";", "WIN:COR_Graph")
+	
+	WAVE DetCts_COR = DetCts_COR
+	WAVE Qvals_COR = Qvals_COR
+	WAVE ErrDetCts_COR = ErrDetCts_COR
+		
 	if(strlen(list) != 0)
 		//	Print "COR already on graph"
 		SetDataFolder root:

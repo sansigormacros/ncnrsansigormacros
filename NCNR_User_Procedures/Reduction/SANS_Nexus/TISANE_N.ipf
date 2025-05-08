@@ -147,6 +147,9 @@ End
 Function LogInt_Proc(string ctrlName, variable checked) : CheckBoxControl
 
 	SetDataFolder root:Packages:NIST:TISANE
+	
+	WAVE logslicedData = logslicedData
+	WAVE slicedData = slicedData
 	if(checked)
 		Duplicate/O logslicedData, dispsliceData
 	else

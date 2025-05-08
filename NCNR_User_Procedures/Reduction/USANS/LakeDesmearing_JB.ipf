@@ -1172,6 +1172,10 @@ Function AppendExtrapolation()
 // 	if( strsearch(TraceNameList("Desmear_Graph", "", 1),"extr_hqi",0,2) == -1)		//Igor 5
 	if( strsearch(TraceNameList("Desmear_Graph", "", 1),"extr_hqi",0) == -1)
 		SetDataFolder $(USANSFolder+":DSM:")
+		
+		WAVE extr_hqi = extr_hqi
+		WAVE extr_hqq = extr_hqq
+		
 		AppendToGraph/W=Desmear_Graph extr_hqi vs extr_hqq
 		ModifyGraph/W=Desmear_Graph lSize(extr_hqi)=2
 		setdatafolder root:
@@ -1396,6 +1400,9 @@ Function DSM_MyMaskProc(ctrlName) : ButtonControl
 	SetDataFolder $(USANSFolder+":DSM")
 	Killwaves/Z I_smth,Q_smth,S_smth
 
+	WAVE I_exp_orig = I_exp_orig
+	WAVE Q_exp_orig = Q_exp_orig
+	
 	if(aExists)		//mask the selected point
 		// toggle NaN (keep) or Data value (= masked)
 		Wave MaskData
@@ -1470,6 +1477,7 @@ Function DSM_MaskGTCursor(ctrlName) : ButtonControl
 	Killwaves/Z I_smth,Q_smth,S_smth
 
 	Wave data=I_exp_orig
+	WAVE MaskData = MaskData
 
 	Variable pt,ii,endPt
 	endPt=numpnts(MaskData)

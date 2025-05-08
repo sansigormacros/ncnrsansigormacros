@@ -71,6 +71,8 @@ Function WriteUSANSNXcanSAS(string type, string fullpath, variable lo, variable 
 	Duplicate/O qvals, tq, ti, te
 	ti = inten
 	te = sig
+	WAVE dumWave = dumWave
+	
 	if((lo != hi) && (lo < hi))
 		redimension/N=(hi - lo + 1) tq, ti, te, dumWave //lo to hi, inclusive
 		tq = qvals[p + lo]
@@ -168,7 +170,7 @@ Function WriteNXcanSASUSANSDesmeared(string fullpath, variable lo, variable hi, 
 	WAVE qvals = $(destStr + "Q_dsm")
 	WAVE inten = $(destStr + "I_dsm")
 	WAVE sig   = $(destStr + "S_dsm")
-
+	
 	//check each wave
 	if(!(WaveExists(qvals)))
 		Abort "qvals DNExist in WriteUSANSWaves()"
@@ -179,6 +181,8 @@ Function WriteNXcanSASUSANSDesmeared(string fullpath, variable lo, variable hi, 
 	if(!(WaveExists(sig)))
 		Abort "sig DNExist in WriteUSANSWaves()"
 	endif
+
+	WAVE Q_dsm = Q_dsm
 
 	Duplicate/O Q_dsm, res1, res2, res3
 	res3  = 1   // "fake" beamstop shadowing

@@ -62,7 +62,7 @@ Function DuplicateRAWForExport()
 	KillDataFolder/Z root:export
 
 	if(DataFolderExists("root:Packages:NIST:RAW:Entry") == 1)
-		DuplicateDataFolder root:Packages:NIST:RAW:root:export
+		DuplicateDataFolder root:Packages:NIST:RAW root:export
 	else
 		DoAlert 0, "No RAW data folder exists. Please load the correct RAW data file and repeat this Duplicate step"
 	endif

@@ -1458,6 +1458,10 @@ Function FreezeButtonProc(ctrlName) : ButtonControl
 
 	SetDataFolder root:Packages:NIST:SAS
 
+	WAVE aveint = aveint
+	WAVE qval = qval
+	WAVE sigave = sigave
+	
 	Duplicate/O aveint,$("aveint_"+num2str(ct))
 	Duplicate/O qval,$("qval_"+num2str(ct))
 	Duplicate/O sigave,$("sigave_"+num2str(ct))
