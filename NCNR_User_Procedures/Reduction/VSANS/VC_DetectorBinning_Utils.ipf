@@ -97,7 +97,7 @@ Function FillPanel_wModelData(WAVE det, WAVE qTot, string type)
 			tmpInten  = VC_EC_Empirical(2.2e-12, 3.346, 0.0065, 9.0, 0.016, qTot[p][q])
 			tmpInten += VC_BlockedBeam(0.01, qTot[p][q])
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: //  
 			tmpInten = VC_Debye(10, 300, 0.1, qTot[p][q])
 	endswitch
 
@@ -818,14 +818,14 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	strswitch(type) // string switch
 
 		// only one panel, simply pick that panel and move on out of the switch
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL": //  
+		case "FR": //  
+		case "FT": //  
+		case "FB": //  
+		case "ML": //  
+		case "MR": //  
+		case "MT": //  
+		case "MB": //  
 		case "B":
 			if(isVCALC)
 				WAVE   inten = $(folderPath + instPath + detStr + ":det_" + detStr)
@@ -1030,7 +1030,7 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 			nSets = 4
 			break
 
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: //  
 			nSets = 0
 			Print "ERROR   ---- type is not recognized "
 	endswitch

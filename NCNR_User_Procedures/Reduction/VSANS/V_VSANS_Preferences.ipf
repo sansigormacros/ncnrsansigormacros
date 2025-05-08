@@ -225,7 +225,7 @@ Function V_WritePref(string ctrlName, variable checked) : CheckBoxControl
 			CheckBox PrefCtrl_0c, value=0
 			nxVal = 0
 			break
-		case "PrefCtrl_0c": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "PrefCtrl_0c": //  
 			CheckBox PrefCtrl_0a, value=0
 			asciiVal = 0
 			CheckBox PrefCtrl_0b, value=0
@@ -233,7 +233,7 @@ Function V_WritePref(string ctrlName, variable checked) : CheckBoxControl
 			CheckBox PrefCtrl_0c, value=1
 			nxVal = checked
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 End
@@ -472,7 +472,7 @@ Function V_PrefTabProc(string name, variable tab)
 					break
 				// add more items to the switch if different control types are used
 				default:
-					// FIXME(BugproneMissingSwitchDefaultCase)
+					// no default action
 					break
 			endswitch
 		endif

@@ -58,10 +58,10 @@ Function VC_fBinDetector_byRows(string folderStr, string detStr)
 
 	strswitch(detStr) // string switch
 		// only one panel, simply pick that panel and move on out of the switch
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL": //  
+		case "FR": //  
+		case "ML": //  
+		case "MR": //  
 		case "B":
 			if(isVCALC)
 				WAVE   inten = $(folderPath + instPath + detStr + ":det_" + detStr) // 2D detector data
@@ -121,7 +121,7 @@ Function VC_fBinDetector_byRows(string folderStr, string detStr)
 		//			nSets = 2
 		//			break
 
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: //  
 			nSets = 0
 			Print "ERROR   ---- type is not recognized "
 	endswitch

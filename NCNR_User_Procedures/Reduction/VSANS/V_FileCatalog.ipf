@@ -482,11 +482,11 @@ Function V_CatTableHook(string infoStr)
 				//					DoIgorMenu "Edit", "Paste"
 				//					break
 				default:
-					// FIXME(BugproneMissingSwitchDefaultCase)
+					// no default action
 					break
 			endswitch //popup selection
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch // event
 
@@ -1000,7 +1000,7 @@ Function V_CatVSANSTable_SortFunction(string ctrlName) // added by [davidm]
 			break
 
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 

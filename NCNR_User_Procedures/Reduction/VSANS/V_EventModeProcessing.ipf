@@ -343,7 +343,7 @@ Function V_DuplRAWForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -375,7 +375,7 @@ Function V_CopySlicesForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -398,7 +398,7 @@ Function V_SaveExportedNexus_Button(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -420,7 +420,7 @@ Function V_SplitToPanels_Button(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -444,7 +444,7 @@ Function V_GraphPanels_Button(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -475,7 +475,7 @@ Function V_EventModeRadioProc(string name, variable value)
 			gEventModeRadioVal = MODE_TOF
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 	CheckBox chkbox1_0, value=gEventModeRadioVal == MODE_OSCILL
@@ -498,7 +498,7 @@ Function V_EventCarrRadioProc(string name, variable value)
 			CheckBox chkbox1_5, value=1
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -516,7 +516,7 @@ Function V_AdjustEventDataButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -534,7 +534,7 @@ Function V_CustomBinButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -560,7 +560,7 @@ Function V_ShowEventDataButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -580,7 +580,7 @@ Function V_BinTypePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -598,7 +598,7 @@ Function V_ShowBinDetailsButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -615,7 +615,7 @@ Function V_UndoTimeSortButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -632,7 +632,7 @@ Function V_ExportSlicesButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -649,7 +649,7 @@ Function V_EventModeHelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -664,7 +664,7 @@ Function V_EventDone_Proc(STRUCT WMButtonAction &ba) : ButtonControl
 			DoWindow/K VSANS_EventModePanel
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 	return (0)
@@ -756,7 +756,7 @@ Function V_Osc_ProcessEventLog(string ctrlName)
 		case "Custom": // execute if case matches expression
 			//bins are set by the user on the panel - assume it's good to go
 			break
-		default: // optional default expression executed, FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: // optional default expression executed,  
 			DoAlert 0, "No match for bin type, Equal bins used"
 			V_SetLinearBins(binEndTime, timeWidth, nslices, t_longest)
 	endswitch
@@ -897,7 +897,7 @@ Function V_Stream_ProcessEventLog(string ctrlName)
 		case "Custom": // execute if case matches expression
 			//bins are set by the user on the panel - assume it's good to go
 			break
-		default: // optional default expression executed, FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: // optional default expression executed,  
 			DoAlert 0, "No match for bin type, Equal bins used"
 			V_SetLinearBins(binEndTime, timeWidth, nslices, t_longest)
 	endswitch
@@ -1924,7 +1924,7 @@ Function V_EC_AddCursorButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1965,7 +1965,7 @@ Function V_EC_ColorizeTimeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1989,7 +1989,7 @@ Function V_EC_SortTimeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2056,7 +2056,7 @@ Function V_EC_DisplayButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2162,7 +2162,7 @@ Function V_EC_DoDifferential(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2258,7 +2258,7 @@ Function V_EC_TrimPointsButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2371,7 +2371,7 @@ Function V_EC_FindOutlierButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2407,7 +2407,7 @@ Function V_EC_SaveWavesButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2455,7 +2455,7 @@ Function V_EC_ImportWavesButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2497,7 +2497,7 @@ Function V_EC_ShowAllButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2514,7 +2514,7 @@ Function V_EC_HelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2531,7 +2531,7 @@ Function V_EC_DoneButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2657,7 +2657,7 @@ Function V_CB_SaveBinsButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2697,7 +2697,7 @@ Function V_CB_ImportBinsButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2759,7 +2759,7 @@ Function V_CB_UpdateWavesButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2780,7 +2780,7 @@ Function V_CB_HelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2795,7 +2795,7 @@ Function V_CB_Done_Proc(STRUCT WMButtonAction &ba) : ButtonControl
 			DoWindow/K V_CustomBinPanel
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 	return (0)
@@ -2804,8 +2804,8 @@ End
 Function V_CB_NumSlicesSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up,  
+		case 2: // Enter key,  
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -2824,7 +2824,7 @@ Function V_CB_NumSlicesSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariable
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -3015,8 +3015,8 @@ Function V_AccumulateSlices(variable mode)
 			NVAR gLog = root:Packages:NIST:VSANS:Event:gEvent_logint
 			V_LogIntEvent_Proc("", gLog)
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-			// FIXME(BugproneMissingSwitchDefaultCase)
+		default: //  
+			// no default action
 			break
 
 	endswitch

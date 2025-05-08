@@ -94,7 +94,7 @@ Function V_DIVSetupButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -121,7 +121,7 @@ Function V_DIVClearOldButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -138,7 +138,7 @@ Function V_DIVNormalizeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -157,7 +157,7 @@ Function V_DIVCopyButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -174,7 +174,7 @@ Function V_DIVMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -191,7 +191,7 @@ Function V_DIVSaveButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1120,7 +1120,7 @@ Function V_DispFolderPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1137,7 +1137,7 @@ Function V_DispCarriagePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1154,7 +1154,7 @@ Function V_DispOperationPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1180,7 +1180,7 @@ Function V_DispUpdateButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 

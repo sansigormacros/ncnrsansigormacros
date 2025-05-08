@@ -378,7 +378,7 @@ Function V_ConvertBeamCtrPix_to_mm(string folder, string detStr, string destPath
 
 	//
 	strswitch(detStr) // string switch
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL": //  
 		case "ML":
 			// for Left/Right
 			// for left
@@ -386,7 +386,7 @@ Function V_ConvertBeamCtrPix_to_mm(string folder, string detStr, string destPath
 			y_mm[0] = data_realDistY[0][yCtr]
 
 			break
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FR": //  
 		case "MR":
 			// for Left/Right
 			// for right
@@ -394,14 +394,14 @@ Function V_ConvertBeamCtrPix_to_mm(string folder, string detStr, string destPath
 			y_mm[0] = data_realDistY[0][yCtr]
 
 			break
-		case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FT": //  
 		case "MT":
 			// for Top
 			x_mm[0] = data_realDistX[xCtr][0]
 			y_mm[0] = data_realDistY[0][0] + yCtr * tube_width
 
 			break
-		case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FB": //  
 		case "MB":
 			// for Bottom
 			x_mm[0] = data_realDistX[xCtr][0]

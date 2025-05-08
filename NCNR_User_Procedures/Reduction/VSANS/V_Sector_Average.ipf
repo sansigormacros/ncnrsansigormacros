@@ -279,14 +279,14 @@ Function V_fDoSectorBin_QxQy2D(string folderStr, string type, string collimation
 	strswitch(type) // string switch
 
 		// only one panel, simply pick that panel and move on out of the switch
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL": //  
+		case "FR": //  
+		case "FT": //  
+		case "FB": //  
+		case "ML": //  
+		case "MR": //  
+		case "MT": //  
+		case "MB": //  
 		case "B":
 			if(isVCALC)
 				WAVE   inten = $(folderPath + instPath + detStr + ":det_" + detStr)
@@ -503,7 +503,7 @@ Function V_fDoSectorBin_QxQy2D(string folderStr, string type, string collimation
 			nSets = 4
 			break
 
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: //  
 			nSets = 0
 			Print "ERROR   ---- type is not recognized "
 	endswitch

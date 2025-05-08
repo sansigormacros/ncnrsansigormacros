@@ -488,8 +488,10 @@ EndMacro
 Function ThetaMinSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		// fall through by design
+		case 2: // Enter key,  
+		// fall through by design
 		case 3: // Live update
 			variable ThetaMin = sva.dval
 			string   ns       = CtrlNumber(sva.ctrlName) //control number as a string
@@ -501,7 +503,7 @@ Function ThetaMinSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableContro
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -513,8 +515,10 @@ End
 Function ThetaMaxSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		// fall through by design
+		case 2: // Enter key, 
+		// fall through by design
 		case 3: // Live update
 			variable ThetaMax = sva.dval
 			string   ns       = CtrlNumber(sva.ctrlName) //control number as a string
@@ -528,7 +532,7 @@ Function ThetaMaxSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableContro
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -539,8 +543,10 @@ End
 Function IncrSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		// fall through by design
+		case 2: // Enter key, 
+		// fall through by design
 		case 3: // Live update
 			variable incr     = sva.dval
 			string   ns       = CtrlNumber(sva.ctrlName) //control number as a string
@@ -552,7 +558,7 @@ Function IncrSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -564,8 +570,10 @@ End
 Function NumPtsSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		// fall through by design
+		case 2: // Enter key, 
+		// fall through by design
 		case 3: // Live update
 			variable NumPts   = sva.dval
 			string   ns       = CtrlNumber(sva.ctrlName) //control number as a string
@@ -583,7 +591,7 @@ Function NumPtsSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -595,13 +603,15 @@ End
 Function CtTimeSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		// fall through by design
+		case 2: // Enter key, 
+		// fall through by design
 		case 3: // Live update
 			CalcTotalCountTime()
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -692,7 +702,7 @@ Function EnterModeCheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -738,7 +748,8 @@ Function ShowEMPCheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 						qval = "Q_2p0"
 						CR   = "CR_2p0"
 						break
-					default: // optional default expression executed, FIXME(CodeStyleFallthroughCaseRequireComment)
+					default: // optional default expression executed if nothing matches,
+						// fall through by design
 						OK = 0
 				endswitch
 
@@ -759,7 +770,7 @@ Function ShowEMPCheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -780,7 +791,7 @@ Function U_SimPlotButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -1166,14 +1177,13 @@ Function GraphSIM()
 		SetDataFolder root:
 		return (0)
 	endif
-	
-	
+
 	// these waves may not exist
 	WAVE/Z Smeared_inten = Smeared_inten
-	WAVE/Z Sim_USANS_q = Sim_USANS_q
-	WAVE/Z Sim_USANS_i = Sim_USANS_i
-	WAVE/Z Sim_USANS_s = Sim_USANS_s
-	WAVE/Z setNumber = setNumber
+	WAVE/Z Sim_USANS_q   = Sim_USANS_q
+	WAVE/Z Sim_USANS_i   = Sim_USANS_i
+	WAVE/Z Sim_USANS_s   = Sim_USANS_s
+	WAVE/Z setNumber     = setNumber
 
 	//append the data if it exists
 	if(waveExists($"Sim_USANS_i") == 1)
@@ -1301,7 +1311,7 @@ Function Sim_USANS_ModelPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -1331,7 +1341,7 @@ Function UCALC_SampleAperturePopup(STRUCT WMPopupAction &pa) : PopupMenuControl
 			break
 
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -1525,14 +1535,14 @@ Function UCALC_PresetPopup(STRUCT WMPopupAction &pa) : PopupMenuControl
 					gIncr7    = 5
 
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-					// FIXME(BugproneMissingSwitchDefaultCase)
+				default:
+					// no action if the event code doesn't match
 					break
 			endswitch
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -1612,7 +1622,7 @@ Function U_SaveButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -1876,7 +1886,7 @@ Function U_ConfigTextProc(STRUCT WMButtonAction &ba) : ButtonControl
 			DisplayUCALCText()
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -1899,7 +1909,7 @@ Function U_SavePanelProc(STRUCT WMButtonAction &ba) : ButtonControl
 			//
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 

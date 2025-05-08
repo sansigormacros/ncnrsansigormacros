@@ -187,7 +187,7 @@ Function AddUSANSDone(STRUCT WMButtonAction &ba) : ButtonControl
 			DoWindow/K USANS_Add_Panel
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -204,7 +204,7 @@ Function AddUSANSFilesButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -221,7 +221,7 @@ Function ClearSumButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -246,7 +246,7 @@ Function SaveSumButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 
@@ -695,7 +695,7 @@ Function ClearABButtonProc(string ctrlName) : ButtonControl
 			CleanOutFolder("SUM_AB")
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the button name doesn't match
 			break
 	endswitch
 

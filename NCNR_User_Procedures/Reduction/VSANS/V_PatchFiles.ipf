@@ -667,7 +667,7 @@ Function V_PatchListBoxProc(STRUCT WMListboxAction &lba) : ListBoxControl
 			break
 		case 3: // double click
 			break
-		case 4: // cell selection, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 4: // cell selection,  
 		case 5: // cell selection plus shift key
 			break
 		case 6: // begin edit
@@ -677,7 +677,7 @@ Function V_PatchListBoxProc(STRUCT WMListboxAction &lba) : ListBoxControl
 		case 13: // checkbox clicked (Igor 6.2 or later)
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -903,9 +903,9 @@ End
 Function V_SetMatchStrProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 8: // edit end, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up,  
+		case 2: // Enter key,  
+		case 8: // edit end,  
 			variable dval = sva.dval
 			string   sval = sva.sval
 
@@ -924,7 +924,7 @@ Function V_SetMatchStrProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -1502,7 +1502,7 @@ Function V_MatchCheckProc(string name, variable value)
 			gRadioVal = 3
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 	CheckBox check0, value=gRadioVal == 1
@@ -1814,7 +1814,7 @@ Function V_LoadCSVDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -1862,7 +1862,7 @@ Function V_WriteCSVDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -1885,18 +1885,18 @@ Function V_GeneratePerfDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 			WAVE deadTimeWave = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
 			ControlInfo popup_0
 			strswitch(S_Value)
-				case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "FR": //  
+				case "FL": //  
+				case "MR": //  
+				case "ML": //  
+				case "FT": //  
+				case "FB": //  
+				case "MT": //  
 				case "MB":
 					deadTimeWave = 1e-18
 
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+				default: //  
 					Print "Det type not found: V_GeneratePerfDTButton()"
 			endswitch
 
@@ -1904,7 +1904,7 @@ Function V_GeneratePerfDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -1929,7 +1929,7 @@ Function V_ReadDTButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -1959,7 +1959,7 @@ Function V_WriteDTButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2143,7 +2143,7 @@ Function V_LoadCSVCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2195,7 +2195,7 @@ Function V_WriteCSVCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2228,18 +2228,18 @@ Function V_GeneratePerfCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 			WAVE calibrationWave = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
 			ControlInfo popup_0
 			strswitch(S_Value)
-				case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "FR": //  
+				case "FL": //  
+				case "MR": //  
 				case "ML":
 					//	// for the "tall" L/R banks
 					calibrationWave[0][] = -521
 					calibrationWave[1][] = 8.14
 					calibrationWave[2][] = 0
 					break
-				case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "FT": //  
+				case "FB": //  
+				case "MT": //  
 				case "MB":
 					//	// for the "short" T/B banks
 					calibrationWave[0][] = -266
@@ -2247,7 +2247,7 @@ Function V_GeneratePerfCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 					calibrationWave[2][] = 0
 
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+				default: //  
 					Print "Det type not found: V_GeneratePerfCalibButton()"
 			endswitch
 
@@ -2255,7 +2255,7 @@ Function V_GeneratePerfCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2280,7 +2280,7 @@ Function V_ReadCalibButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2310,7 +2310,7 @@ Function V_WriteCalibButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2561,7 +2561,7 @@ Function V_ClearXYButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2578,7 +2578,7 @@ Function V_FrontRefFileButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2595,7 +2595,7 @@ Function V_MiddleRefFileButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2616,7 +2616,7 @@ Function V_BackRefFileButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2641,7 +2641,7 @@ Function V_ReadXYButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -2673,7 +2673,7 @@ Function V_WriteXYButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//  no default action
 			break
 	endswitch
 
@@ -3295,8 +3295,8 @@ Function V_fPatch_Guide_SSD_Aperture(variable lo, variable hi, string numGuideSt
 	string fname, detStr
 
 	strswitch(numGuideStr)
-		case "CONV_BEAMS": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "NARROW_SLITS": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "CONV_BEAMS": //  
+		case "NARROW_SLITS": //  
 		case "0":
 			A1_to_GV = 2441
 			break
@@ -3327,7 +3327,7 @@ Function V_fPatch_Guide_SSD_Aperture(variable lo, variable hi, string numGuideSt
 		case "9":
 			A1_to_GV = 579
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: //  
 			Print "Error - using default A1_to_GV value"
 			A1_to_GV = 2441
 	endswitch

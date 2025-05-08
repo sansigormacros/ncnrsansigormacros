@@ -470,7 +470,7 @@ Function VSANSDataHook(STRUCT WMWinHookStruct &s)
 			break
 		// And so on . . .
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -737,7 +737,7 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -797,7 +797,7 @@ Function V_File_minus_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -819,7 +819,7 @@ Function V_File_plus_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -853,7 +853,7 @@ Function V_Tab_p_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -873,7 +873,7 @@ Function V_SensorButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -893,7 +893,7 @@ Function V_AvgMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -918,7 +918,7 @@ Function V_IsolateButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -944,7 +944,7 @@ Function V_ToWorkFileButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -977,7 +977,7 @@ Function V_IvsQPanelButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1003,7 +1003,7 @@ Function V_annularAvgButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1068,7 +1068,7 @@ Function V_StatusButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1144,7 +1144,7 @@ Function V_LogLinButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1166,7 +1166,7 @@ Function V_TagFileButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1221,7 +1221,7 @@ Function V_SaveIQ_ButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1243,7 +1243,7 @@ Function V_BeamCtrButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1265,7 +1265,7 @@ Function V_SpreadPanelButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1287,7 +1287,7 @@ Function V_RestorePanelButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 

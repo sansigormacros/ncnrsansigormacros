@@ -109,7 +109,7 @@ Function V_WorkFolderPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -191,7 +191,7 @@ Function V_SensorPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 

@@ -1203,7 +1203,7 @@ Function V_HRNoiseFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1222,7 +1222,7 @@ Function V_SAMFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1241,7 +1241,7 @@ Function V_BKGFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1260,7 +1260,7 @@ Function V_EMPFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1279,7 +1279,7 @@ Function V_DIVFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1298,7 +1298,7 @@ Function V_MSKFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -3170,7 +3170,7 @@ Function V_Proto_doAverage(string avgStr, string av_type, string activeType, var
 			//do nothing
 			break
 		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 		//do nothing
 	endswitch
@@ -3221,7 +3221,7 @@ Function V_Proto_doPlot(string plotStr, string av_type, string activeType, varia
 				//do nothing
 				break
 			default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// no default action
 				break
 			//do nothing
 		endswitch

@@ -149,7 +149,7 @@ Function V_Plot1D_LogCheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 

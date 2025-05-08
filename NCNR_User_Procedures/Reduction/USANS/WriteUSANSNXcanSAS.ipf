@@ -283,6 +283,7 @@ Function WriteUSANSNXcanSASMetaData(variable fileID, string type, string parentB
 			paramStr  = "Uncorrected SAM data"
 			pkStr    += "SAM PEAK ANGLE: " + num2str(QpkFromNote("SAM"))
 			break
+
 		case "EMP":
 			samStr    = type + " FILES: " + StringByKey("FILE", note(inten), ":", ";")
 			empStr    = "Uncorrected EMP data"
@@ -291,7 +292,8 @@ Function WriteUSANSNXcanSASMetaData(variable fileID, string type, string parentB
 			paramStr  = "Uncorrected EMP data"
 			pkStr    += "EMP PEAK ANGLE: " + num2str(QpkFromNote("EMP"))
 			break
-		case "DSM": // FIXME(CodeStyleFallthroughCaseRequireComment)
+
+		case "DSM": 
 			samStr    = "SMEARED FILES: " + StringByKey("FILE", note(inten), ":", ";")
 			empStr    = "EMP FILES: " + StringByKey("FILE", note(inten_EMP), ":", ";")
 			empLevStr = "EMP LEVEL: " + num2str(empCts)
@@ -301,7 +303,9 @@ Function WriteUSANSNXcanSASMetaData(variable fileID, string type, string parentB
 			paramStr += "Trock = " + num2str(TransRock)
 			pkStr    += "SAM PEAK ANGLE: " + num2str(QpkFromNote("SAM"))
 			pkStr    += " ; EMP PEAK ANGLE: " + num2str(QpkFromNote("EMP"))
-		default: //"COR" is the default, FIXME(CodeStyleFallthroughCaseRequireComment)
+			break
+
+		case "COR":
 			samStr    = type + " FILES: " + StringByKey("FILE", note(inten), ":", ";")
 			empStr    = "EMP FILES: " + StringByKey("FILE", note(inten_EMP), ":", ";")
 			empLevStr = "EMP LEVEL: " + num2str(empCts)
@@ -311,6 +315,10 @@ Function WriteUSANSNXcanSASMetaData(variable fileID, string type, string parentB
 			paramStr += "Trock = " + num2str(TransRock)
 			pkStr    += "SAM PEAK ANGLE: " + num2str(QpkFromNote("SAM"))
 			pkStr    += " ; EMP PEAK ANGLE: " + num2str(QpkFromNote("EMP"))
+			break
+		default:
+			// no action if the case doesn't match
+			break
 	endswitch
 
 	processNote  = samStr + "\n" + dateStr + "\n" + empStr + "\n" + paramStr + "\n" + pkStr + "\n"

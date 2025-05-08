@@ -144,7 +144,7 @@ Function OpenHelpMoviePage()
 	if(V_flag==1)
 //		BrowseURL "ftp://webster.ncnr.nist.gov/pub/sans/kline/movies/"
 		// Andrew has set up a (depricated) http page. in the future, link to NISTube (once I get permission/ERB approval)
-		BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/movies/reduction_analysis_movies.html"
+		BrowseURL "https://www.nist.gov/ncnr/sans-usans-reduction-video-tutorials"
 	endif
 End
 

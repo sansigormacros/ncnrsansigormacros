@@ -173,7 +173,7 @@ Function V_DrawMaskHelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -224,7 +224,7 @@ Function V_DrawMaskRadioCheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxContro
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -311,7 +311,7 @@ Function V_MaskWindowHook(STRUCT WMWinHookStruct &s)
 			hookResult = 1 // We handled keystroke
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -339,7 +339,7 @@ Function V_ToggleMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -376,7 +376,7 @@ Function V_AddToMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -418,7 +418,7 @@ Function V_AddShapeToMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -444,7 +444,7 @@ Function V_MaskToolsButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -481,7 +481,7 @@ Function V_RemoveFromMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -538,7 +538,7 @@ Function V_SetMaskPanelPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -612,9 +612,9 @@ Function V_DrawPanelToMask(string str)
 	// common values (panel position, etc)
 	// TODO -- units are absolute, based on pixels in cm. make sure this is always correct
 	strswitch(str)
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL": //  
+		case "FR": //  
+		case "ML": //  
 		case "MR":
 			width  = trunc(nPix_X * pixSize_X * scale * 1.15) //48 tubes @ 8 mm
 			height = trunc(nPix_Y * pixSize_Y * scale * 0.8)  //128 pixels @ 8 mm
@@ -630,9 +630,9 @@ Function V_DrawPanelToMask(string str)
 			bottom2 = bottom
 
 			break
-		case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FT": //  
+		case "FB": //  
+		case "MT": //  
 		case "MB":
 			width  = trunc(nPix_X * pixSize_X * scale * 1.) //128 pix @ 4 mm
 			height = trunc(nPix_Y * pixSize_Y * scale)      // 48 tubes @ 8 mm
@@ -810,7 +810,7 @@ Function V_SaveMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1528,7 +1528,7 @@ Function V_PickFolderPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1549,7 +1549,7 @@ Function V_PickCarriagePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1568,7 +1568,7 @@ Function V_UpdatePanelsButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1682,7 +1682,7 @@ Function V_ToggleFourMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1779,17 +1779,17 @@ Function V_ShowAvgRangeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 					endfor
 
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-					// FIXME(BugproneMissingSwitchDefaultCase)
+				default: //  
+					// no default action
 					break
 				//do nothing
 			endswitch
 
 			// switch for the overlay
 			strswitch(av_type)
-				case "Sector": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "Annular": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "Sector_PlusMinus": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "Sector": //  
+				case "Annular": //  
+				case "Sector_PlusMinus": //  
 				case "Rectangular":
 
 					variable state = 1
@@ -1877,8 +1877,8 @@ Function V_ShowAvgRangeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 					break
 
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-					// FIXME(BugproneMissingSwitchDefaultCase)
+				default: //  
+					// no default action
 					break
 				//do nothing
 			endswitch
@@ -1887,7 +1887,7 @@ Function V_ShowAvgRangeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1976,8 +1976,8 @@ Function V_DoPanelAvgButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 				case "PNG_Graphic":
 					//do nothing
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-					// FIXME(BugproneMissingSwitchDefaultCase)
+				default: //  
+					// no default action
 					break
 				//do nothing
 			endswitch
@@ -1986,7 +1986,7 @@ Function V_DoPanelAvgButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2008,7 +2008,7 @@ Function V_AvgPanelHelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -2046,7 +2046,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 			overlay = maskW //this copies the data into the properly scaled wave
 
 			strswitch(detStr)
-				case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "ML": //  
 				case "FL":
 					//					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
@@ -2056,7 +2056,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_L ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MR": //  
 				case "FR":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
 					if(V_flag == 0) //so the overlay doesn't get appended more than once
@@ -2065,7 +2065,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_R ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MT": //  
 				case "FT":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
 					if(V_flag == 0) //so the overlay doesn't get appended more than once
@@ -2074,7 +2074,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_T ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				case "MB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MB": //  
 				case "FB":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
 					if(V_flag == 0) //so the overlay doesn't get appended more than once
@@ -2083,7 +2083,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_B ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+				default: //  
 					//
 					Print "off bottom of switch"
 			endswitch
@@ -2093,7 +2093,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 			WAVE overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_" + detStr + ":overlay_" + detStr)
 
 			strswitch(detStr)
-				case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "ML": //  
 				case "FL":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 					if(V_Flag == 1) //overlay is present
@@ -2101,7 +2101,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_L ''#1
 					endif
 					break
-				case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MR": //  
 				case "FR":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
 					if(V_Flag == 1) //overlay is present
@@ -2109,7 +2109,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_R ''#1
 					endif
 					break
-				case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MT": //  
 				case "FT":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
 					if(V_Flag == 1) //overlay is present
@@ -2117,7 +2117,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_T ''#1
 					endif
 					break
-				case "MB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MB": //  
 				case "FB":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
 					if(V_Flag == 1) //overlay is present
@@ -2125,7 +2125,7 @@ Function V_OverlayFourMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_B ''#1
 					endif
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+				default: //  
 					//
 					Print "off bottom of switch"
 			endswitch
@@ -2168,8 +2168,8 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 			//			overlay = maskW		//this copies the data into the properly scaled wave
 
 			strswitch(detStr)
-				case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "ML": //  
+				case "FL": //  
 				case "B":
 					//					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
@@ -2179,7 +2179,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_L ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MR": //  
 				case "FR":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
 					if(V_flag == 0) //so the overlay doesn't get appended more than once
@@ -2188,7 +2188,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_R ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MT": //  
 				case "FT":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
 					if(V_flag == 0) //so the overlay doesn't get appended more than once
@@ -2197,7 +2197,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_T ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				case "MB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MB": //  
 				case "FB":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
 					if(V_flag == 0) //so the overlay doesn't get appended more than once
@@ -2206,7 +2206,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						ModifyImage/W=VSANS_Det_Panels#Panel_B ''#1, ctab={0.9, 0.95, BlueRedGreen, 0}, minRGB=NaN, maxRGB=(0, 65000, 0, 35000)
 					endif
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+				default: //  
 					//
 					Print "off bottom of switch"
 			endswitch
@@ -2216,8 +2216,8 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 			WAVE overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_" + detStr + ":AvgOverlay_" + detStr)
 
 			strswitch(detStr)
-				case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
-				case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "ML": //  
+				case "FL": //  
 				case "B":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 					if(V_Flag == 1) //overlay is present
@@ -2225,7 +2225,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_L ''#1
 					endif
 					break
-				case "MR": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MR": //  
 				case "FR":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
 					if(V_Flag == 1) //overlay is present
@@ -2233,7 +2233,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_R ''#1
 					endif
 					break
-				case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MT": //  
 				case "FT":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
 					if(V_Flag == 1) //overlay is present
@@ -2241,7 +2241,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_T ''#1
 					endif
 					break
-				case "MB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+				case "MB": //  
 				case "FB":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
 					if(V_Flag == 1) //overlay is present
@@ -2249,7 +2249,7 @@ Function V_OverlayFourAvgMask(string folderStr, string detStr, variable state)
 						RemoveImage/W=VSANS_Det_Panels#Panel_B ''#1
 					endif
 					break
-				default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+				default: //  
 					//
 					Print "off bottom of switch"
 			endswitch

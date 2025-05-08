@@ -110,9 +110,9 @@ Function GraphSAM()
 	string list = ""
 	list = Wavelist("DetCts_SAM*", ";", "WIN:COR_Graph")
 	
-	WAVE DetCts_SAM = DetCts_SAM
-	WAVE Qvals_SAM = Qvals_SAM
-	WAVE ErrDetCts_SAM = ErrDetCts_SAM
+	WAVE/Z DetCts_SAM = DetCts_SAM
+	WAVE/Z Qvals_SAM = Qvals_SAM
+	WAVE/Z ErrDetCts_SAM = ErrDetCts_SAM
 	
 	if(strlen(list) != 0)
 		//Print "SAM already on graph"
@@ -141,9 +141,9 @@ Function GraphEMP()
 	string list = ""
 	list = Wavelist("DetCts_EMP*", ";", "WIN:COR_Graph")
 	
-	WAVE DetCts_EMP = DetCts_EMP
-	WAVE Qvals_EMP = Qvals_EMP
-	WAVE ErrDetCts_EMP = ErrDetCts_EMP
+	WAVE/Z DetCts_EMP = DetCts_EMP
+	WAVE/Z Qvals_EMP = Qvals_EMP
+	WAVE/Z ErrDetCts_EMP = ErrDetCts_EMP
 	
 	if(strlen(list) != 0)
 		//	Print "EMP already on graph"
@@ -174,9 +174,9 @@ Function GraphCOR()
 	string list = ""
 	list = Wavelist("DetCts_COR*", ";", "WIN:COR_Graph")
 	
-	WAVE DetCts_COR = DetCts_COR
-	WAVE Qvals_COR = Qvals_COR
-	WAVE ErrDetCts_COR = ErrDetCts_COR
+	WAVE/Z DetCts_COR = DetCts_COR
+	WAVE/Z Qvals_COR = Qvals_COR
+	WAVE/Z ErrDetCts_COR = ErrDetCts_COR
 		
 	if(strlen(list) != 0)
 		//	Print "COR already on graph"
@@ -359,7 +359,7 @@ Function TypeToggleCheckProc(string ctrlName, variable checked) : CheckBoxContro
 			gRadioVal = 3
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the control name doesn't match
 			break
 	endswitch
 	CheckBox CORCheck, win=COR_Graph, value=(gRadioVal == 1)
@@ -467,7 +467,7 @@ Function LogLinToggleCheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 			endif
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the event code doesn't match
 			break
 	endswitch
 

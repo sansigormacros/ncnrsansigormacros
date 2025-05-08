@@ -381,7 +381,7 @@ Function V_VCALCShowMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -417,7 +417,7 @@ Function V_VCALCSaveConfiguration(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -467,7 +467,7 @@ Function V_VCALCSaveNICEConfiguration(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -486,7 +486,7 @@ Function V_VCALCRecalcButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -615,7 +615,7 @@ Function VCALCTabProc(string name, variable tab)
 					break
 				// add more items to the switch if different control types are used
 				default:
-					// FIXME(BugproneMissingSwitchDefaultCase)
+					// no default action
 					break
 			endswitch
 		endif
@@ -716,7 +716,7 @@ Function V_GuideSliderProc(string ctrlName, variable sliderValue, variable event
 			case 0:
 				apStr = "0.75 cm;1.5 cm;3.0 cm;"
 				break
-			default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			default: // 
 				apStr = "6.0 cm;"
 				PopupMenu VCALCCtrl_0f, mode=1, popvalue="6.0 cm"
 		endswitch
@@ -742,7 +742,7 @@ Function Front2DQ_Log_CheckProc(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -765,7 +765,7 @@ Function VC_SourceAperDiamSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuContr
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -788,7 +788,7 @@ Function VC_SampleAperDiamSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuContr
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -851,7 +851,7 @@ Function VC_SourceApShapeSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuContro
 				//					break
 
 				default:
-					// FIXME(BugproneMissingSwitchDefaultCase)
+					// no default action
 					break
 			endswitch
 			//			Print "Not filled in yet"
@@ -866,7 +866,7 @@ Function VC_SourceApShapeSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuContro
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -920,7 +920,7 @@ Function VC_SampleApShapeSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuContro
 				//					break
 
 				default:
-					// FIXME(BugproneMissingSwitchDefaultCase)
+					// no default action
 					break
 			endswitch
 			//			Print "Not filled in yet"
@@ -935,7 +935,7 @@ Function VC_SampleApShapeSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuContro
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -956,7 +956,7 @@ Function VC_DeltaLamSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1020,7 +1020,7 @@ Function VC_MonochromSelectPopup(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1089,7 +1089,7 @@ Function VC_PresetConfigPopup(STRUCT WMPopupAction &pa) : PopupMenuControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1147,8 +1147,8 @@ End
 Function VC_Sam_to_GV_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1161,7 +1161,7 @@ Function VC_Sam_to_GV_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableC
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1174,8 +1174,8 @@ End
 Function VC_A2_to_GV_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1188,7 +1188,7 @@ Function VC_A2_to_GV_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCo
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1201,8 +1201,8 @@ End
 Function VC_Lambda_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1215,7 +1215,7 @@ Function VC_Lambda_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCont
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1230,8 +1230,8 @@ End
 Function VC_SimCtTime_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1245,7 +1245,7 @@ Function VC_SimCtTime_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableC
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1259,8 +1259,8 @@ End
 Function VC_SimImon_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1276,7 +1276,7 @@ Function VC_SimImon_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCon
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1288,8 +1288,8 @@ End
 Function FrontView_Range_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1300,7 +1300,7 @@ Function FrontView_Range_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariab
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1314,8 +1314,8 @@ End
 Function Front2DQ_Range_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1329,7 +1329,7 @@ Function Front2DQ_Range_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariabl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1342,8 +1342,8 @@ End
 Function VC_FDet_SDD_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1366,7 +1366,7 @@ Function VC_FDet_SDD_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCo
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1379,8 +1379,8 @@ End
 Function VC_MDet_SDD_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1403,7 +1403,7 @@ Function VC_MDet_SDD_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCo
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1416,8 +1416,8 @@ End
 Function VC_BDet_SDD_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1440,7 +1440,7 @@ Function VC_BDet_SDD_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCo
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1453,8 +1453,8 @@ End
 Function VC_FDet_LR_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1477,7 +1477,7 @@ Function VC_FDet_LR_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCon
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 
@@ -1490,8 +1490,8 @@ End
 Function VC_MDet_LR_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -1514,7 +1514,7 @@ Function VC_MDet_LR_SetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableCon
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default action
 			break
 	endswitch
 

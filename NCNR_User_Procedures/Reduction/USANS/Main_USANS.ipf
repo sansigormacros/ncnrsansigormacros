@@ -22,7 +22,7 @@
 //********************
 
 Menu "USANS"
-	"USANS Reduction Panel", ShowUSANSPanel()
+	"USANS Reduction Panel", USANSPanelToFront()
 	"Build USANS Notebook"
 	"Desmear USANS Data", Desmear()
 	"Add two raw BT5 files", SelectFilesToAdd()
@@ -46,6 +46,18 @@ Menu "USANS"
 	"Open Help Movie Page", OpenHelpMoviePage()
 	"Check for Updates", CheckForLatestVersion()
 End
+
+
+// Bring the USANS_Panel to the front
+// unlike ShowUSANSPanel (which is called from multiple locations) - this procedure
+// does NOT reinitialize anything, since it's meant to just bring the window to the top 
+// - not restarting an experiment
+Proc USANSPanelToFront()
+	DoWindow/F USANS_Panel
+	if(V_Flag == 0)
+		USANS_Panel()
+	endif
+EndMacro
 
 // Bring the USANS_Panel to the front
 // ALWAYS initializes the folders and variables
@@ -961,7 +973,7 @@ Function ClearButtonProc(string ctrlName) : ButtonControl
 			CleanOutFolder("COR")
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no action if the control name doesn't match
 			break
 	endswitch
 	// uncheck the cursors
