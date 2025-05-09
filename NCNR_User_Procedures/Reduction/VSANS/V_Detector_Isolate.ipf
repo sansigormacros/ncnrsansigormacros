@@ -207,7 +207,7 @@ Function V_isoDrawDetPanel(string str)
 
 			break
 
-		case "DIV": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "DIV":  
 		case "MSK":
 			// TODO
 			// -- this takes fake data from VCALC, which is very likely wrong for DIV data
@@ -222,10 +222,10 @@ Function V_isoDrawDetPanel(string str)
 			pixSize_Y = VC_pixSize_Y
 			break
 
-		case "RAW": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "ADJ": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "SAM": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "EMP": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "RAW":  
+		case "ADJ":  
+		case "SAM":  
+		case "EMP":  
 		case "BGD":
 			WAVE dispW = $("root:Packages:NIST:VSANS:" + folder + ":entry:instrument:detector_" + str + ":data")
 
@@ -247,9 +247,9 @@ Function V_isoDrawDetPanel(string str)
 	// common values (panel position, etc)
 	//  -- units are absolute, based on pixels in cm. make sure this is always correct
 	strswitch(str)
-		case "FL": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FR": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "ML": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FL":  
+		case "FR":  
+		case "ML":  
 		case "MR":
 			width  = trunc(nPix_X * pixSize_X * scale * 1.15) //48 tubes @ 8 mm
 			height = trunc(nPix_Y * pixSize_Y * scale * 0.8)  //128 pixels @ 8 mm
@@ -265,9 +265,9 @@ Function V_isoDrawDetPanel(string str)
 			bottom2 = bottom
 
 			break
-		case "FT": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "FB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "MT": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "FT":  
+		case "FB":  
+		case "MT":  
 		case "MB":
 			width  = trunc(nPix_X * pixSize_X * scale * 1.) //128 pix @ 4 mm
 			height = trunc(nPix_Y * pixSize_Y * scale)      // 48 tubes @ 8 mm

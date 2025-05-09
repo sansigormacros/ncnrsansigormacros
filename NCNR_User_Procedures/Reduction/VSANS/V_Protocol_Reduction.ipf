@@ -151,7 +151,7 @@ Function V_DeleteProtocolButton(string ctrlName) : ButtonControl
 			break
 		case "tempProtocol":
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default:  
 			//delete the protocol
 			KillWaves/Z $protocol
 	endswitch
@@ -3169,7 +3169,7 @@ Function V_Proto_doAverage(string avgStr, string av_type, string activeType, var
 		case "PNG_Graphic":
 			//do nothing
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default:  
 			// no default action
 			break
 		//do nothing
@@ -3189,7 +3189,7 @@ Function V_Proto_doPlot(string plotStr, string av_type, string activeType, varia
 				//still do nothing
 				break
 
-			case "Circular": // FIXME(CodeStyleFallthroughCaseRequireComment)
+			case "Circular":  
 			case "Sector":
 				V_PlotData_Panel() //this brings the plot window to the front, or draws it (ONLY)
 				V_Update1D_Graph(activeType, binType) //update the graph, data was already binned
@@ -3220,7 +3220,7 @@ Function V_Proto_doPlot(string plotStr, string av_type, string activeType, varia
 			case "PNG_Graphic":
 				//do nothing
 				break
-			default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			default:  
 				// no default action
 				break
 			//do nothing
@@ -3355,7 +3355,7 @@ Function V_Proto_SaveFile(string avgStr, string activeType, string samFileLoaded
 				//				SaveAsPNG(activeType,fullpath,dialog)
 				break
 
-			default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			default:  
 				DoAlert 0, "av_type not found in dispatch to write file"
 		endswitch
 

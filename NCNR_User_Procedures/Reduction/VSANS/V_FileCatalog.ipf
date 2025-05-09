@@ -324,7 +324,7 @@ Function V_CatTableHook(string infoStr)
 
 	//	Print "EVENT= ",event
 	strswitch(event)
-		case "mouseup": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "mouseup": 
 			//			Variable xpix= NumberByKey("MOUSEX",infoStr)
 			//			Variable ypix= NumberByKey("MOUSEY",infoStr)
 			//			PopupContextualMenu/C=(xpix, ypix) "yes;no;maybe;"
