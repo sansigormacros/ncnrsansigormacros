@@ -129,7 +129,7 @@ Function TISANEDone_Proc(STRUCT WMButtonAction &ba) : ButtonControl
 			DoWindow/K TISANE
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -254,7 +254,7 @@ Function ProcessLog(variable nslices, variable slicewidth)
 				//printf "MAR : \r"
 				break
 			default:
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// default case not needed
 				break
 		endswitch
 	while(1)
@@ -335,7 +335,7 @@ Function PreProcessLog()
 			case ATMAR:
 				break
 			default:
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// default case not needed
 				break
 		endswitch
 	while(1)

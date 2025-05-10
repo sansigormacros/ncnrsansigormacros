@@ -805,7 +805,7 @@ Function MatchCheckProc(string name, variable value)
 			gRadioVal = 3
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 	CheckBox check0, value=gRadioVal == 1
@@ -1364,7 +1364,7 @@ Function LoadCSVDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1401,7 +1401,7 @@ Function WriteCSVDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1436,7 +1436,7 @@ Function GeneratePerfDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1459,7 +1459,7 @@ Function ReadDTButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1487,7 +1487,7 @@ Function WriteDTButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1678,7 +1678,7 @@ Function LoadCSVCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1725,7 +1725,7 @@ Function WriteCSVCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1767,7 +1767,7 @@ Function GeneratePerfCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1790,7 +1790,7 @@ Function ReadCalibButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1818,7 +1818,7 @@ Function WriteCalibButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1983,7 +1983,7 @@ Function LoadCSVAttTableButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2052,7 +2052,7 @@ Function WriteCSVAttTableButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2082,7 +2082,7 @@ Function ReadAttTableButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2110,7 +2110,7 @@ Function WriteAttTableButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2280,7 +2280,7 @@ Function LoadCSVAttErrTableButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2345,7 +2345,7 @@ Function WriteCSVAttErrTableButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2375,7 +2375,7 @@ Function ReadAttErrTableButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2403,7 +2403,7 @@ Function WriteAttErrTableButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 

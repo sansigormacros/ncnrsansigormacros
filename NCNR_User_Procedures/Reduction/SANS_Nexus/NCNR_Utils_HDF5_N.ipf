@@ -427,8 +427,8 @@ Function xN_DetectorPixelResolution(string fileStr, string detStr)
 	NVAR PixelResDefault = root:myGlobals:PixelResDefault
 
 	strswitch(instr)
-		case "CGB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "NG3": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "CGB":  
+		case "NG3":  
 		case "ngb30":
 			if(cmpstr(detStr, "ILL   ") == 0)
 				DDet = PixelResNG3_ILL
@@ -443,7 +443,7 @@ Function xN_DetectorPixelResolution(string fileStr, string detStr)
 				DDet = PixelResNG5_ORNL //detector is ordella-type
 			endif
 			break
-		case "NG7": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "NG7":  
 		case "ng7":
 			if(cmpstr(detStr, "ILL   ") == 0)
 				DDet = PixelResNG7_ILL
@@ -451,8 +451,8 @@ Function xN_DetectorPixelResolution(string fileStr, string detStr)
 				DDet = PixelResNG7_ORNL //detector is ordella-type
 			endif
 			break
-		case "NGA": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "NGB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "NGA":  
+		case "NGB":  
 		case "ngb":
 			if(cmpstr(detStr, "ILL   ") == 0)
 				DDet = PixelResNGB_ILL
@@ -460,7 +460,7 @@ Function xN_DetectorPixelResolution(string fileStr, string detStr)
 				DDet = PixelResNGB_ORNL //detector is ordella-type
 			endif
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default:  
 			//return error?
 			DoAlert 0, "No matching instrument xDetectorPixelResolution-- Using default resolution"
 			DDet = PixelResDefault //0.5 cm, typical for new ORNL detectors
@@ -542,8 +542,8 @@ Function xN_DetectorDeadtime(string fileStr, string detStr, [string dateAndTimeS
 	variable fileTime   = N_ConvertNexusDay2secs(dateAndTimeStr)
 
 	strswitch(instr)
-		case "CGB": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "NG3": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "CGB":  
+		case "NG3":  
 		case "ngb30": // 30m sans at ngb
 			if(cmpstr(detStr, "ILL   ") == 0)
 				deadtime = DeadtimeNG3_ILL
@@ -562,7 +562,7 @@ Function xN_DetectorDeadtime(string fileStr, string detStr, [string dateAndTimeS
 				deadtime = DeadtimeNG5_ORNL //detector is ordella-type
 			endif
 			break
-		case "NG7": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "NG7":  
 		case "ng7":
 			if(cmpstr(detStr, "ILL   ") == 0)
 				deadtime = DeadtimeNG7_ILL
@@ -574,8 +574,8 @@ Function xN_DetectorDeadtime(string fileStr, string detStr, [string dateAndTimeS
 				endif
 			endif
 			break
-		case "NGA": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "NGB": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "NGA":  
+		case "NGB":  
 		case "ngb": // 10m nSoft
 			if(cmpstr(detStr, "ILL   ") == 0)
 				deadtime = DeadtimeNGB_ILL
@@ -584,7 +584,7 @@ Function xN_DetectorDeadtime(string fileStr, string detStr, [string dateAndTimeS
 			endif
 			//			Print "Using fictional values for NGB dead time"
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default:  
 			//return error?
 			DoAlert 0, "no matching instrument DetectorDeadtime, using default"
 			deadtime = DeadtimeDefault //1e-6 seconds, typical for new ORNL detectors

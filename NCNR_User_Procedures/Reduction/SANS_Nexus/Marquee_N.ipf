@@ -671,15 +671,11 @@ End
 //operation is responsible for creating them.
 //
 //
-// FIXME -- this may be broken since I don't know what dat folder AvgCounts and Position are stored in
-// (since rtGlobals was updated to 3)
 Function Draw_Histo()
 
 	// this assumes I'm in the right data folder
 	WAVE AvgCounts = AvgCounts
 	WAVE Position = Position
-
-	DoAlert 0,"FIXME -- this may be broken since I don't know what dat folder AvgCounts and Position are stored in"
 
 	Display/W=(197, 329, 567, 461)/K=1 AvgCounts vs Position
 	DoWindow/C SANS_Histo
@@ -884,7 +880,7 @@ Function SH_FreeCursorCheck(STRUCT WMCheckboxAction &cba) : CheckBoxControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -900,7 +896,7 @@ Function SH_RecalcButton(STRUCT WMButtonAction &ba) : ButtonControl
 			DoHistogramPair(hcsr(A, "SANS_Data"), vcsr(A, "SANS_Data"))
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -922,7 +918,7 @@ Function SH_DoneButton(STRUCT WMButtonAction &ba) : ButtonControl
 			endif
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -932,8 +928,8 @@ End
 Function SH_WidthSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 			string   sval = sva.sval
@@ -942,7 +938,7 @@ Function SH_WidthSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableContro
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 

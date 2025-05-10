@@ -149,11 +149,11 @@ Function Panel_DoAverageButtonProc(string ctrlName) : ButtonControl
 			case "Annular":
 				WritePhiave_W_Protocol(type, "", 1)
 				break
-			case "2D ASCII": // FIXME(CodeStyleFallthroughCaseRequireComment)
-			case "QxQy ASCII": // FIXME(CodeStyleFallthroughCaseRequireComment)
+			case "2D ASCII":  
+			case "QxQy ASCII":  
 			case "2D_NXcanSAS":
 				break
-			default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			default:  
 				if(useXMLOutput == 1)
 					WriteXMLWaves_W_Protocol(type, "", 1)
 				elseif(useNXcanSASOutput == 1)
@@ -206,16 +206,16 @@ Function AvTypePopMenuProc(string ctrlName, variable popNum, string popStr) : Po
 	DisableUnusedParameters(choice)
 
 	strswitch(choice) // string switch
-		case "2D ASCII": // execute if case matches expression, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "QxQy ASCII": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "2D ASCII": // execute if case matches expression, 
+		case "QxQy ASCII":  
 		case "2D_NXcanSAS":
 			string/G root:myGlobals:Drawing:gDrawInfoStr = ReplaceStringByKey("AVTYPE", tempStr, choice, "=", ";")
 			Button P_DoAvg, title="Save ASCII"
 			break
-		case "Circular": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "Sector": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "Sector_PlusMinus": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "Rectangular": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "Circular":  
+		case "Sector":  
+		case "Sector_PlusMinus":  
+		case "Rectangular":  
 		case "Annular":
 			string/G root:myGlobals:Drawing:gDrawInfoStr = ReplaceStringByKey("AVTYPE", tempStr, choice, "=", ";")
 			Button P_DoAvg, title="Do Average"
@@ -236,9 +236,9 @@ Function DisableUnusedParameters(string choice)
 	variable no  = 0
 
 	strswitch(choice) // string switch
-		case "2D ASCII": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "QxQy ASCII": // FIXME(CodeStyleFallthroughCaseRequireComment)
-		case "2D_NXcanSAS": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "2D ASCII":  
+		case "QxQy ASCII":  
+		case "2D_NXcanSAS":  
 		case "Circular": //disable everything for these three choices
 			SetVariable Phi_p, disable=yes
 			SetVariable Qctr_p, disable=yes
@@ -247,7 +247,7 @@ Function DisableUnusedParameters(string choice)
 			SetVariable width_p, disable=yes
 			popupmenu sides, disable=yes
 			break
-		case "Sector": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "Sector":  
 		case "Sector_PlusMinus":
 			SetVariable Phi_p, disable=no
 			SetVariable Qctr_p, disable=yes

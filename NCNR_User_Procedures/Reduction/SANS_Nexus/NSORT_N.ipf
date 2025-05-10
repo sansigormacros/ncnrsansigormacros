@@ -141,7 +141,7 @@ Function LoadDataForNSORT(string fileStr, variable setNum)
 			endPts  = endPts4
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -196,7 +196,7 @@ Function LoadDataForNSORT(string fileStr, variable setNum)
 			gColumns4 = numCols
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -448,7 +448,7 @@ Function Plot_0_Button(string ctrlName) : ButtonControl
 			ControlInfo/W=NSORT_Panel popup_4
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -509,7 +509,7 @@ Function Plot_0_Button(string ctrlName) : ButtonControl
 				DisplayHighestSet()
 				break
 			default:
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// no default case needed
 				break
 		endswitch
 		Legend
@@ -548,7 +548,7 @@ Function Plot_0_Button(string ctrlName) : ButtonControl
 				endif
 				break
 			default:
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// no default case needed
 				break
 		endswitch
 
@@ -1153,7 +1153,7 @@ Function DoAutoScaleFromPanel(variable auto)
 			normToStr = name4
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1403,8 +1403,8 @@ Function DoAutoScaleFromPanel(variable auto)
 
 		// normalization
 		switch(normTo)
-			case 1: // FIXME(CodeStyleFallthroughCaseRequireComment)
-			case 2: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			case 1: 
+			case 2: 
 			case 3:
 				//normalize to first or second or third file, so multiply fourth by norm34
 				highesti *= norm34
@@ -1424,7 +1424,7 @@ Function DoAutoScaleFromPanel(variable auto)
 				highs *= norm34
 				break
 			default:
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// no default case needed
 				break
 		endswitch
 
@@ -1735,8 +1735,8 @@ Function DoAutoScaleFromPanel(variable auto)
 
 		// normalization
 		switch(normTo)
-			case 1: // FIXME(CodeStyleFallthroughCaseRequireComment)
-			case 2: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			case 1: 
+			case 2: 
 			case 3:
 				//normalize to first or second or third file, so multiply fourth by norm34
 				highesti *= norm34
@@ -1756,7 +1756,7 @@ Function DoAutoScaleFromPanel(variable auto)
 				highs *= norm34
 				break
 			default:
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// no default case needed
 				break
 		endswitch
 
@@ -2196,7 +2196,7 @@ Function CombineTableHook(string infoStr)
 	//	Print "EVENT= ",event
 	if(cmpstr(subwin, "CombinePanel#GroupedFiles") == 0)
 		strswitch(event)
-			case "mousedown": // FIXME(CodeStyleFallthroughCaseRequireComment)
+			case "mousedown": 
 				variable xpix  = NumberByKey("MOUSEX", infoStr)
 				variable ypix  = NumberByKey("MOUSEY", infoStr)
 				variable modif = NumberByKey("MODIFIERS", infoStr)
@@ -2209,12 +2209,12 @@ Function CombineTableHook(string infoStr)
 							SendSelectionToTable()
 							break
 						default:
-							// FIXME(BugproneMissingSwitchDefaultCase)
+							// no default case needed
 							break
 					endswitch //on selection
 				endif
 			default:
-				// FIXME(BugproneMissingSwitchDefaultCase)
+				// no default case needed
 				break
 		endswitch // on event
 	endif

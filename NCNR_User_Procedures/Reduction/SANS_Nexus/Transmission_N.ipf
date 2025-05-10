@@ -1924,8 +1924,8 @@ Function fGuessTransToScattFiles(variable numChars)
 			gMatchSamStr = ""
 			// do nothing
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-			// FIXME(BugproneMissingSwitchDefaultCase)
+		default: 
+			// default case not needed
 			break
 		//	do nothing
 	endswitch
@@ -1953,7 +1953,7 @@ Function GuessFromTableHook(string infoStr)
 	menuStr += "Guess using 24 characters;"
 
 	strswitch(event)
-		case "mousedown": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "mousedown": 
 			variable xpix  = NumberByKey("MOUSEX", infoStr)
 			variable ypix  = NumberByKey("MOUSEY", infoStr)
 			variable modif = NumberByKey("MODIFIERS", infoStr)
@@ -1995,12 +1995,12 @@ Function GuessFromTableHook(string infoStr)
 						fGuessTransToScattFiles(num)
 						break
 					default:
-						// FIXME(BugproneMissingSwitchDefaultCase)
+						// default case not needed
 						break
 				endswitch //on selection
 			endif
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch // on event
 
@@ -2019,7 +2019,7 @@ Function DoAssignTransButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			DoWindow/K ConfirmGuess
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -2090,7 +2090,7 @@ Function DoTryAgainMoreButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			//Print "Try Again"
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -2161,7 +2161,7 @@ Function DoTryAgainFewerButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			//Print "Try Again"
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -2179,7 +2179,7 @@ Function SkipTransButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			DoWindow/K ConfirmGuess
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 

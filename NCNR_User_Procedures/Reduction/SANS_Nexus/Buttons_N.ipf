@@ -143,7 +143,7 @@ Function MapSliderProc(string name, variable value, variable event)
 			Slider loSlide, win=SANS_Data, value=0
 			loScale = 0
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: 
 			loScale = 0
 			hiScale = 1
 	endswitch

@@ -1297,7 +1297,7 @@ Function AutoReduceHelpButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1315,7 +1315,7 @@ Function AutoAskForConfigButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1332,7 +1332,7 @@ Function AutoSortConfigButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1349,7 +1349,7 @@ Function AutoFillProtocolButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1366,7 +1366,7 @@ Function AutoCalcTransButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1383,7 +1383,7 @@ Function AutoFindUnityTransButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1400,7 +1400,7 @@ Function AutoFindLargeTransButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1417,7 +1417,7 @@ Function AutoReduceEverythingButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1435,7 +1435,7 @@ Function AutoNSORTTableButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 
@@ -1454,7 +1454,7 @@ Function AutoNSORTEverythingButton(STRUCT WMButtonAction &ba) : ButtonControl
 		case -1: // control being killed
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			//default case not needed
 			break
 	endswitch
 

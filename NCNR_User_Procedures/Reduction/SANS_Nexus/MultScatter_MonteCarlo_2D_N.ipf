@@ -1277,8 +1277,8 @@ EndMacro
 Function CountTimeSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 
@@ -1288,7 +1288,7 @@ Function CountTimeSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableContr
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1306,7 +1306,7 @@ Function MC_ModelPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1378,7 +1378,7 @@ Function MC_DoItButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1412,7 +1412,7 @@ Function MC_Display2DButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			Execute "ChangeDisplay(\"SAS\")"
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1936,8 +1936,8 @@ EndMacro
 Function Sim_1D_CountTimeSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 
@@ -1945,7 +1945,7 @@ Function Sim_1D_CountTimeSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariab
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1955,8 +1955,8 @@ End
 Function Sim_1D_SamThickSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 
@@ -1964,7 +1964,7 @@ Function Sim_1D_SamThickSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariabl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -1974,8 +1974,8 @@ End
 Function Sim_1D_SamTransSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariableControl
 
 	switch(sva.eventCode)
-		case 1: // mouse up, FIXME(CodeStyleFallthroughCaseRequireComment)
-		case 2: // Enter key, FIXME(CodeStyleFallthroughCaseRequireComment)
+		case 1: // mouse up, 
+		case 2: // Enter key, 
 		case 3: // Live update
 			variable dval = sva.dval
 
@@ -1983,7 +1983,7 @@ Function Sim_1D_SamTransSetVarProc(STRUCT WMSetVariableAction &sva) : SetVariabl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2001,7 +2001,7 @@ Function Sim_1D_ModelPopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 
@@ -2017,7 +2017,7 @@ Function Sim_1D_DoItButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// no default case needed
 			break
 	endswitch
 

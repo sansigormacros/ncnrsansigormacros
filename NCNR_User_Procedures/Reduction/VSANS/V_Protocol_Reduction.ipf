@@ -3293,9 +3293,9 @@ Function V_Proto_SaveFile(string avgStr, string activeType, string samFileLoaded
 
 				break
 
-			case "Circular": //in SANS, this was the default, but is dangerous, so make it explicit here, FIXME(CodeStyleFallthroughCaseRequireComment)
-			case "Sector": // TODO: this falls through - which luckily works for now..., FIXME(CodeStyleFallthroughCaseRequireComment)
-			case "Rectangular": // TODO: this falls through - which luckily works for now..., FIXME(CodeStyleFallthroughCaseRequireComment)
+			case "Circular": //in SANS, this was the default, but is dangerous, so make it explicit here 
+			case "Sector": // TODO: this falls through - which luckily works for now...
+			case "Rectangular": // TODO: this falls through - which luckily works for now...
 			case "Narrow_Slit": // TODO: this falls through - which luckily works for now...
 
 				// no VSANS support of XML output at this point

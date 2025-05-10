@@ -157,7 +157,7 @@ Function DeleteProtocolButton(string ctrlName) : ButtonControl
 			break
 		case "tempProtocol":
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+		default: 
 			//delete the protocol
 			KillWaves/Z $protocol
 	endswitch
@@ -1893,18 +1893,18 @@ Function ExecuteProtocol(string protStr, string samStr)
 		case "Sector_PlusMinus":
 			Sector_PlusMinus1D(activeType)
 			break
-		case "none": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "none": 
 		//do nothing
-		case "2D_ASCII": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "2D_ASCII": 
 		//do nothing
-		case "QxQy_ASCII": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "QxQy_ASCII": 
 		//do nothing
-		case "2D_NXcanSAS": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "2D_NXcanSAS": 
 		//do nothing
-		case "PNG_Graphic": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "PNG_Graphic": 
 		//do nothing
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-			// FIXME(BugproneMissingSwitchDefaultCase)
+		default: 
+			// default case not needed
 			break
 		//do nothing
 	endswitch
@@ -1992,7 +1992,7 @@ Function ExecuteProtocol(string protStr, string samStr)
 			case "PNG_Graphic":
 				SaveAsPNG(activeType, fullpath, dialog)
 				break
-			default: // FIXME(CodeStyleFallthroughCaseRequireComment)
+			default: 
 				if(useXMLOutput == 1)
 					WriteXMLWaves_W_Protocol(activeType, fullPath, dialog)
 				elseif(useNXcanSASOutput == 1)

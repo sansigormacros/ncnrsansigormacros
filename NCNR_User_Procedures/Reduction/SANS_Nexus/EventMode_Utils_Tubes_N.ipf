@@ -1150,8 +1150,8 @@ Function Proto_doAverage(string avgStr, string av_type, string activeType)
 		case "PNG_Graphic":
 			//do nothing
 			break
-		default: // FIXME(CodeStyleFallthroughCaseRequireComment)
-			// FIXME(BugproneMissingSwitchDefaultCase)
+		default: 
+			// no default case needed
 			break
 		//do nothing
 	endswitch
@@ -1286,7 +1286,7 @@ Function Proto_SaveFile(string avgStr, string activeType, string samFileLoaded, 
 			case "PNG_Graphic":
 				SaveAsPNG(activeType, fullpath, dialog)
 				break
-			default: // this is the circular/sector/rectangular averages, FIXME(CodeStyleFallthroughCaseRequireComment)
+			default: // this is the circular/sector/rectangular averages, 
 				if(useXMLOutput == 1)
 					WriteXMLWaves_W_Protocol(activeType, fullPath, dialog)
 				elseif(useNXcanSASOutput == 1)

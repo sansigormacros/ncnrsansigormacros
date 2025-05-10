@@ -599,12 +599,12 @@ Function RA_ExportCheckProc(string ctrlName, variable checked) : CheckBoxControl
 			CheckBox check1, value=1
 			CheckBox check2, value=0
 			break
-		case "check2": // FIXME(CodeStyleFallthroughCaseRequireComment)
+		case "check2": 
 			CheckBox check0, value=0
 			CheckBox check1, value=0
 			CheckBox check2, value=1
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 	return (0)

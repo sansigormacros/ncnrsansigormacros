@@ -307,7 +307,7 @@ Function ShowBoxButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -451,7 +451,7 @@ Function GenerateDIVButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			gLog = oldState //revert display preference to old state
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -504,7 +504,7 @@ Function DoneDIVButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			DoWindow/K DIV_Panel
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -525,7 +525,7 @@ Function ReloadDIVButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			//			Execute "ChangeDisplay(\"DIV\")"
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -544,7 +544,7 @@ Function DIVHelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			endif
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 
@@ -580,7 +580,7 @@ Function CompareDIVButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			Execute "ChangeDisplay(\"SUB\")"
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 

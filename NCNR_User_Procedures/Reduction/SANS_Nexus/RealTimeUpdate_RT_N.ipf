@@ -285,7 +285,7 @@ Function RT_Param_SetVarProc(string ctrlName, variable varNum, string varStr, st
 			//			rw[26]=varNum
 			break
 		default:
-			// FIXME(BugproneMissingSwitchDefaultCase)
+			// default case not needed
 			break
 	endswitch
 	//only update the graph if it is open, and is a RealTime display...
