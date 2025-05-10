@@ -224,9 +224,9 @@ Proc DrawVCALC_Panel()
 	//	endif
 
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
-		Display/W=(476 * sc, 35 * sc, 755 * sc, 290 * sc)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		Display/W=(476 * sc, 35 * sc, 755 * sc, 290 * sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	else
-		Display/W=(476, 35, 755, 303)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		Display/W=(476, 35, 755, 303)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	endif
 
 	RenameWindow #, Panels_Q

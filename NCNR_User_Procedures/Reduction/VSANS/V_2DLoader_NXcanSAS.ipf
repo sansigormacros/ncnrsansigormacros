@@ -131,9 +131,9 @@ Function V_Display_1()
 
 		if(gLaptopMode == 1)
 			// note that the dimensions here are not strictly followed since the aspect ratio is set below
-			Display/W=(10 / sc, 20 / sc, 200 / sc, 200 / sc)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+			Display/W=(10 / sc, 20 / sc, 200 / sc, 200 / sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 		else
-			Display/W=(19, 14, 500, 500)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+			Display/W=(19, 14, 500, 500)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 		endif
 		RenameWindow #, Panels_Q
 		ModifyGraph mode=2 // mode = 2 = dots

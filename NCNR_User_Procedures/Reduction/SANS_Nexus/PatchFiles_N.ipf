@@ -1344,7 +1344,7 @@ Proc DeadtimePatchPanel() : Panel
 	SetVariable setvar1, value=root:myGlobals:Patch:gFileNum_Hi_dt
 
 	// display the wave
-	Edit/W=(180 * sc, 40 * sc, 380 * sc, 550 * sc)/HOST=#root:myGlobals:Patch:deadTimeWave
+	Edit/W=(180 * sc, 40 * sc, 380 * sc, 550 * sc)/HOST=# root:myGlobals:Patch:deadTimeWave
 	ModifyTable width(Point)=30
 	ModifyTable width(root:myGlobals:Patch:deadTimeWave)=110 * sc
 	RenameWindow #, T0
@@ -1656,7 +1656,7 @@ Proc CalibrationPatchPanel() : Panel
 	SetVariable setvar1, value=root:myGlobals:Patch:gFileNum_Hi_calib
 
 	// display the wave
-	Edit/W=(180 * sc, 40 * sc, 580 * sc, 550 * sc)/HOST=#root:myGlobals:Patch:calibrationWave
+	Edit/W=(180 * sc, 40 * sc, 580 * sc, 550 * sc)/HOST=# root:myGlobals:Patch:calibrationWave
 	ModifyTable width(Point)=30
 	ModifyTable width(root:myGlobals:Patch:calibrationWave)=100 * sc
 	// the elements() command transposes the view in the table, but does not transpose the wave
@@ -1961,7 +1961,7 @@ Proc DrawPatchAttenTablePanel() : Panel
 	SetVariable setvar1, value=root:myGlobals:Patch:gFileNum_Hi_att
 
 	// display the wave
-	Edit/W=(180 * sc, 40 * sc, 580 * sc, 550 * sc)/HOST=#root:myGlobals:Patch:attenWave
+	Edit/W=(180 * sc, 40 * sc, 580 * sc, 550 * sc)/HOST=# root:myGlobals:Patch:attenWave
 	ModifyTable width(Point)=30
 	ModifyTable width(root:myGlobals:Patch:attenWave)=100 * sc
 	// the elements() command transposes the view in the table, but does not transpose the wave
@@ -2258,7 +2258,7 @@ Proc DrawPatchAttenErrTablePanel() : Panel
 	SetVariable setvar1, value=root:myGlobals:Patch:gFileNum_Hi_attErr
 
 	// display the wave
-	Edit/W=(180 * sc, 40 * sc, 580 * sc, 550 * sc)/HOST=#root:myGlobals:Patch:attenErrWave
+	Edit/W=(180 * sc, 40 * sc, 580 * sc, 550 * sc)/HOST=# root:myGlobals:Patch:attenErrWave
 	ModifyTable width(Point)=30
 	ModifyTable width(root:myGlobals:Patch:attenErrWave)=100 * sc
 	// the elements() command transposes the view in the table, but does not transpose the wave

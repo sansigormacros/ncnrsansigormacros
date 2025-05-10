@@ -122,11 +122,11 @@ Proc V_CombineDataGraph()
 	// last, set up the dependency (but don't set it up twice!)
 	if(exists("root:Packages:NIST:VSANS:Globals:Protocols:trimUpdate") == 0)
 		Make/O/D/N=1 root:Packages:NIST:VSANS:Globals:Protocols:trimUpdate
-		root :Packages:NIST:VSANS:Globals:Protocols:trimUpdate:=V_TrimTestUpdate(Beg_pts, End_pts)
+		root:Packages:NIST:VSANS:Globals:Protocols:trimUpdate:=V_TrimTestUpdate(Beg_pts, End_pts)
 	else
 		string dependencyStr = GetFormula(root:Packages:NIST:VSANS:Globals:Protocols:trimUpdate)
 		if(strlen(dependencyStr) == 0)
-			root :Packages:NIST:VSANS:Globals:Protocols:trimUpdate:=V_TrimTestUpdate(Beg_pts, End_pts)
+			root:Packages:NIST:VSANS:Globals:Protocols:trimUpdate:=V_TrimTestUpdate(Beg_pts, End_pts)
 		endif
 	endif
 

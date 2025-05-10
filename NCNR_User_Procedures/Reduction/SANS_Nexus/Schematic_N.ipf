@@ -46,7 +46,7 @@ Proc ShowSchematic()
 		Abort
 	endif
 
-	root :Packages:NIST:gLogScalingAsDefault=num
+	root:Packages:NIST:gLogScalingAsDefault=num
 
 	if(cmpstr("Macintosh", IgorInfo(2)) == 0)
 		DrawMacSchematic()
@@ -54,7 +54,7 @@ Proc ShowSchematic()
 		DrawWinSchematic()
 	endif
 	//reset scaling back to old value
-	root :Packages:NIST:gLogScalingAsDefault=oldScaling
+	root:Packages:NIST:gLogScalingAsDefault=oldScaling
 EndMacro
 
 //returns the new color mapping

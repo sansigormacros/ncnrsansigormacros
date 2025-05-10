@@ -983,26 +983,26 @@ Proc GetAvgInfo(av_typ, autoSave, autoName, autoPlot, side, phi, dphi, width, QC
 	string/G root:myGlobals:Protocols:gAvgInfoStr = ""
 
 	// all averages need these four values
-	root :myGlobals:Protocols:gAvgInfoStr+="AVTYPE=" + av_typ + ";"
-	root :myGlobals:Protocols:gAvgInfoStr+="SAVE=" + autoSave + ";"
-	root :myGlobals:Protocols:gAvgInfoStr+="NAME=" + autoName + ";"
-	root :myGlobals:Protocols:gAvgInfoStr+="PLOT=" + autoPlot + ";"
+	root:myGlobals:Protocols:gAvgInfoStr+="AVTYPE=" + av_typ + ";"
+	root:myGlobals:Protocols:gAvgInfoStr+="SAVE=" + autoSave + ";"
+	root:myGlobals:Protocols:gAvgInfoStr+="NAME=" + autoName + ";"
+	root:myGlobals:Protocols:gAvgInfoStr+="PLOT=" + autoPlot + ";"
 
 	if(cmpstr(av_typ, "Sector") == 0 || cmpstr(av_typ, "Sector_PlusMinus") == 0)
-		root :myGlobals:Protocols:gAvgInfoStr+="SIDE=" + side + ";"
-		root :myGlobals:Protocols:gAvgInfoStr+="PHI=" + num2str(phi) + ";"
-		root :myGlobals:Protocols:gAvgInfoStr+="DPHI=" + num2str(dphi) + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="SIDE=" + side + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="PHI=" + num2str(phi) + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="DPHI=" + num2str(dphi) + ";"
 	endif
 
 	if(cmpstr(av_typ, "Rectangular") == 0)
-		root :myGlobals:Protocols:gAvgInfoStr+="SIDE=" + side + ";"
-		root :myGlobals:Protocols:gAvgInfoStr+="PHI=" + num2str(phi) + ";"
-		root :myGlobals:Protocols:gAvgInfoStr+="WIDTH=" + num2str(width) + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="SIDE=" + side + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="PHI=" + num2str(phi) + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="WIDTH=" + num2str(width) + ";"
 	endif
 
 	if(cmpstr(av_typ, "Annular") == 0)
-		root :myGlobals:Protocols:gAvgInfoStr+="QCENTER=" + num2str(QCtr) + ";"
-		root :myGlobals:Protocols:gAvgInfoStr+="QDELTA=" + num2str(QDelta) + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="QCENTER=" + num2str(QCtr) + ";"
+		root:myGlobals:Protocols:gAvgInfoStr+="QDELTA=" + num2str(QDelta) + ";"
 	endif
 EndMacro
 
@@ -2048,11 +2048,11 @@ Proc AskForAbsoluteParams(c2, c3, c4, c5, err)
 
 	string/G root:myGlobals:Protocols:gAbsStr = ""
 
-	root :myGlobals:Protocols:gAbsStr="TSTAND=" + num2str(c2)
-	root :myGlobals:Protocols:gAbsStr+=";" + "DSTAND=" + num2str(c3)
-	root :myGlobals:Protocols:gAbsStr+=";" + "IZERO=" + num2str(c4)
-	root :myGlobals:Protocols:gAbsStr+=";" + "XSECT=" + num2str(c5)
-	root :myGlobals:Protocols:gAbsStr+=";" + "SDEV=" + num2str(err)
+	root:myGlobals:Protocols:gAbsStr="TSTAND=" + num2str(c2)
+	root:myGlobals:Protocols:gAbsStr+=";" + "DSTAND=" + num2str(c3)
+	root:myGlobals:Protocols:gAbsStr+=";" + "IZERO=" + num2str(c4)
+	root:myGlobals:Protocols:gAbsStr+=";" + "XSECT=" + num2str(c5)
+	root:myGlobals:Protocols:gAbsStr+=";" + "SDEV=" + num2str(err)
 
 EndMacro
 

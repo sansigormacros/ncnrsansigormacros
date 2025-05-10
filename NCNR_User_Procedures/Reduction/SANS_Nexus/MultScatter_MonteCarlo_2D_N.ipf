@@ -1221,7 +1221,7 @@ End
 Proc MC_SASCALC()
 
 	// when opening the panel, set the raw counts check to 1
-	root :Packages:NIST:SAS:gRawCounts=1
+	root:Packages:NIST:SAS:gRawCounts=1
 
 	PauseUpdate; Silent 1 // building window...
 	NewPanel/W=(92, 556, 713, 818)/K=1 as "SANS Simulator"
@@ -1255,14 +1255,14 @@ Proc MC_SASCALC()
 
 	string fldrSav0 = GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:SAS:
-	Edit/W=(344, 23, 606, 248)/HOST=#results_desc results
+	Edit/W=(344, 23, 606, 248)/HOST=# results_desc results
 	ModifyTable format(Point)=1, width(Point)=0, width(results_desc)=150
 	SetDataFolder fldrSav0
 	RenameWindow #, T_results
 	SetActiveSubwindow ##
 
 	// set the global for the popup function menu so the shown item is global
-	root :Packages:NIST:SAS:gFuncStr=StringFromList(0, MC_FunctionPopupList(), ";")
+	root:Packages:NIST:SAS:gFuncStr=StringFromList(0, MC_FunctionPopupList(), ";")
 EndMacro
 
 //
@@ -1925,11 +1925,11 @@ Proc Sim_1D_Panel()
 	ValDisplay valdisp0_4, limits={0, 0, 0}, barmisc={0, 1000}, value=root:Packages:NIST:SAS:g_MultScattFraction
 	// set the flags here -- do the simulation, but not 2D
 
-	root :Packages:NIST:SAS:doSimulation=1 // == 1 if 1D simulated data, 0 if other from the checkbox
-	root :Packages:NIST:SAS:gDoMonteCarlo=0 // == 1 if 2D MonteCarlo set by hidden flag
+	root:Packages:NIST:SAS:doSimulation=1 // == 1 if 1D simulated data, 0 if other from the checkbox
+	root:Packages:NIST:SAS:gDoMonteCarlo=0 // == 1 if 2D MonteCarlo set by hidden flag
 
 	// set the global for the popup function menu so the shown item is global
-	root :Packages:NIST:SAS:gFuncStr=StringFromList(0, MC_FunctionPopupList(), ";")
+	root:Packages:NIST:SAS:gFuncStr=StringFromList(0, MC_FunctionPopupList(), ";")
 
 EndMacro
 

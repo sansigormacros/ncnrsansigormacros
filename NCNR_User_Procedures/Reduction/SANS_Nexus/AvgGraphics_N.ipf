@@ -35,7 +35,7 @@ Proc InitializeAveragePanel()
 
 	//ok, create the globals, fill the keyword string with all possible values (default)
 	string/G root:myGlobals:Drawing:gDrawInfoStr = "AVTYPE=Circular;PHI=0;DPHI=0;WIDTH=0;SIDE=both;"
-	root :myGlobals:Drawing:gDrawInfoStr+="QCENTER=0;QDELTA=0;"
+	root:myGlobals:Drawing:gDrawInfoStr+="QCENTER=0;QDELTA=0;"
 	variable/G root:myGlobals:Drawing:gDrawPhi    = 0
 	variable/G root:myGlobals:Drawing:gDrawWidth  = 1
 	variable/G root:myGlobals:Drawing:gDrawDPhi   = 0

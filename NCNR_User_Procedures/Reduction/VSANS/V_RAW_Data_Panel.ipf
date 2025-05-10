@@ -229,7 +229,7 @@ Window VSANS_DataPanel() : Panel
 	Make/O/D tmp_asdf
 	// for back panels (in pixels)
 	//	Display/W=(50,185,517,620)/HOST=# tmp_asdf
-	Display/W=(50 * sc, 185 * sc, 517 * sc, 620 * sc)/HOST=#tmp_asdf
+	Display/W=(50 * sc, 185 * sc, 517 * sc, 620 * sc)/HOST=# tmp_asdf
 	RenameWindow #, det_panelsB
 	ModifyGraph mode=2 // mode = 2 = dots
 	ModifyGraph marker=19
@@ -240,7 +240,7 @@ Window VSANS_DataPanel() : Panel
 	SetActiveSubwindow ##
 
 	// for middle panels (in pixels?)
-	Display/W=(50 * sc, 185 * sc, 517 * sc, 620 * sc)/HOST=#tmp_asdf
+	Display/W=(50 * sc, 185 * sc, 517 * sc, 620 * sc)/HOST=# tmp_asdf
 	RenameWindow #, det_panelsM
 	ModifyGraph mode=2 // mode = 2 = dots
 	ModifyGraph marker=19
@@ -251,7 +251,7 @@ Window VSANS_DataPanel() : Panel
 	SetActiveSubwindow ##
 
 	// for front panels (in pixels?)
-	Display/W=(50 * sc, 185 * sc, 517 * sc, 620 * sc)/HOST=#tmp_asdf
+	Display/W=(50 * sc, 185 * sc, 517 * sc, 620 * sc)/HOST=# tmp_asdf
 	RenameWindow #, det_panelsF
 	ModifyGraph mode=2 // mode = 2 = dots
 	ModifyGraph marker=19
