@@ -226,7 +226,9 @@ Function V_getResolution(variable inQ, string folderStr, string type, string col
 	if(isVCALC)
 		BS = VC_beamstopDiam(type[0, 1]) * 10 // convert cm to mm
 	else
-		BS = V_IdentifyBeamstopDiameter(folderStr, type) //returns diameter in [mm]
+		// returns diameter in [mm] if it is curcular
+		// returns width if rectangular (height for either rectangular BS on Back is 300 mm)
+		BS = V_IdentifyBeamstopDiameter(folderStr, type) 
 	endif
 	//	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm]
 

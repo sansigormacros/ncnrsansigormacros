@@ -1422,7 +1422,8 @@ Function V_SetAverageParamsButtonProc(string ctrlName) : ButtonControl
 
 	// override these default values for narrow slit case
 	if(cmpstr(av_typ, "Narrow_Slit") == 0)
-		binType = "F2-M2-B"
+//		binType = "F2-M2-B"		//why was this set this way??
+		binType = "SLIT-F2-M2-B"
 
 		begStr = ksBinTrimBegZero
 		endStr = ksBinTrimEndZero
