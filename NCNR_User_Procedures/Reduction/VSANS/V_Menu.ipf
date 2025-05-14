@@ -162,7 +162,7 @@ Proc V_UseZeroPointTables(useZeroPtTables)
 
 	Prompt useZeroPtTables, "1 = Use Tables, 0 = Don't use Tables"
 
-	root :Packages:NIST:VSANS:Globals:gUseZeroPointTables=useZeroPtTables
+	root:Packages:NIST:VSANS:Globals:gUseZeroPointTables=useZeroPtTables
 EndMacro
 
 Function V_PolarizationLoader()

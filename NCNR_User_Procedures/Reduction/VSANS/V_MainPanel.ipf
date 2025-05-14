@@ -69,7 +69,7 @@ Proc V_DisplayMainButtonProc(ctrlName) : ButtonControl
 
 		// set the global to display ONLY if the load was called from here, not from the
 		// other routines that load data (to read in values)
-		root :Packages:NIST:VSANS:Globals:gLastLoadedFile=root:file_name
+		root:Packages:NIST:VSANS:Globals:gLastLoadedFile=root:file_name
 
 	endif
 EndMacro

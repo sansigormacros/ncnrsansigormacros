@@ -181,7 +181,7 @@ Proc V_SwitchGroupAndCleanup(num)
 	Duplicate/O timePt, rescaledTime
 	KillWaves/Z OscSortIndex
 	print WaveMax(rescaledTime)
-	root :Packages:NIST:VSANS:Event:gEvent_t_longest=waveMax(rescaledTime)
+	root:Packages:NIST:VSANS:Event:gEvent_t_longest=waveMax(rescaledTime)
 
 	SetDataFolder root:
 

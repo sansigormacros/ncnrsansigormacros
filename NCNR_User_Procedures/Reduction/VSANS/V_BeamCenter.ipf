@@ -897,7 +897,7 @@ EndMacro
 Proc V_NaN_BeforeFit(x1, x2, y1, y2)
 	variable x1, x2, y1, y2
 
-	root :Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel[x1, x2][y1, y2]=NaN
+	root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel[x1, x2][y1, y2]=NaN
 EndMacro
 
 Function V_Convert_FittedPix_2_cm(string panel, variable xPix, variable yPix)

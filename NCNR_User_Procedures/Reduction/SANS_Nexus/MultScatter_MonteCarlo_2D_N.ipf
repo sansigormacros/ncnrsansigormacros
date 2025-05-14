@@ -1220,6 +1220,11 @@ End
 // for various reasons...
 Proc MC_SASCALC()
 
+	// trusting that RAW data is present so that I can set detector dimensions needed in FindPixel()
+	String type = "RAW"
+	variable/G root:myGlobals:gNPixelsX = getDet_pixel_num_x(type)
+	variable/G root:myGlobals:gNPixelsY = getDet_pixel_num_y(type)
+
 	// when opening the panel, set the raw counts check to 1
 	root:Packages:NIST:SAS:gRawCounts=1
 

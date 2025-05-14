@@ -1,8 +1,13 @@
 #pragma TextEncoding="UTF-8"
-#pragma rtFunctionErrors=1
+
 #pragma rtGlobals=3 // Use modern global access method and strict wave access.
 #pragma version=1.0
 #pragma IgorVersion=7.00
+
+//if this pragma is added, there are multiple errors in identifying the active graph window
+// when switching focus from VSANS_Data and then back, since VSANS_Data won't necessarily have focus
+////#pragma rtFunctionErrors=1		
+
 
 //
 // this panel and proceudres is the equivalent of "RawWindowHook" for SANS

@@ -233,6 +233,13 @@ Proc InitDIVPanel()
 
 	//set up the global variables needed for the protocol panel
 	//global strings to put in a temporary protocol textwave
+	
+	// trusting that RAW data is present so that I can set detector dimensions
+	String type = "RAW"
+	variable/G root:myGlobals:gNPixelsX = getDet_pixel_num_x(type)
+	variable/G root:myGlobals:gNPixelsY = getDet_pixel_num_y(type)
+	
+	
 	variable ii      = 0
 	variable nsteps  = 8
 	string   waveStr = "DIV_Protocol"

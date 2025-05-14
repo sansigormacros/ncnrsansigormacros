@@ -1,8 +1,12 @@
-#pragma rtFunctionErrors=1
 #pragma TextEncoding="UTF-8"
 #pragma rtGlobals=3 // Use modern global access method and strict wave access.
 #pragma version=5.0
 #pragma IgorVersion=6.1
+
+// removing this to avoid RT errors when str2num gets an invalid input
+// (doing this on purpose to test for a valid run number)
+// #pragma rtFunctionErrors=1
+
 
 // RTI clean
 
@@ -727,6 +731,8 @@ End
 //
 // see the equivalent V_ function in the VSANS macros
 //
+// sscanf doesn't work - it sees the whole name as a string
+//
 Function/S N_GetRunNumStrFromFile(string item)
 
 	string   invalid = "ABCD" //"ABCD" is not a valid run number, since it's text
@@ -748,7 +754,22 @@ Function/S N_GetRunNumStrFromFile(string item)
 	endif
 
 	runStr = item[4, pos - 1]
-	return (runStr)
+	
+	//test the runStr to be sure it's OK. The file may be "Events_sansNNNN.nxs.ngx"
+	if(str2num(runStr) > 0)		
+		// if it's a number, OK, if bad, will return NaN
+		return (runStr)
+	else
+		runStr = item[11, pos - 1]
+		if(str2num(runStr) > 0)
+			// test one last time
+			return (runStr)
+		else
+			return(invalid)
+		endif
+	endif
+	
+	
 End
 
 //returns a string containing the full path to the file containing the
