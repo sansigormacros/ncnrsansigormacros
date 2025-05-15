@@ -250,9 +250,9 @@ Proc DrawVCALC_Panel()
 
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 		// note that the dimensions here are not strictly followed since the aspect ratio is set below
-		Display/W=(475 * sc, 310 * sc, 800 * sc, 620 * sc)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		Display/W=(475 * sc, 310 * sc, 800 * sc, 620 * sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	else
-		Display/W=(475, 332, 814, 631)/HOST=#root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		Display/W=(475, 332, 814, 631)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	endif
 
 	RenameWindow #, Panels_IQ
