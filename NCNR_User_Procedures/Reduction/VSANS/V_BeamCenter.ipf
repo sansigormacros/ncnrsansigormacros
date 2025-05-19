@@ -20,6 +20,7 @@
 //
 // -- am I working in detector coordinates (1->n) or in array coordinates (0->n-1)??
 
+// FEB 2019 - updated values
 //these are values from Dec 2018 data and the CENTROID on FR or MR
 Constant kBCtrDelta_FL_x = 0.13
 Constant kBCtrDelta_FL_y = 0.35
@@ -35,7 +36,7 @@ Constant kBCtrDelta_MT_x = -0.28
 Constant kBCtrDelta_MT_y = 0.60
 
 ////these are values from Dec 2018 data and the FITTED ARC on FR or MR
-// don't use these - the values from the centroid are superior) FEB 2019
+// don't use these - the values from the centroid are superior)
 //Constant kBCtrDelta_FL_x = 0.49
 //Constant kBCtrDelta_FL_y = 0.48
 //Constant kBCtrDelta_FB_x = 1.31
