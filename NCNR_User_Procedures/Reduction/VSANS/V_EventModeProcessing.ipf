@@ -2909,13 +2909,14 @@ Function/S V_fSplitBigFile(variable splitSize, string baseStr)
 	Printf "frac = %u\r", frac
 
 	//	baseStr = "split"
+	Variable nn = splitSize / readSize
 
 	for(ii = 0; ii < numSplit; ii += 1)
 		outStr = (thePath + baseStr + num2str(ii))
 		//		Print "outStr = ",outStr
 		Open outRef as outStr
 
-		for(jj = 0; jj < (splitSize / readSize); jj += 1)
+		for(jj = 0; jj < nn; jj += 1)		//nn = (splitSize / readSize)
 			FBinRead refNum, aBlob
 			FBinWrite outRef, aBlob
 		endfor

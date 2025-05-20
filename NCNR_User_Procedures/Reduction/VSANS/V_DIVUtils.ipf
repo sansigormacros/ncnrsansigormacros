@@ -607,12 +607,13 @@ End
 //
 Function V_CopyDIVToSave(string type)
 
-	variable ii, totCts, pixelX, pixelY
+	variable ii, totCts, pixelX, pixelY, nn
 	string detStr
 	string topath   = "root:VSANS_DIV_file:entry:instrument:detector_"
 	string fromPath = "root:Packages:NIST:VSANS:" + type + ":entry:instrument:detector_"
 
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 		Duplicate/O $(fromPath + detStr + ":data"), $(toPath + detStr + ":data")

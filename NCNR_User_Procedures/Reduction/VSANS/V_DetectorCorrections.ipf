@@ -707,11 +707,12 @@ EndMacro
 //
 Function V_fMakeFakeCalibrationWaves()
 
-	variable ii, pixSize
+	variable ii, pixSize, nn
 	string detStr, orientation
 	string fname = "RAW"
 
-	for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+	nn = ItemsInList(ksDetectorListNoB)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		//		Wave w = V_getDetectorDataW(fname,detStr)
 		Make/O/D/N=(3, 48) $("root:Packages:NIST:VSANS:RAW:entry:instrument:detector_" + detStr + ":spatial_calibration")
@@ -1378,7 +1379,8 @@ Function V_Absolute_Scale(string type, string absStr)
 
 	// and now loop through all of the detectors
 	//do the actual absolute scaling here, modifying the data in ABS
-	for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListNoB)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		WAVE data     = V_getDetectorDataW("ABS", detStr)
 		WAVE data_err = V_getDetectorDataErrW("ABS", detStr)

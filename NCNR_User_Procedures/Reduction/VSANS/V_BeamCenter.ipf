@@ -666,7 +666,7 @@ Function V_RestorePanels()
 
 	string fname  = ""
 	string detStr = ""
-	variable ii, xCtr, yCtr
+	variable ii, xCtr, yCtr, nn
 
 	// this works if the proper centers are in the file - otherwise, it's a mess
 	// "B" is skipped here, as it should be...
@@ -674,7 +674,8 @@ Function V_RestorePanels()
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
 
 	fname = type
-	for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+	nn = ItemsInList(ksDetectorListNoB)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		xCtr   = V_getDet_beam_center_x_pix(fname, detStr)
 		yCtr   = V_getDet_beam_center_y_pix(fname, detStr)
@@ -725,11 +726,12 @@ Function V_BCtrTable()
 		Edit/W=(547, 621, 1076, 943)/N=BCtrTable panelW, xCtr_pix, yCtr_pix, xCtr_cm, yCtr_cm
 	endif
 
-	variable ii
+	variable ii,nn
 	string detStr, fname
 
 	fname = "RAW"
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr     = StringFromList(ii, ksDetectorListAll, ";")
 		panelW[ii] = detStr
 
@@ -762,7 +764,7 @@ Function V_BeamCtr_WriteTable()
 
 	string folder
 
-	variable ii
+	variable ii,nn
 	string detStr, fname
 
 	WAVE   xCtr_pix = root:xCtr_pix
@@ -771,7 +773,8 @@ Function V_BeamCtr_WriteTable()
 
 	fname = V_FindFileFromRunNumber(runNumber)
 
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		//		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		detStr = panelW[ii]
 		V_writeDet_beam_center_x(fname, detStr, xCtr_pix[ii])

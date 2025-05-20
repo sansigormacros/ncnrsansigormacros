@@ -1502,10 +1502,11 @@ Function V_IQ_BeamstopShadow()
 // x- I had to put a lot of conditions on when not to try to apply the shadow factor
 // to avoid errors when iq had no points in the wave, or incorrectly applying the beamstop to the back panel.
 
-	Variable ii
+	Variable ii,nn
 	String ext
 //	loop over all of the types of data
-	for(ii=0;ii<ItemsInList(extStr);ii+=1)
+	nn = ItemsInList(extStr)
+	for(ii=0;ii<nn;ii+=1)
 		ext = StringFromList(ii, extStr, ";")
 		Wave iq = $(folderStr+"iBin_qxqy_"+ext)
 		Wave/Z fs = $(folderStr+"fSubS_qxqy_"+ext)
@@ -2591,10 +2592,11 @@ end
 //
 Function VC_ResetVCALCMask()
 
-	Variable ii
+	Variable ii,nn
 	String detStr
 
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii=0;ii<nn;ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 		mask = 0

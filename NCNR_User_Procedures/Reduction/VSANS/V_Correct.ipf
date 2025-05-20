@@ -301,7 +301,8 @@ Function V_CorrectMode_1()
 	tmonbgd = V_getBeamMonNormData("BGD") //monitor count in BGD
 
 	// and now loop through all of the detectors
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)
@@ -440,7 +441,8 @@ Function V_CorrectMode_2()
 	tmonbgd = V_getBeamMonNormData("BGD") //monitor count in BGD
 
 	// and now loop through all of the detectors
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)
@@ -550,7 +552,8 @@ Function V_CorrectMode_3()
 	emp_trans_err = V_getSampleTransError("EMP")
 
 	// and now loop through all of the detectors
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)
@@ -648,7 +651,8 @@ Function V_CorrectMode_4()
 	sam_AttenFactor = V_getAttenuator_transmission("SAM")
 	sam_atten_err   = V_getAttenuator_trans_err("SAM")
 
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)
@@ -712,7 +716,8 @@ Function V_CorrectMode_11()
 	time_drk   = V_getCount_time("DRK")             //drk count time
 
 	// and now loop through all of the detectors
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)
@@ -869,7 +874,8 @@ Function V_CorrectMode_12()
 	time_drk   = V_getCount_time("DRK")             //drk count time
 
 	// and now loop through all of the detectors
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)
@@ -1001,7 +1007,8 @@ Function V_CorrectMode_13()
 	time_drk   = V_getCount_time("DRK")             //drk count time
 
 	// and now loop through all of the detectors
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)
@@ -1126,7 +1133,8 @@ Function V_CorrectMode_14()
 	time_drk   = V_getCount_time("DRK")             //drk count time
 
 	// and now loop through all of the detectors
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE cor_data = V_getDetectorDataW("COR", detStr)
 		WAVE cor_err  = V_getDetectorDataErrW("COR", detStr)

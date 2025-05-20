@@ -666,7 +666,8 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:instrument:"
 
 	fname = "RAW"
-	for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+	Variable nn = ItemsInList(ksDetectorListNoB)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		WAVE data = V_getDetectorDataW(fname, detStr)
 

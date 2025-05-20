@@ -272,7 +272,8 @@ Function V_DataBinTypePlotPop(string ctrlName, variable popNum, string popStr) :
 
 	//remove all of the "toTrim" data from the graph, if it's there
 	SetDataFolder root:ToTrim
-	for(ii = 0; ii < ItemsInList(ksPanelBinTypeList); ii += 1)
+	Variable nn = ItemsInList(ksPanelBinTypeList)
+	for(ii = 0; ii < nn; ii += 1)
 		type = StringFromList(ii, ksPanelBinTypeList, ";")
 		CheckDisplayed/W=$winStr $("iBin_qxqy_" + type + "_trim")
 		if(V_flag == 1)
@@ -353,8 +354,9 @@ Function V_DataFolderPlotPop(string ctrlName, variable popNum, string popStr) : 
 
 	//remove EVERYTHING from the graph, no matter what
 	string type, list, item
+	Variable nn = ItemsInList(list)
 	list = TraceNameList(winStr, ";", 1)
-	for(ii = 0; ii < ItemsInList(list); ii += 1)
+	for(ii = 0; ii < nn; ii += 1)
 		item = StringFromList(ii, list, ";")
 		//		CheckDisplayed/W=$winStr $(item)
 		//		if(V_flag==1)
@@ -374,7 +376,8 @@ Function V_DataFolderPlotPop(string ctrlName, variable popNum, string popStr) : 
 
 	//remove all of the "toTrim" data from the graph, if it's there
 	SetDataFolder root:ToTrim
-	for(ii = 0; ii < ItemsInList(ksPanelBinTypeList); ii += 1)
+	nn = ItemsInList(ksPanelBinTypeList)
+	for(ii = 0; ii < nn; ii += 1)
 		type = StringFromList(ii, ksPanelBinTypeList, ";")
 		CheckDisplayed/W=$winStr $("iBin_qxqy_" + type + "_trim")
 		if(V_flag == 1)

@@ -1577,7 +1577,7 @@ Function ClearIQIfDisplayed_AllFldr(string type, string winNameStr)
 
 	//	String folderList = ksWorkFolderListShort
 	string   fldr
-	variable ii
+	variable ii,nn
 
 	string folderList = ksWorkFolderListShort
 
@@ -1590,7 +1590,8 @@ Function ClearIQIfDisplayed_AllFldr(string type, string winNameStr)
 		folderList = "RealTime;"
 	endif
 
-	for(ii = 0; ii < ItemsInList(folderList); ii += 1)
+	nn = ItemsInList(folderList)
+	for(ii = 0; ii < nn; ii += 1)
 		fldr = StringFromList(ii, folderList, ";")
 		ClearIQIfDisplayed(fldr, type, winNameStr)
 	endfor
@@ -1610,9 +1611,10 @@ Function ClearIQIfDisplayed_AllBin(string fldr, string winNameStr)
 
 	//	String folderList = ksWorkFolderListShort
 	string   type
-	variable ii
+	variable ii,nn
 
-	for(ii = 0; ii < ItemsInList(ksPanelBinTypeList); ii += 1)
+	nn = ItemsInList(ksPanelBinTypeList)
+	for(ii = 0; ii < nn; ii += 1)
 		type = StringFromList(ii, ksPanelBinTypeList, ";")
 		ClearIQIfDisplayed(fldr, type, winNameStr)
 	endfor
