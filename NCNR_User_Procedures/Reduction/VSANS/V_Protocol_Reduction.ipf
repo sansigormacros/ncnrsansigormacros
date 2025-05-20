@@ -1420,13 +1420,18 @@ Function V_SetAverageParamsButtonProc(string ctrlName) : ButtonControl
 	begStr = ksBinTrimBegDefault
 	endStr = ksBinTrimEndDefault
 
-	// override these default values for narrow slit case
+	// TODO update these default values for narrow slit case
 	if(cmpstr(av_typ, "Narrow_Slit") == 0)
 //		binType = "F2-M2-B"		//why was this set this way??
 		binType = "SLIT-F2-M2-B"
 
-		begStr = ksBinTrimBegZero
-		endStr = ksBinTrimEndZero
+// zero is not going to work -- some points will need to be trimmed
+//		begStr = ksBinTrimBegZero
+//		endStr = ksBinTrimEndZero
+
+// is the defautlt sset correct		
+		begStr = ksBinTrimBegDefault
+		endStr = ksBinTrimEndDefault
 	endif
 
 	// all averages need these values

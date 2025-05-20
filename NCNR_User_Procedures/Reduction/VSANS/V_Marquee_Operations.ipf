@@ -346,6 +346,14 @@ Function V_Find_BeamCentroid() : GraphMarquee
 		//		xctr+=1
 		//		yctr+=1
 
+		Print "X-center (in array coordinates 0->n-1 ) = ", xctr
+		Print "Y-center (in array coordinates 0->n-1 ) = ", yctr
+
+		Print "X-center (cm) = ", x_mm / 10
+		Print "Y-center (cm) = ", y_mm / 10
+
+
+
 		// correct for the zero position (y-position) on the L/R panels not being exactly equal
 		// the lateral scan data from Dec 2018 is used to correct this. The span of zero points
 		// is relatively small (+- 0.5 pixel) but is significant for data using graphite monochromator
@@ -361,109 +369,109 @@ Function V_Find_BeamCentroid() : GraphMarquee
 		// constants have also been defined for the tube reference values so that they are no longer hard-coded
 		// constants are defined in V_TubeAdjustments.ipf
 		//
-
-		// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
-
-		// overwrite the correction waves every time since I have introduced the perfect table
-		// -- Look at the global to see if tables are to be used (change with VSANS menu option)
-		NVAR gUseTables = root:Packages:NIST:VSANS:Globals:gUseZeroPointTables
-
-		// --OR--
-		// Programmatically determine if the zero point tables are needed
-		//	by checking the average value of the first row of the calibration table. for FR, this
-		// is  == -521 if "perfect"
-		WaveStats/RMD=[0, 0]/Q root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:spatial_calibration
-
-		//	Print V_avg
-		if(V_avg != -521)
-			gUseTables = 0
-		else
-			gUseTables = 1
+		if(cmpstr(detStr,"B") != 0 )
+			// then we're on F or M, so check for the tube correction
+			
+			// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
+	
+			// overwrite the correction waves every time since I have introduced the perfect table
+			// -- Look at the global to see if tables are to be used (change with VSANS menu option)
+			NVAR gUseTables = root:Packages:NIST:VSANS:Globals:gUseZeroPointTables
+	
+			// --OR--
+			// Programmatically determine if the zero point tables are needed
+			//	by checking the average value of the first row of the calibration table. for FR, this
+			// is  == -521 if "perfect"
+			WaveStats/RMD=[0, 0]/Q root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:spatial_calibration
+	
+			//	Print V_avg
+			if(V_avg != -521)
+				gUseTables = 0
+			else
+				gUseTables = 1
+			endif
+	
+			//		if(!WaveExists(tube_num))
+			if(gUseTables == 1)
+				Execute "V_TubeZeroPointTables()"
+				Print "Using the built-in zero point tables"
+			else
+				Execute "V_TubeZeroPointTables_Perfect()"
+				Print "NOT using the built-in zero-point tables. Calibration tables used instead"
+			endif
+	
+			WAVE/Z tube_num  = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
+			WAVE/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
+			//		endif
+	
+			variable yCorrection = interp(xCtr, tube_num, yCtr_tube)
+			variable yPixSize    = V_getDet_y_pixel_size(gCurDispType, detStr)
+			yPixSize /= 10 // convert mm to cm
+			// Zero point offsets were determined in Dec 2018 using:
+			// FR tube # 7 = 61.70 pix = k_FR_tube_ZeroPoint
+			// MR tube # 10 = 61.94 pix = k_MR_tube_ZeroPoint
+	
+	
+			if(cmpstr(detStr, "FR") == 0)
+				Print "Reference Y-Center is corrected for FR tube #7 zero position"
+	
+				yCorrection = k_FR_tube_ZeroPoint - yCorrection
+				Print "yCorrection (pix) = ", yCorrection
+				Print "yCorrection (cm) = ", yCorrection * yPixSize
+				xRef = x_mm / 10
+				yRef = y_mm / 10 + yCorrection * yPixSize
+				Print "FRONT Reference X-center (cm) = ", xRef
+				Print "FRONT Reference Y-center (cm) = ", yRef
+	
+			endif
+	
+			if(cmpstr(detStr, "MR") == 0)
+				Print "Reference Y-Center is corrected for MR tube #10 zero position"
+	
+				yCorrection = k_MR_tube_ZeroPoint - yCorrection
+				Print "yCorrection (pix) = ", yCorrection
+				Print "yCorrection (cm) = ", yCorrection * yPixSize
+				xRef = x_mm / 10
+				yRef = y_mm / 10 + yCorrection * yPixSize
+				Print "MIDDLE Reference X-center (cm) = ", xRef
+				Print "MIDDLE Reference Y-center (cm) = ", yRef
+	
+			endif
+	
+			// if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value
+			// these corrections are exactly the opposite (subtract, not add) of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
+			// since the lateral scans to determine the relative centers were done at the same time
+			// the pixel values for the zero are on the same y-level, set by the beam height
+			//
+			if(cmpstr(detStr, "FL") == 0)
+				Print "Reference Y-Center is corrected for FR tube #7 zero position"
+	
+				yCorrection = k_FR_tube_ZeroPoint - yCorrection
+				Print "yCorrection (pix) = ", yCorrection
+				Print "yCorrection (cm) = ", yCorrection * yPixSize
+				xRef = x_mm / 10 - kBCtrDelta_FL_x
+				yRef = y_mm / 10 - kBCtrDelta_FL_y + yCorrection * yPixSize
+				Print "FRONT Reference X-center (cm) = ", xRef // NEW Dec 2018 values
+				Print "FRONT Reference Y-center (cm) = ", yRef
+	
+			endif
+	
+			if(cmpstr(detStr, "ML") == 0)
+				Print "Reference Y-Center is corrected for MR tube #10 zero position"
+	
+				yCorrection = k_MR_tube_ZeroPoint - yCorrection
+				Print "yCorrection (pix) = ", yCorrection
+				Print "yCorrection (cm) = ", yCorrection * yPixSize
+				xRef = x_mm / 10 - kBCtrDelta_ML_x
+				yRef = y_mm / 10 - kBCtrDelta_ML_y + yCorrection * yPixSize
+				Print "MIDDLE Reference X-center (cm) = ", xRef
+				Print "MIDDLE Reference Y-center (cm) = ", yRef
+	
+			endif
 		endif
 
-		//		if(!WaveExists(tube_num))
-		if(gUseTables == 1)
-			Execute "V_TubeZeroPointTables()"
-			Print "Using the built-in zero point tables"
-		else
-			Execute "V_TubeZeroPointTables_Perfect()"
-			Print "NOT using the built-in zero-point tables. Calibration tables used instead"
-		endif
+	endif		// specific to F and M carriages
 
-		WAVE/Z tube_num  = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
-		WAVE/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
-		//		endif
-
-		variable yCorrection = interp(xCtr, tube_num, yCtr_tube)
-		variable yPixSize    = V_getDet_y_pixel_size(gCurDispType, detStr)
-		yPixSize /= 10 // convert mm to cm
-		// Zero point offsets were determined in Dec 2018 using:
-		// FR tube # 7 = 61.70 pix = k_FR_tube_ZeroPoint
-		// MR tube # 10 = 61.94 pix = k_MR_tube_ZeroPoint
-
-		Print "X-center (in array coordinates 0->n-1 ) = ", xctr
-		Print "Y-center (in array coordinates 0->n-1 ) = ", yctr
-
-		Print "X-center (cm) = ", x_mm / 10
-		Print "Y-center (cm) = ", y_mm / 10
-
-		if(cmpstr(detStr, "FR") == 0)
-			Print "Reference Y-Center is corrected for FR tube #7 zero position"
-
-			yCorrection = k_FR_tube_ZeroPoint - yCorrection
-			Print "yCorrection (pix) = ", yCorrection
-			Print "yCorrection (cm) = ", yCorrection * yPixSize
-			xRef = x_mm / 10
-			yRef = y_mm / 10 + yCorrection * yPixSize
-			Print "FRONT Reference X-center (cm) = ", xRef
-			Print "FRONT Reference Y-center (cm) = ", yRef
-
-		endif
-
-		if(cmpstr(detStr, "MR") == 0)
-			Print "Reference Y-Center is corrected for MR tube #10 zero position"
-
-			yCorrection = k_MR_tube_ZeroPoint - yCorrection
-			Print "yCorrection (pix) = ", yCorrection
-			Print "yCorrection (cm) = ", yCorrection * yPixSize
-			xRef = x_mm / 10
-			yRef = y_mm / 10 + yCorrection * yPixSize
-			Print "MIDDLE Reference X-center (cm) = ", xRef
-			Print "MIDDLE Reference Y-center (cm) = ", yRef
-
-		endif
-
-		// if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value
-		// these corrections are exactly the opposite (subtract, not add) of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
-		// since the lateral scans to determine the relative centers were done at the same time
-		// the pixel values for the zero are on the same y-level, set by the beam height
-		//
-		if(cmpstr(detStr, "FL") == 0)
-			Print "Reference Y-Center is corrected for FR tube #7 zero position"
-
-			yCorrection = k_FR_tube_ZeroPoint - yCorrection
-			Print "yCorrection (pix) = ", yCorrection
-			Print "yCorrection (cm) = ", yCorrection * yPixSize
-			xRef = x_mm / 10 - kBCtrDelta_FL_x
-			yRef = y_mm / 10 - kBCtrDelta_FL_y + yCorrection * yPixSize
-			Print "FRONT Reference X-center (cm) = ", xRef // NEW Dec 2018 values
-			Print "FRONT Reference Y-center (cm) = ", yRef
-
-		endif
-
-		if(cmpstr(detStr, "ML") == 0)
-			Print "Reference Y-Center is corrected for MR tube #10 zero position"
-
-			yCorrection = k_MR_tube_ZeroPoint - yCorrection
-			Print "yCorrection (pix) = ", yCorrection
-			Print "yCorrection (cm) = ", yCorrection * yPixSize
-			xRef = x_mm / 10 - kBCtrDelta_ML_x
-			yRef = y_mm / 10 - kBCtrDelta_ML_y + yCorrection * yPixSize
-			Print "MIDDLE Reference X-center (cm) = ", xRef
-			Print "MIDDLE Reference Y-center (cm) = ", yRef
-
-		endif
-	endif
 
 	// TODO
 	// ?? store the xy reference values somewhere so that the conversion to proper

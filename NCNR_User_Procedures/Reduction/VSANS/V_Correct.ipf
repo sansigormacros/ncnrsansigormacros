@@ -349,7 +349,7 @@ Function V_CorrectMode_1()
 		// for the BGD file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for BGD file. BGD data has NOT been shifted."
 		endif
 		bgd_temp  = bgd_data // no shift, no effect
 		noadd_bgd = 1
@@ -366,7 +366,7 @@ Function V_CorrectMode_1()
 		// for the EMP file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for EMP file. EMP data has NOT been shifted."
 		endif
 		emp_temp  = emp_data // no shift, no effect
 		noadd_emp = 1
@@ -479,7 +479,7 @@ Function V_CorrectMode_2()
 		// for the BGD file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for BGD file. BGD data has NOT been shifted."
 		endif
 		bgd_temp  = bgd_data // no shift, no effect
 		noadd_bgd = 1
@@ -595,7 +595,7 @@ Function V_CorrectMode_3()
 		// for the EMP file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for EMP file. EMP data has NOT been shifted."
 		endif
 		emp_temp  = emp_data // no shift, no effect
 		noadd_emp = 1
@@ -771,7 +771,7 @@ Function V_CorrectMode_11()
 		// for the BGD file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for BGD file. BGD data has NOT been shifted."
 		endif
 		bgd_temp  = bgd_data // no shift, no effect
 		noadd_bgd = 1
@@ -788,7 +788,7 @@ Function V_CorrectMode_11()
 		// for the EMP file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for EMP file. EMP data has NOT been shifted."
 		endif
 		emp_temp  = emp_data // no shift, no effect
 		noadd_emp = 1
@@ -924,7 +924,7 @@ Function V_CorrectMode_12()
 		// for the BGD file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for BGD file. BGD data has NOT been shifted."
 		endif
 		bgd_temp  = bgd_data // no shift, no effect
 		noadd_bgd = 1
@@ -1057,7 +1057,7 @@ Function V_CorrectMode_13()
 		// for the EMP file - alert if needed, generate dummy "pass-through" values
 		//
 		if(xshift != 0 || yshift != 0)
-			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+			DoAlert 0, "Beam center mismatch for EMP file. EMP data has NOT been shifted."
 		endif
 		emp_temp  = emp_data // no shift, no effect
 		noadd_emp = 1
