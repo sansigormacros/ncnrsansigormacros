@@ -35,6 +35,14 @@ Constant kBCtrDelta_MB_y = 0.96
 Constant kBCtrDelta_MT_x = -0.28
 Constant kBCtrDelta_MT_y = 0.60
 
+// May 20 2025
+// delta values for Narrow Slit data -- which is different from pinhole collimation
+// having an apparently different? beam axis, and different translation delta values
+// -- only values for ML and FL are needed since all T/B panels are ignored in reduction of slit data
+Constant kBCtrDelta_ML_x_NS = -0.16
+Constant kBCtrDelta_FL_x_NS = 0.46
+ 
+
 ////these are values from Dec 2018 data and the FITTED ARC on FR or MR
 // don't use these - the values from the centroid are superior)
 //Constant kBCtrDelta_FL_x = 0.49
@@ -824,6 +832,21 @@ EndMacro
 Proc V_fDeriveBeamCenters(x_FrontReference, y_FrontReference, x_MiddleReference, y_MiddleReference)
 	variable x_FrontReference, y_FrontReference, x_MiddleReference, y_MiddleReference
 
+//risky, but trusting that RAW data is present...
+	// MAY 2025
+	// add in condition to use delta value for Narrow Slits if that is the crrent collimation
+	//
+	Variable delta_ML_x
+	Variable delta_FL_x
+	if(cmpstr(V_getNumberOfGuides("RAW"),"NARROW_SLITS") == 0)
+		// returns NARROW_SLITS if in beam - other returns all use pinhole deltas
+		delta_ML_x = kBCtrDelta_ML_x_NS
+		delta_FL_x = kBCtrDelta_FL_x_NS
+	else
+		delta_ML_x = kBCtrDelta_ML_x
+		delta_FL_x = kBCtrDelta_FL_x
+	endif
+
 	// start with the front
 	// FR
 	newXCtr_cm[1] = x_FrontReference
@@ -831,7 +854,7 @@ Proc V_fDeriveBeamCenters(x_FrontReference, y_FrontReference, x_MiddleReference,
 	// FL
 	//	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2		//OLD, pre Dec 2018
 	//	newYCtr_cm[0] = y_FrontReference + (0.34 + 0.32)/2
-	newXCtr_cm[0] = x_FrontReference + kBCtrDelta_FL_x //NEW Dec 2018
+	newXCtr_cm[0] = x_FrontReference + delta_FL_x //NEW Dec 2018
 	newYCtr_cm[0] = y_FrontReference + kBCtrDelta_FL_y
 	// FB
 	//	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2		// OLD, pre Dec 2018
@@ -850,7 +873,7 @@ Proc V_fDeriveBeamCenters(x_FrontReference, y_FrontReference, x_MiddleReference,
 	// ML
 	//	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
 	//	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
-	newXCtr_cm[4] = x_MiddleReference + kBCtrDelta_ML_x
+	newXCtr_cm[4] = x_MiddleReference + delta_ML_x
 	newYCtr_cm[4] = y_MiddleReference + kBCtrDelta_ML_y
 	// MB
 	//	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
@@ -1203,13 +1226,28 @@ Function V_PickOpenForBeamCenter(string carrStr)
 
 	//	V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
 
+	// MAY 2025
+	// add in condition to use delta value for Narrow Slits if that is the crrent collimation
+	//
+	Variable delta_ML_x
+	Variable delta_FL_x
+	if(cmpstr(V_getNumberOfGuides("RAW"),"NARROW_SLITS") == 0)		// RAW data will be present at this point
+		// returns NARROW_SLITS if in beam - other returns all use pinhole deltas
+		delta_ML_x = kBCtrDelta_ML_x_NS
+		delta_FL_x = kBCtrDelta_FL_x_NS
+	else
+		delta_ML_x = kBCtrDelta_ML_x
+		delta_FL_x = kBCtrDelta_FL_x
+	endif
+
+
 	if(isF)
 		// start with the front
 		// FR
 		newXCtr_cm[1] = xRef_F
 		newYCtr_cm[1] = yRef_F
 		// FL
-		newXCtr_cm[0] = xRef_F + kBCtrDelta_FL_x //NEW Dec 2018
+		newXCtr_cm[0] = xRef_F + delta_FL_x //NEW Dec 2018
 		newYCtr_cm[0] = yRef_F + kBCtrDelta_FL_y
 		// FB
 		newXCtr_cm[3] = xRef_F + kBCtrDelta_FB_x // NEW Dec 2018
@@ -1224,7 +1262,7 @@ Function V_PickOpenForBeamCenter(string carrStr)
 		newXCtr_cm[5] = xRef_M
 		newYCtr_cm[5] = yRef_M
 		// ML
-		newXCtr_cm[4] = xRef_M + kBCtrDelta_ML_x
+		newXCtr_cm[4] = xRef_M + delta_ML_x
 		newYCtr_cm[4] = yRef_M + kBCtrDelta_ML_y
 		// MB
 		newXCtr_cm[7] = xRef_M + kBCtrDelta_MB_x

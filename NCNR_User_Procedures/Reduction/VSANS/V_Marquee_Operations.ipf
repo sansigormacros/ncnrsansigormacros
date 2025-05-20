@@ -440,16 +440,33 @@ Function V_Find_BeamCentroid() : GraphMarquee
 	
 			// if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value
 			// these corrections are exactly the opposite (subtract, not add) of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
+			// since we're "un"-correcting the delta
+			
 			// since the lateral scans to determine the relative centers were done at the same time
 			// the pixel values for the zero are on the same y-level, set by the beam height
 			//
+			
+			// MAY 2025
+			// add in condition to use delta value for Narrow Slits if that is the crrent collimation
+			//
+			Variable delta_ML_x
+			Variable delta_FL_x
+			if(cmpstr(V_getNumberOfGuides(gCurDispType),"NARROW_SLITS") == 0)
+				// returns NARROW_SLITS if in beam - other returns all use pinhole deltas
+				delta_ML_x = kBCtrDelta_ML_x_NS
+				delta_FL_x = kBCtrDelta_FL_x_NS
+			else
+				delta_ML_x = kBCtrDelta_ML_x
+				delta_FL_x = kBCtrDelta_FL_x
+			endif
+			
 			if(cmpstr(detStr, "FL") == 0)
 				Print "Reference Y-Center is corrected for FR tube #7 zero position"
 	
 				yCorrection = k_FR_tube_ZeroPoint - yCorrection
 				Print "yCorrection (pix) = ", yCorrection
 				Print "yCorrection (cm) = ", yCorrection * yPixSize
-				xRef = x_mm / 10 - kBCtrDelta_FL_x
+				xRef = x_mm / 10 - delta_FL_x
 				yRef = y_mm / 10 - kBCtrDelta_FL_y + yCorrection * yPixSize
 				Print "FRONT Reference X-center (cm) = ", xRef // NEW Dec 2018 values
 				Print "FRONT Reference Y-center (cm) = ", yRef
@@ -462,15 +479,15 @@ Function V_Find_BeamCentroid() : GraphMarquee
 				yCorrection = k_MR_tube_ZeroPoint - yCorrection
 				Print "yCorrection (pix) = ", yCorrection
 				Print "yCorrection (cm) = ", yCorrection * yPixSize
-				xRef = x_mm / 10 - kBCtrDelta_ML_x
+				xRef = x_mm / 10 - delta_ML_x
 				yRef = y_mm / 10 - kBCtrDelta_ML_y + yCorrection * yPixSize
 				Print "MIDDLE Reference X-center (cm) = ", xRef
 				Print "MIDDLE Reference Y-center (cm) = ", yRef
 	
 			endif
-		endif
+		endif // specific to F and M carriages
 
-	endif		// specific to F and M carriages
+	endif		
 
 
 	// TODO
