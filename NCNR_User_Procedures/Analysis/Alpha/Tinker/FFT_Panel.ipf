@@ -810,12 +810,6 @@ Function FFT_PlotResultsButtonProc(ctrlName) : ButtonControl
 				ModifyGraph mode=4,marker=19,msize=2,rgb(ival_SLD)=(2,39321,1)
 			endif		
 			break
-		case "FFTButton_14a":
-			if(!isTraceOnGraph("ival_SLD","FFT_IQ") && exists("ival_SLD")==1)		//only append if it's not already there
-				AppendToGraph /W=FFT_IQ ival_SLD vs qval_SLD
-				ModifyGraph mode=4,marker=19,msize=2,rgb(ival_SLD)=(2,39321,1)
-			endif		
-			break
 		case "FFTButton_17":
 			if(!isTraceOnGraph("FFT_iUSANS_i","FFT_IQ") && exists("FFT_iUSANS_i")==1)		//only append if it's not already there
 				AppendToGraph /W=FFT_IQ FFT_iUSANS_i vs FFT_iUSANS_q

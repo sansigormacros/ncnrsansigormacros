@@ -448,7 +448,7 @@ Function xN_DetectorPixelResolution(string fileStr, string detStr)
 			endif
 			break
 		case "NG7":  
-		case "ng7":
+//		case "ng7": // comparison of string expression is case-insensitive, per manual
 			if(cmpstr(detStr, "ILL   ") == 0)
 				DDet = PixelResNG7_ILL
 			else
@@ -457,7 +457,7 @@ Function xN_DetectorPixelResolution(string fileStr, string detStr)
 			break
 		case "NGA":  
 		case "NGB":  
-		case "ngb":
+//		case "ngb":
 			if(cmpstr(detStr, "ILL   ") == 0)
 				DDet = PixelResNGB_ILL
 			else
@@ -567,7 +567,7 @@ Function xN_DetectorDeadtime(string fileStr, string detStr, [string dateAndTimeS
 			endif
 			break
 		case "NG7":  
-		case "ng7":
+//		case "ng7": // comparison is case insensitive, per manual
 			if(cmpstr(detStr, "ILL   ") == 0)
 				deadtime = DeadtimeNG7_ILL
 			else
@@ -580,7 +580,7 @@ Function xN_DetectorDeadtime(string fileStr, string detStr, [string dateAndTimeS
 			break
 		case "NGA":  
 		case "NGB":  
-		case "ngb": // 10m nSoft
+//		case "ngb": // 10m nSoft
 			if(cmpstr(detStr, "ILL   ") == 0)
 				deadtime = DeadtimeNGB_ILL
 			else
