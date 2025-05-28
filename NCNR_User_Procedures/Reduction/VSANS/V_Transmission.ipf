@@ -110,15 +110,24 @@ Function V_TSamFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 	// **** TODO
 	// short-circuit the switch, and simply report the values
 	// -- the TransFile popup now drives the panel
-	SVAR gSamLabel = root:Packages:NIST:VSANS:Globals:Transmission:gSamLabel
-	gSamLabel = V_getSampleDescription(pa.popStr)
-	NVAR gSamGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
-	gSamGrpID = V_getSample_GroupID(pa.popStr)
-	NVAR gTrans = root:Packages:NIST:VSANS:Globals:Transmission:gTrans
-	gTrans = V_getSampleTransmission(pa.popStr)
-	NVAR gTransErr = root:Packages:NIST:VSANS:Globals:Transmission:gTransErr
-	gTransErr = V_getSampleTransError(pa.popStr)
-
+	
+	// BUG in Igor 9 that causes this popup function to dun when a kill signal is sent to close the panel
+	// whether from "Done", red x, or command line. When this happens, the pa.popStr = "", and the 
+	// get functions will then ask for the file thorough a dialog.
+	
+	// workaround is to chekc for null string and do nothing if one is found
+	
+	if(strlen(pa.popStr) > 0)
+		SVAR gSamLabel = root:Packages:NIST:VSANS:Globals:Transmission:gSamLabel
+		gSamLabel = V_getSampleDescription(pa.popStr)
+		NVAR gSamGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
+		gSamGrpID = V_getSample_GroupID(pa.popStr)
+		NVAR gTrans = root:Packages:NIST:VSANS:Globals:Transmission:gTrans
+		gTrans = V_getSampleTransmission(pa.popStr)
+		NVAR gTransErr = root:Packages:NIST:VSANS:Globals:Transmission:gTransErr
+		gTransErr = V_getSampleTransError(pa.popStr)
+	endif
+	
 	return (0)
 
 End

@@ -1833,7 +1833,7 @@ End
 //
 Function V_WriteCSVDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 
-	variable ii
+	variable ii, nn
 	string   detStr
 
 	switch(ba.eventCode)
@@ -1850,7 +1850,9 @@ Function V_WriteCSVDTButton(STRUCT WMButtonAction &ba) : ButtonControl
 
 			DoAlert 2, "Do you want to write these values to ALL runs from\r" + num2istr(lo) + " to " + num2istr(hi) + " ?"
 			if(V_Flag == 1) //yes, anything else is a no
-				for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+			
+				nn = ItemsInList(ksDetectorListNoB)
+				for(ii = 0; ii < nn; ii += 1)
 					detStr = StringFromList(ii, ksDetectorListNoB, ";")
 					WAVE tmpW = $("root:deadtime_" + detStr)
 					deadTimeW = tmpW
@@ -2162,7 +2164,7 @@ End
 //
 Function V_WriteCSVCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 
-	variable ii
+	variable ii, nn
 	string   detStr
 
 	switch(ba.eventCode)
@@ -2179,7 +2181,9 @@ Function V_WriteCSVCalibButton(STRUCT WMButtonAction &ba) : ButtonControl
 
 			DoAlert 2, "Do you want to write these values to ALL runs from\r" + num2istr(lo) + " to " + num2istr(hi) + " ?"
 			if(V_Flag == 1) //yes, anything else is a no
-				for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+			
+				nn = ItemsInList(ksDetectorListNoB)
+				for(ii = 0; ii < nn; ii += 1)
 					detStr = StringFromList(ii, ksDetectorListNoB, ";")
 					WAVE tmp_a = $("root:a_" + detStr)
 					WAVE tmp_b = $("root:b_" + detStr)
@@ -2362,7 +2366,7 @@ EndMacro
 //  has been changed
 Function V_fPatchDet_xyCenters(variable lo, variable hi)
 
-	variable ii, jj
+	variable ii, jj, nn
 	string fname, detStr
 
 	WAVE   xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
@@ -2379,7 +2383,8 @@ Function V_fPatchDet_xyCenters(variable lo, variable hi)
 		fname = V_FindFileFromRunNumber(jj)
 		if(strlen(fname) != 0)
 
-			for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+			nn = ItemsInList(ksDetectorListAll)
+			for(ii = 0; ii < nn; ii += 1)
 				detStr = panelW[ii]
 				V_writeDet_beam_center_x(fname, detStr, xCtr_cm[ii])
 				V_writeDet_beam_center_y(fname, detStr, yCtr_cm[ii])
@@ -2400,7 +2405,7 @@ End
 Function V_fReadDet_xyCenters(variable lo, variable hi)
 
 	string fname, detStr
-	variable ii, jj
+	variable ii, jj, nn
 
 	WAVE   xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
 	WAVE   yCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
@@ -2410,7 +2415,8 @@ Function V_fReadDet_xyCenters(variable lo, variable hi)
 		fname = V_FindFileFromRunNumber(jj)
 		if(strlen(fname) != 0)
 
-			for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+			nn = ItemsInList(ksDetectorListAll)
+			for(ii = 0; ii < nn; ii += 1)
 				detStr      = StringFromList(ii, ksDetectorListAll, ";")
 				panelW[ii]  = detStr
 				xCtr_cm[ii] = V_getDet_beam_center_x(fname, detStr) //these values are in cm, not pixels

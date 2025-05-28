@@ -128,13 +128,15 @@ Function V_QBinAllPanels_Sector(string folderStr, variable binType, string colli
 	// do the back, middle, and front separately
 
 	//	figure out the binning type (where is it set?)
-	variable ii, delQ
+	variable ii, delQ, nn
 	string detStr
 
 	//	binType = V_GetBinningPopMode()
 
 	// set delta Q for binning (used later inside VC_fDoBinning_QxQy2D)
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 		delQ = V_SetDeltaQ(folderStr, detStr) // this sets (overwrites) the global value for each panel type

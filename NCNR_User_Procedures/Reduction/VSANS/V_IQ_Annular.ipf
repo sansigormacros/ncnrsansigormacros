@@ -791,7 +791,7 @@ Function V_fDoAnnularBin_QxQy2D_New(string folderStr, string type, variable qCtr
 	WAVE ePhiBin_qxqy   = $(folderPath + ":" + "ePhiBin_qxqy" + "_" + type)
 	WAVE ePhiBin2D_qxqy = $(folderPath + ":" + "ePhiBin2D_qxqy" + "_" + type)
 
-	variable nphi, dphi, isIn, phiij, iphi
+	variable nphi, dphi, isIn, phiij, iphi, nn
 
 	// DONE: define nphi (this is now set as a preference)
 	//	dr = 1 			//minimum annulus width, keep this fixed at one
@@ -823,7 +823,8 @@ Function V_fDoAnnularBin_QxQy2D_New(string folderStr, string type, variable qCtr
 		panelList = ksDetectorListAll
 	endif
 
-	for(kk = 0; kk < ItemsInList(panelList); kk += 1) // loop over all of the 9(or 8) panels
+	nn = ItemsInList(panelList)
+	for(kk = 0; kk < nn; kk += 1) // loop over all of the 9(or 8) panels
 		detStr      = StringFromList(kk, panelList, ";")
 		maskMissing = 1
 

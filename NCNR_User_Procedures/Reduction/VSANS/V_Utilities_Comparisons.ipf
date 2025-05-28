@@ -37,7 +37,7 @@
 //
 Function V_RawFilesMatchConfig(string fname1, string fname2)
 
-	variable ii
+	variable ii, nn
 	string   detStr
 
 	// collimation conditions
@@ -91,7 +91,9 @@ Function V_RawFilesMatchConfig(string fname1, string fname2)
 	//
 	//// only return values for T/B. everything else returns zero
 	//Function V_getDet_VerticalOffset(fname,detStr)
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		if(!V_FP2_Value_Match(V_getDet_LateralOffset, fname1, fname2, detStr))
 			Print "Lateral offset does not match for " + detStr

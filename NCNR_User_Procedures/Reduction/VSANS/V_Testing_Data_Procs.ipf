@@ -47,10 +47,12 @@ Function writeVCALC_to_file(string fileName, string labelStr, string intent, var
 	// the front SDD (correct units)
 	// the middle SDD (correct units)
 	// the back SDD (correct units)
-	variable ii, val
+	variable ii, val, nn
 	variable sumCts = 0
 	string detStr
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Duplicate/O $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_" + detStr + ":det_" + detStr), tmpData
 		Redimension/I tmpData
@@ -452,11 +454,12 @@ EndMacro
 
 Function V_DeadTime_Report(string fname)
 
-	variable ii
+	variable ii, nn
 	variable ctTime
 	string   detStr
 
-	for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+	nn = ItemsInList(ksDetectorListNoB)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		WAVE dataW = V_getDetectorDataW(fname, detStr)
 		ctTime = V_getCount_time(fname)

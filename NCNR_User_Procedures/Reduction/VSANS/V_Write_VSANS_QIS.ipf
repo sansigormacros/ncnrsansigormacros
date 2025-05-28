@@ -577,7 +577,7 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	Variable pixX,pixY
 	Variable numTextLines,ii,jj,kk
 	Variable pixSizeX,pixSizeY
-	Variable duration
+	Variable duration, nn
 
 	numTextLines = 30
 	Make/O/T/N=(numTextLines) labelWave
@@ -599,7 +599,9 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 //	for(kk=0;kk<ItemsInList(detList);kk+=1)
 // be sure to write out "B" first, so it ends up in the "back" in the graph
 // so work through the list backwards
-	for(kk=ItemsInList(detList)-1;kk>=0;kk-=1)
+
+	nn = ItemsInList(detList)-1
+	for(kk = nn;kk >= 0;kk -= 1)
 
 		detStr = StringFromList(kk, detList, ";")
 		detSavePath = fullPath + "_" + detStr + ".DAT"

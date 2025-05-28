@@ -446,7 +446,7 @@ EndMacro
 Function V_Raw_to_work(string newType)
 
 	variable deadTime, defmon, total_mon, total_det, total_trn, total_numruns, total_rtime
-	variable ii, jj, itim, cntrate, dscale, scale, uscale
+	variable ii, jj, itim, cntrate, dscale, scale, uscale, nn
 	string destPath
 
 	string fname = newType
@@ -525,7 +525,9 @@ Function V_Raw_to_work(string newType)
 	// (DONE)
 	// x- currently only redimensioning the data and linear_data_error - anything else???
 	// x- ?? some of this is done at load time for RAW data. Not a problem to re-do the redimension
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE w     = V_getDetectorDataW(fname, detStr)
 		WAVE w_err = V_getDetectorDataErrW(fname, detStr)
@@ -542,7 +544,9 @@ Function V_Raw_to_work(string newType)
 		// if not in DIV folder, load.
 		// if unable to load, skip correction and report error (Alert?) (Ask to Load?)
 		Print "Doing DIV correction" // for "+ detStr
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 			if(cmpstr(detStr, "B") == 0 && gIgnoreDetB == 1)
@@ -576,7 +580,9 @@ Function V_Raw_to_work(string newType)
 	// use the "perfect" values
 	if(gDoNonLinearCor == 1 || gDoNonLinearCor == 0)
 		Print "Doing Non-linear correction" // for "+ detStr
-		for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+		
+		nn = ItemsInList(ksDetectorListNoB)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListNoB, ";")
 			WAVE w = V_getDetectorDataW(fname, detStr)
 			//			Wave w_err = V_getDetectorDataErrW(fname,detStr)
@@ -674,7 +680,9 @@ Function V_Raw_to_work(string newType)
 	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
 	if(gDoDeadTimeCor == 1)
 		Print "Doing DeadTime correction" // for "+ detStr
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			WAVE w     = V_getDetectorDataW(fname, detStr)
 			WAVE w_err = V_getDetectorDataErrW(fname, detStr)
@@ -718,7 +726,9 @@ Function V_Raw_to_work(string newType)
 	endif
 	if(gDoSolidAngleCor == 1)
 		Print "Doing Solid Angle correction" // for "+ detStr
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 			if(cmpstr(detStr, "B") == 0 && gIgnoreDetB == 1)
@@ -763,7 +773,8 @@ Function V_Raw_to_work(string newType)
 	if(gDoTubeShadowCor == 1)
 		Print "Doing Tube Efficiency+Shadow correction"
 
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 			if(cmpstr(detStr, "B") == 0)
@@ -798,7 +809,8 @@ Function V_Raw_to_work(string newType)
 	if(gDoWinTrans == 1)
 		Print "Doing Large-angle Downstream window transmission correction" // for "+ detStr
 
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 			if(cmpstr(detStr, "B") == 0 && gIgnoreDetB == 1)
@@ -826,7 +838,9 @@ Function V_Raw_to_work(string newType)
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if(gDoTrans == 1)
 		Print "Doing Large-angle sample transmission correction" // for "+ detStr
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 			if(cmpstr(detStr, "B") == 0 && gIgnoreDetB == 1)
@@ -869,7 +883,8 @@ Function V_Raw_to_work(string newType)
 		//			V_getBeamMonLowData(fname)
 		//			V_getBeamMonLowSaved_count(fname)
 
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			WAVE w     = V_getDetectorDataW(fname, detStr)
 			WAVE w_err = V_getDetectorDataErrW(fname, detStr)
@@ -910,7 +925,9 @@ Function V_Raw_to_work(string newType)
 	//loop through all of the folders to keep the linear_data in sync with the data (And errors)
 	// by manually setting htem equal after all of the corrections to the data are done.
 	// -- it is the responsibility of the data reduction steps (COR) to keep linear_data up-to-date
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE w     = V_getDetectorDataW(fname, detStr)
 		WAVE w_err = V_getDetectorDataErrW(fname, detStr)
@@ -998,7 +1015,7 @@ Function V_Add_raw_to_work(string newType)
 	variable saved_mon_dest, scale_dest, saved_mon_tmp, scale_tmp
 	variable collection_time_dest, collection_time_tmp, count_time_dest, count_time_tmp
 	variable detCount_dest, detCount_tmp, det_integrated_ct_dest, det_integrated_ct_tmp
-	variable ii, new_scale, defMon
+	variable ii, new_scale, defMon, nn
 
 	defMon = 1e8 //default monitor counts
 
@@ -1044,7 +1061,9 @@ Function V_Add_raw_to_work(string newType)
 	// data_err
 	// integrated count
 	// linear_data
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 
 		WAVE data_dest        = V_getDetectorDataW(newType, detStr)

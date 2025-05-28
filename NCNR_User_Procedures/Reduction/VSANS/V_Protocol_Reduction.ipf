@@ -2417,7 +2417,7 @@ Function V_AskForAbsoluteParams_Quest(variable isBack)
 
 	variable err, loc, refnum
 
-	variable ii
+	variable ii, nn
 
 	variable kappa = 1
 	variable kappa_err
@@ -2498,7 +2498,9 @@ Function V_AskForAbsoluteParams_Quest(variable isBack)
 			// if not in DIV folder, load.
 			// if unable to load, skip correction and report error (Alert?) (Ask to Load?)
 			Print "Doing DIV correction" // for "+ detStr
-			for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+			
+			nn = ItemsInList(ksDetectorListAll)
+			for(ii = 0; ii < nn; ii += 1)
 				detStr = StringFromList(ii, ksDetectorListAll, ";")
 				WAVE w     = V_getDetectorDataW("RAW", detStr)
 				WAVE w_err = V_getDetectorDataErrW("RAW", detStr)

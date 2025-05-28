@@ -792,9 +792,11 @@ Function V_SaveMaskButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			// this step overwrites the "default" mask from H_Setup...
 			// and replaces it with what was actually drawn
 
-			variable ii
+			variable ii, nn
 			string   str
-			for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+			
+			nn = ItemsInList(ksDetectorListAll)
+			for(ii = 0; ii < nn; ii += 1)
 				str = StringFromList(ii, ksDetectorListAll, ";")
 				WAVE det_str = $("root:VSANS_MASK_file:entry:instrument:detector_" + str + ":data")
 				WAVE maskW   = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_" + str + ":data")
@@ -1718,7 +1720,7 @@ Function V_ShowAvgRangeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			// if sector
 			// display the mask on the current data
 
-			variable ii
+			variable ii, nn
 			string   detStr
 			string str1 = "root:Packages:NIST:VSANS:" + folderStr
 			string str2 = ":entry:instrument:detector_"
@@ -1738,7 +1740,9 @@ Function V_ShowAvgRangeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 					// loop over all of the panels
 					// calculate phi matrix
 					// fill in the mask
-					for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+					
+					nn = ItemsInList(ksDetectorListAll)
+					for(ii = 0; ii < nn; ii += 1)
 						detStr = StringFromList(ii, ksDetectorListAll, ";")
 						WAVE qTotal = $(str1 + str2 + detStr + ":qTot_" + detStr)
 						WAVE phi    = V_MakePhiMatrix(qTotal, folderStr, detStr, str1 + str2 + detStr)
@@ -1765,7 +1769,9 @@ Function V_ShowAvgRangeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
 					// loop over all of the panels
 					// fill in the mask
-					for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+					
+					nn = ItemsInList(ksDetectorListAll)
+					for(ii = 0; ii < nn; ii += 1)
 						detStr = StringFromList(ii, ksDetectorListAll, ";")
 						WAVE qTotal = $(str1 + str2 + detStr + ":qTot_" + detStr)
 						if(isVCALC)

@@ -57,7 +57,7 @@ Function V_LoadHDF5Data(string file, string folder)
 
 	string base_name, detStr
 	string   destPath
-	variable ii
+	variable ii,nn
 
 	destPath = "root:Packages:NIST:VSANS:" + folder
 	// before reading in new data, clean out what old data can be cleaned. hopefully new data will overwrite what is in use
@@ -92,7 +92,8 @@ Function V_LoadHDF5Data(string file, string folder)
 	if(cmpstr(folder, "DIV") == 0)
 		// makes data error and linear copy -- DP waves if V_MakeDataWaves_DP() called above
 		tmpStr = "root:Packages:NIST:VSANS:DIV:entry:instrument:"
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			SetDataFolder $(tmpStr + "detector_" + detStr)
 			//V_MakeDataError(tmpStr+"detector_"+detStr)
@@ -188,7 +189,8 @@ Function V_LoadHDF5Data(string file, string folder)
 		//		V_FakeScaleToCenter()
 
 		// makes data error and linear copy -- DP waves if V_MakeDataWaves_DP() called above
-		for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+		nn = ItemsInList(ksDetectorListAll)
+		for(ii = 0; ii < nn; ii += 1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			V_MakeDataError(tmpStr + "detector_" + detStr)
 		endfor
@@ -212,7 +214,8 @@ Function V_LoadHDF5Data(string file, string folder)
 		// use the "perfect" values
 		if(gDoNonLinearCor == 1 || gDoNonLinearCor == 0)
 			Print "Calculating Non-linear correction at RAW load time" // for "+ detStr
-			for(ii = 0; ii < ItemsInList(ksDetectorListNoB); ii += 1)
+			nn = ItemsInList(ksDetectorListNoB)
+			for(ii = 0; ii < nn; ii += 1)
 				detStr = StringFromList(ii, ksDetectorListNoB, ";")
 				WAVE w = V_getDetectorDataW(folder, detStr)
 				//			Wave w_err = V_getDetectorDataErrW(fname,detStr)		//not here, done above w/V_MakeDataError()
@@ -327,10 +330,11 @@ End
 // fname is the folder = "RAW"
 Function V_MakeDataWaves_DP(string fname)
 
-	variable ii
+	variable ii, nn
 	string   detStr
 
-	for(ii = 0; ii < ItemsInList(ksDetectorListAll); ii += 1)
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		WAVE w = V_getDetectorDataW(fname, detStr)
 		//		Wave w_err = V_getDetectorDataErrW(fname,detStr)  //not here, done in V_MakeDataError() by duplicating dataW

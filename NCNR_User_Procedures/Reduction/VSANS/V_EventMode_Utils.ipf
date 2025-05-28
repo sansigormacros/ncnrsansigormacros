@@ -1974,14 +1974,16 @@ Function V_Differentiate_onePanel(variable panelVal, variable numPt)
 	// and a second wave with the actual (negative) time values so I can
 	// directly get the "bad" times without needing to do the math
 	//
-	variable ii, jj
+	variable ii, jj, nn
 	variable numBadPt = sum(tmp)
 	Make/O/D/N=(numBadPt) badPoints, badTime
 
 	//v_tic()
 	ii = 0
 	jj = 0
-	for(ii = 0; ii < numpnts(tmp); ii += 1)
+//	for(ii = 0; ii < numpnts(tmp); ii += 1)		// test how much of a speedup this is...
+	nn = numpnts(tmp)
+	for(ii = 0; ii < nn; ii += 1)
 		if(tmp[ii] == 1)
 			badPoints[jj] = ii
 			badTime[jj]   = onePanel_DIF[ii]
@@ -2070,7 +2072,7 @@ Function V_ReadEventHeader()
 	gDetStr   = PadString(gDetStr, 1, 0x20)   //pad to 1 byte
 
 	variable gRevision, gOffset, gTime1, gTime2, gTime3, gTime4, gTime5, gVolt, gResol, gTime6
-	variable refnum, ii
+	variable refnum, ii, nn
 	string filePathStr = ""
 
 	Make/O/B/U/N=27 byteWave
@@ -2122,7 +2124,8 @@ Function V_ReadEventHeader()
 
 	Close refnum
 
-	for(ii = 0; ii < numpnts(byteWave); ii += 1)
+	nn = numpnts(byteWave)
+	for(ii = 0; ii < nn; ii += 1)
 		printf "%X  ", byteWave[ii]
 	endfor
 	printf "\r"
