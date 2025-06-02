@@ -511,3 +511,52 @@ Function V_CloseEnough(variable v1, variable v2, variable tol)
 	return (0)
 End
 
+
+// TODO -- this may not be needed if detector "type" returns something I can key on
+// - otherwise I need something like this to switch based on date
+//
+// returns null string if the type cannot be deduced, calling procedure is responsible
+//  for properly handling this error condition
+//
+// fname is the filename or folder
+//
+//
+// my definition is to return:
+// "CCD" for the "old high-res detector
+// "Denex" for the new detector
+//
+// As of 2025, the Denex has not yet been installed at VSANS, and the CCD has been dead for years
+// so without any clear date when the detector was swapped, I'm using 2025-01-01 as the date. Anything
+// prior is CCD, and anything after is Denex
+//
+// V_Compare_ISO_Dates(string iso1, string iso2)
+//
+//
+// // The general format of the time string is:
+//  1901-01-01T12:00:00-0500
+// (note that the -0500 appears to be incorrect - should be -05:00
+Function/S V_IdentifyBackDetectorType(string fname)
+
+	string typeStr = ""
+	string startTime = ""
+	string useDenexTime = "2025-01-01T11:11:00-05:00"
+	variable retval
+	
+	startTime = V_getDataStartTime(fname)
+//	print startTime
+
+
+// 1 if iso1 is greater than iso2 (meaning iso1 is more RECENT)
+// 2 if iso2 is greater than iso1 (meaning iso2 is more RECENT)
+// 0 if they are the same time
+	retVal = V_Compare_ISO_Dates(startTime, useDenexTime)
+	
+	if(retVal == 1)		// == 1 == current data is more recent than Denex install time
+		typeStr = "Denex"
+	else
+		typeStr = "CCD"
+	endif
+	
+
+	return (typeStr)
+End
