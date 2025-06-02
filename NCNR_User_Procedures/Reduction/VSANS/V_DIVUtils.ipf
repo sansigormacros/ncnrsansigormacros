@@ -697,6 +697,7 @@ EndMacro
 //
 Proc H_Setup_VSANS_DIV_Structure()
 
+// DENEX-TOFIX
 	//	if( cmpstr("Denex",V_getDetDescription(dataType,"B")) == 0)
 	//		isDenex = 1
 	//	endif
@@ -998,6 +999,7 @@ Function V_UpdatePanelDisp()
 		ModifyGraph btLen=3
 		ModifyGraph tlOffset=-2
 
+// DENEX-TOFIX
 		if(cmpstr("Denex", V_getDetDescription(folder, "B")) == 0)
 			ModifyGraph height={Aspect, kNum_y_Denex / kNum_x_Denex}
 		endif
@@ -1029,6 +1031,7 @@ Function V_UpdatePanelDisp()
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
 
+// DENEX-TOFIX
 	//be sure the aspect ratio is correct for the L panel, since it may have been
 	// set to 1 if the Denex (back) panel was displayed
 	//	ModifyGraph height={Aspect,425/200}		// based on the aspect ratio of L panel as declared

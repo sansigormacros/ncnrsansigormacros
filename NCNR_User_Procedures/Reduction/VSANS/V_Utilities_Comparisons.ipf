@@ -534,7 +534,10 @@ End
 //
 // // The general format of the time string is:
 //  1901-01-01T12:00:00-0500
-// (note that the -0500 appears to be incorrect - should be -05:00
+// (note that the -0500 appears to be incorrect - should be -05:00)
+//
+//
+// DENEX-TOFIX
 Function/S V_IdentifyBackDetectorType(string fname)
 
 	string typeStr = ""

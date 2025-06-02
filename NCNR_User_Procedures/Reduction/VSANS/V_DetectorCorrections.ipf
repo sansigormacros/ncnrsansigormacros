@@ -295,6 +295,7 @@ End
 // Since only the first element is used, the "correction" is linear.
 //
 // -- MAR 2023 -- this will work fine for the Denex, as long as cal_x and cal_y are set correctly
+// DENEX-TOFIX
 //
 Function V_NonLinearCorrection_B(string folder, WAVE dataW, WAVE cal_x, WAVE cal_y, string detStr, string destPath)
 
@@ -959,6 +960,7 @@ End
 //
 // -- MAR 2023 -- this should be fine for the Denex detector which is a grid like the
 //                previous highRes detector
+// DENEX-TOFIX
 //
 Function V_SolidAngleCorrection(WAVE w, WAVE w_err, string fname, string detStr, string destPath)
 
@@ -1584,6 +1586,7 @@ End
 //
 // currently, data is not added together and averaged, but it could be
 //
+// DENEX-TOFIX
 Function V_ShiftBackDetImage(WAVE w, WAVE adjW)
 
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning

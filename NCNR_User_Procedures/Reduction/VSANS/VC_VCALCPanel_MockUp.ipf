@@ -1697,6 +1697,7 @@ Proc VC_Initialize_Space()
 
 		// HARD WIRED DENEX VAULES (that are WRONG)
 		// as of APRIL 2023
+		// DENEX-TOFIX
 		//
 		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.15 // 1.5 mm resolution (units of [cm] here)
 		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.15

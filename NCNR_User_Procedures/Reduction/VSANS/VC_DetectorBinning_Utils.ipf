@@ -20,6 +20,7 @@
 //
 // NOTE - this is a VCALC only routine, so it's not been made completely generic
 //
+// DENEX-TOFIX
 Function FillPanel_wModelData(WAVE det, WAVE qTot, string type)
 
 	//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
@@ -217,7 +218,7 @@ End
 //
 // TODO:
 // -- tube width is hard-wired in
-//
+// DENEX-TOFIX
 //
 Function VC_Detector_2Q_NonLin(WAVE data, WAVE qTot, WAVE qx, WAVE qy, WAVE qz, variable xCtr, variable yCtr, variable sdd, variable lam, variable pixSizeX, variable pixSizeY, string detStr)
 

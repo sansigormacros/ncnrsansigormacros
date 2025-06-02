@@ -481,11 +481,13 @@ Function V_Raw_to_work(string newType)
 	//except for removing the read noise of the back detector
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 
+// DENEX-TOFIX
 	variable isDenex = 0
 	if(cmpstr("Denex", V_getDetDescription("RAW", "B")) == 0)
 		isDenex = 1
 	endif
 
+// DENEX-TOFIX
 	if(gIgnoreDetB == 0 && !isDenex)
 		// it's the old CCD HighRes
 		WAVE w = V_getDetectorDataW(fname, "B")
@@ -637,7 +639,7 @@ Function V_Raw_to_work(string newType)
 			WAVE w     = V_getDetectorDataW(fname, detStr)
 			WAVE cal_x = V_getDet_cal_x(fname, detStr)
 			WAVE cal_y = V_getDet_cal_y(fname, detStr)
-
+// DENEX-TOFIX
 			V_NonLinearCorrection_B(fname, w, cal_x, cal_y, detStr, destPath)
 
 			// "B" is always naturally defined in terms of a pixel center. This can be converted to mm,

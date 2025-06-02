@@ -1166,6 +1166,7 @@ Function fPlotBackPanels()
 	WAVE det_B  = det_B
 	WAVE qTot_B = qTot_B
 
+// DENEX-TOFIX
 	FillPanel_wModelData(det_B, qTot_B, "B")
 
 	SetDataFolder root:

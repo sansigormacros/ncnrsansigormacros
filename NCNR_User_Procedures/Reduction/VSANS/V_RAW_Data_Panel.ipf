@@ -509,7 +509,8 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 	if(gLaptopMode == 1)
 		sc = 0.7
 	endif
-
+	
+// DENEX-TOFIX
 	variable isDenex        = 0
 	string   detDescription = ""
 
@@ -526,6 +527,7 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 
 			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
 
+// DENEX-TOFIX
 			if(cmpstr("Denex", V_getDetDescription(dataType, "B")) == 0)
 				isDenex = 1
 			endif
@@ -587,6 +589,7 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 
 				ModifyImage/W=VSANS_Data#det_panelsB ''#0, ctabAutoscale=0, lookup=LookupWave
 
+// DENEX-TOFIX
 				if(isDenex)
 					//				// make the plot square
 					ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect, 1}

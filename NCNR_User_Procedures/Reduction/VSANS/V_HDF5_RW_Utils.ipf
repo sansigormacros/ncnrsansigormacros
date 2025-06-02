@@ -126,6 +126,7 @@ Function V_LoadHDF5Data(string file, string folder)
 		WAVE/Z testB = V_getDetectorDataW(file, "B")
 		if(WaveExists(testB) == 0) // null wave reference
 
+// DENEX-TOFIX
 			variable isDenex = 0
 			variable nx, ny, ctrX, ctrY
 
@@ -310,6 +311,7 @@ Function V_LoadHDF5Data(string file, string folder)
 		// the data wave is altered
 		// the linear_data wave is not altered
 
+// DENEX-TOFIX
 		WAVE adjW = V_getDetectorDataW(folder, "B")
 		WAVE w    = V_getDetectorLinearDataW(folder, "B")
 		V_ShiftBackDetImage(w, adjW)

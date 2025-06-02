@@ -3,6 +3,9 @@
 #pragma rtGlobals=3 // Use modern global access method.
 #pragma IgorVersion=7.00
 
+
+
+
 // SRK Igor 9 change OCT 2020
 //
 // some of the functions here are from the HDF5 Browser.ipf that is automatically
@@ -12,6 +15,10 @@
 // -- 4/2021
 // There is a routine here that reads in the full nexus file, with attributes and the DAS_logs
 // that needs to be kept for completeness, in case I need to read the whole file.
+//
+// 6/2025-- I think that function is H_HDF5Gate_Read_Raw(), but in Igor 9, this does not
+// read in any attributes - the "waves" of attributes all have zero points.
+
 
 // Still need to figure out what of the other "fake" data generators are useful.
 
@@ -512,8 +519,8 @@ Function H_HDF_ListAttributes(string fname, string groupName)
 			// HDF5 Browser.ipf is loaded, use the function
 			attrValue = GetPreviewString(fileID, 1, di, "/entry", "cucumber")
 #else
-			// Igor 9, HDF5 Browser is an independent module
-			//			attrValue = HDF5Browser#GetPreviewString(fileID, 1, di, "/entry", "cucumber")
+			// Igor 9, HDF5 Browser is an independent module -- how do I access the function?
+//						attrValue = HDF5Browser#GetPreviewString(fileID, 1, di, "/entry", "cucumber")
 #endif
 			Print "attrValue = ", attrValue
 

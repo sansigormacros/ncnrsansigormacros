@@ -549,6 +549,7 @@ Function V_fDoSectorBin_QxQy2D(string folderStr, string type, string collimation
 
 	// -- nq will need to be larger, once the back detector is installed
 	//
+	// DENEX-TOFIX
 	if(cmpstr(type, "B") == 0)
 		nq = 8000
 	else
