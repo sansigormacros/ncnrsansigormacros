@@ -383,8 +383,8 @@ Function V_getResolution(variable inQ, string folderStr, string type, string col
 	QBar   = (4.0 * Pi / lambda) * sin(0.5 * atan(rm / L2))
 	SigmaQ = QBar * sqrt(v_r / rmd^2 + v_lambda) //JGB eq (4)
 
-	if(numType(sigmaQ) != 0)
-		print "bad resolution - check the back beamstop"
+	if(numType(sigmaQ) != 0 && inQ != 0)
+		print "bad resolution at nonzero Q - check the back beamstop"
 	endif
 
 	// more readable method for calculating the variance in Q
