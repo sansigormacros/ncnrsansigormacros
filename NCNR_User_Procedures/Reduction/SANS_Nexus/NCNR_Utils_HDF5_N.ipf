@@ -454,7 +454,7 @@ Function N_xDetectorPixelResolution(fileStr,detStr)
 			endif
 			break
 		case "NG7":
-		case "ng7":
+		//case "ng7":
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				DDet= PixelResNG7_ILL
 			else
@@ -463,7 +463,7 @@ Function N_xDetectorPixelResolution(fileStr,detStr)
 			break
 		case "NGA":
 		case "NGB":
-		case "ngb":
+		//case "ngb":
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				DDet= PixelResNGB_ILL
 			else
@@ -576,7 +576,7 @@ Function N_DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 			endif
 			break
 		case "NG7":
-		case "ng7":
+		//case "ng7":
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNG7_ILL
 			else
@@ -589,7 +589,7 @@ Function N_DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 			break
 		case "NGA":
 		case "NGB":
-		case "ngb":		// 10m nSoft
+		//case "ngb":		// 10m nSoft
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNGB_ILL
 			else
@@ -1965,12 +1965,12 @@ xFunction N_AttenuationFactor(fileStr,lam,attenNo,atten_err)
 			attenFactor = N_LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NG7":
-		case "ng7":		//ng7 sans
+		//case "ng7":		//ng7 sans
 			attenFactor = N_LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NGA":
 		case "NGB":
-		case "ngb":		//10m nSoft SANS
+		//case "ngb":		//10m nSoft SANS
 			attenFactor = N_LookupAttenNGB(lam,attenNo,atten_err)
 			break
 		default:							
