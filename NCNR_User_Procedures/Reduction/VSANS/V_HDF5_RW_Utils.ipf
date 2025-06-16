@@ -126,18 +126,18 @@ Function V_LoadHDF5Data(string file, string folder)
 		WAVE/Z testB = V_getDetectorDataW(file, "B")
 		if(WaveExists(testB) == 0) // null wave reference
 
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 			variable isDenex = 0
 			variable nx, ny, ctrX, ctrY
 
 			// since det_B does not exist... test for Denex will always FAIL
 			// I need a different way to do this..
-			if(cmpstr("Denex", V_getDetDescription("RAW", "B")) == 0)
+			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
 				isDenex = 1
-				nx      = 512
-				ny      = 512
-				ctrX    = 255
-				ctrY    = 255
+				nx      = kNum_x_Denex
+				ny      = kNum_y_Denex
+				ctrX    = trunc(kNum_x_Denex/2)
+				ctrY    = trunc(kNum_y_Denex/2)
 			else
 				nx   = 680
 				ny   = 1656

@@ -527,8 +527,8 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 
 			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
 
-// DENEX-TOFIX
-			if(cmpstr("Denex", V_getDetDescription(dataType, "B")) == 0)
+// DENEX-TOFIX-DONE
+			if(cmpstr("Denex", V_IdentifyBackDetectorType(dataType)) == 0)
 				isDenex = 1
 			endif
 

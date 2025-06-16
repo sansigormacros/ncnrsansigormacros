@@ -5,6 +5,15 @@
 #pragma IgorVersion=7.00
 
 //
+// JUNE 2025
+// in all of the VSANS procedures, especially this one, to accommodate the new Denex detector
+// locations that (may) need to be corrected are tagged with DENEX-TOFIX
+// -- mark as done/no fix needed/etc as they are evaluated and fixed.
+//
+
+
+
+//
 // functions to apply corrections to the detector panels
 //
 // these are meant to be called by the procedures that convert "raw" data to
@@ -140,6 +149,10 @@ End
 // x- what else do I need to pass to the function? (fname=folder? detStr?)
 // y- (yes,see below) need a separate block or function to handle "B" detector which will be ? different
 //
+//
+// APR 2025 - both true and false values of gDoNonLinearCor will pass in, switch here to either apply non-linear
+// corections as in the data file (true), or (false), don't apply non-linear corrections and here
+// use the "perfect" values
 //
 // fname can also be a folder such as "RAW"
 Function V_NonLinearCorrection(string fname, WAVE dataW, WAVE coefW, variable tube_width, string detStr, string destPath)

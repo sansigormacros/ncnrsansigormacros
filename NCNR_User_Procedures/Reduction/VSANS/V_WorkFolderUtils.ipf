@@ -481,13 +481,14 @@ Function V_Raw_to_work(string newType)
 	//except for removing the read noise of the back detector
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 	variable isDenex = 0
-	if(cmpstr("Denex", V_getDetDescription("RAW", "B")) == 0)
+	if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
 		isDenex = 1
 	endif
 
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
+// this only executes if back detector is used and is not Denex
 	if(gIgnoreDetB == 0 && !isDenex)
 		// it's the old CCD HighRes
 		WAVE w = V_getDetectorDataW(fname, "B")
@@ -520,8 +521,9 @@ Function V_Raw_to_work(string newType)
 					Abort "No binning case matches in V_Raw_to_Work"
 			endswitch
 		endif //waveExists
-	endif // using det B
-
+	endif // using det B, CCD, not Denex
+	
+	
 	// (0) Redimension the data waves in the destination folder
 	//     so that they are DP, not integer
 	// (DONE)

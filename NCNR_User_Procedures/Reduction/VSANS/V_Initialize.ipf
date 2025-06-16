@@ -82,7 +82,7 @@ StrConstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;
 StrConstant ksBinTrimBegZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
 StrConstant ksBinTrimEndZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
 
-//////// HIGH RESOLUTION DETECTOR  ///////////////
+//////// HIGH RESOLUTION (CCD) DETECTOR  ///////////////
 //
 // In May 2019 - after testing with Phil's procesing, the data from the detector has a
 // larger read noise value. It can also no longer be treated  as a constant value, but rather
@@ -131,12 +131,26 @@ Constant kShift_BottomY_bin1 = 130
 Constant kNum_x_HighRes_CCD = 680 //old High res, removed in April? 2023
 Constant kNum_y_HighRes_CCD = 1656
 
+
+//////// HIGH RESOLUTION (DENEX) DETECTOR  ///////////////
+
 // DENEX-TOFIX
 Constant kNum_x_Denex = 512 // TODO -- as of April 2023, these values are not known
 Constant kNum_y_Denex = 512
 
+
+////////////////////////
+
+
 Constant kDownstreamWinTrans    = 1 // TODO -- set these to measured values once they are known
 Constant kDownstreamWinTransErr = 0
+
+
+
+
+
+
+
 
 Proc Initialize_VSANS()
 	V_Initialize()

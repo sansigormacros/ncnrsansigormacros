@@ -695,20 +695,27 @@ EndMacro
 //
 // (DONE) x- correct the number of pixels for the BACK detector
 //
+//
+// JUNE 2025
+// I have all of the Front and Middle panel pixel numbers hard-wired
+//
+//  the number of pixels on the back detector are read from "RAW", which is hopefully present and correct
+// otherwise I have no way of knowing the correct values. I do not necessarily need to know which type
+// of detector is present, but I do check and write out the string to the DIV file just in case.
+//
+// in the future it have be prudent to explicitly check the nx, ny values for each panel, but that still
+// trusts that RAW is present and correctr
+//
+//
 Proc H_Setup_VSANS_DIV_Structure()
 
-// DENEX-TOFIX
-	//	if( cmpstr("Denex",V_getDetDescription(dataType,"B")) == 0)
-	//		isDenex = 1
-	//	endif
-
-	// RAW data should be present at this point, so use the values from here
+	// RAW data should be present at this point, so all of the pixel values should be available
 	//
 	variable nx = V_getDet_pixel_num_x("RAW", "B")
 	variable ny = V_getDet_pixel_num_y("RAW", "B")
 
-	// fill the same description string in the DIV file so that the (B) panel will display correctly
-	string detType = V_getDetDescription("RAW", "B")
+	// fill the correct description string in the DIV file so that the (B) panel will display correctly
+	string detType = V_IdentifyBackDetectorType("RAW")
 
 	Print "DIV setup nx,ny = ", nx, ny
 
@@ -999,9 +1006,11 @@ Function V_UpdatePanelDisp()
 		ModifyGraph btLen=3
 		ModifyGraph tlOffset=-2
 
-// DENEX-TOFIX
-		if(cmpstr("Denex", V_getDetDescription(folder, "B")) == 0)
-			ModifyGraph height={Aspect, kNum_y_Denex / kNum_x_Denex}
+// DENEX-TOFIX-DONE
+		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder))  == 0)
+			variable nx = V_getDet_pixel_num_x(folder, "B")
+			variable ny = V_getDet_pixel_num_y(folder, "B")
+			ModifyGraph height={Aspect, ny / nx}
 		endif
 
 		SetActiveSubwindow ##

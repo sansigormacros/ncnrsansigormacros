@@ -866,17 +866,17 @@ Proc H_Setup_VSANS_MASK_Structure()
 		data[2599, 2719][] = 1 //
 
 	else
-	// DENEX-TOFIX
+	// DENEX-TOFIX-DONE
 		// binning will always be 4, even if Denex, so it will drop here
 		variable isDenex = 0
-		if(cmpstr("Denex", V_getDetDescription("RAW", "B")) == 0)
+		if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
 			isDenex = 1
 		endif
 
 		// fill the same description string in the MSK file so that the (B) panel will display correctly
-		string detType = V_getDetDescription("RAW", "B")
+		string detType = V_IdentifyBackDetectorType("RAW")
 
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 		if(isDenex)
 			variable nx = V_getDet_pixel_num_x("RAW", "B")
 			variable ny = V_getDet_pixel_num_y("RAW", "B")
@@ -889,7 +889,7 @@ Proc H_Setup_VSANS_MASK_Structure()
 			data[nx - 11, nx - 1][] = 1
 
 		else
-			// the normal HighRes CCD detector
+			// the old HighRes CCD detector
 			Make/O/I/N=(kNum_x_HighRes_CCD, kNum_y_HighRes_CCD) data = 0
 
 			data[][0, 5]       = 1
@@ -1006,15 +1006,15 @@ Function V_GenerateDefaultMask()
 			Duplicate/O data, overlay_B
 			break
 		case 4:
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 			// binning will still be the defult value of 4 even if it's the Denex detector
 			variable isDenex = 0
-			if(cmpstr("Denex", V_getDetDescription("RAW", "B")) == 0)
+			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
 				isDenex = 1
 			endif
 
 			if(isDenex)
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 				variable nx = V_getDet_pixel_num_x("RAW", "B")
 				variable ny = V_getDet_pixel_num_y("RAW", "B")
 				Print "MSK setup nx,ny = ", nx, ny
@@ -1420,8 +1420,8 @@ Function V_UpdateFourPanelDisp()
 		ModifyGraph btLen=3
 		ModifyGraph tlOffset=-2
 
-// DENEX-TOFIX
-		if(cmpstr("Denex", V_getDetDescription(folder, "B")) == 0)
+// DENEX-TOFIX-DONE
+		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder)) == 0)
 			ModifyGraph height={Aspect, 1}
 		endif
 
