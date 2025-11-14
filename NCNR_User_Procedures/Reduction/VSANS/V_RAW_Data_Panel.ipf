@@ -589,7 +589,7 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 
 				ModifyImage/W=VSANS_Data#det_panelsB ''#0, ctabAutoscale=0, lookup=LookupWave
 
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 				if(isDenex)
 					//				// make the plot square
 					ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect, 1}

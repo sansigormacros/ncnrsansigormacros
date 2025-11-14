@@ -203,6 +203,7 @@ Proc PlotSum_Model(num,qmin,qmax)
 	
 	// these are the function names - make global so the fit function
 	// can find them
+	String S_Value
 	ControlInfo/W=Sum_Model_Panel popup1_0
 	String/G root:Packages:NIST:SumModel:gModelStr1=S_Value
 	ControlInfo/W=Sum_Model_Panel popup2_0
