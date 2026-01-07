@@ -395,18 +395,34 @@ Function V_setDeltaQy_Slit(string folderStr, string detStr)
 	WAVE qy   = $(folderPath + instPath + detStr + ":qy_" + detStr)
 	WAVE mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_" + detStr + ":data")
 
-	Duplicate/O qy, tmp_qy
-	// for the minimum
-	tmp_qy = (mask == 0) ? qY : 1e6
-	min_qy = WaveMin(tmp_qy)
+	//don't crash if no mask, just use the full y-range
+	if(waveExists(mask) == 1)
+		// mask wave exists
+		Duplicate/O qy, tmp_qy
+		// for the minimum
+		tmp_qy = (mask == 0) ? qY : 1e6
+		min_qy = WaveMin(tmp_qy)
+	
+		// for the maximum
+		tmp_qy = (mask == 0) ? qY : -1e6
+		max_qy = WaveMax(tmp_qy)
+	
+		KillWaves/Z tmp_qy
+	
+		delQy = max_qy - min_qy
 
-	// for the maximum
-	tmp_qy = (mask == 0) ? qY : -1e6
-	max_qy = WaveMax(tmp_qy)
+	else
+		//no mask wave
+		// for the minimum
+		min_qy = WaveMin(qy)
+	
+		// for the maximum
+		max_qy = WaveMax(qy)
+	
+		delQy = max_qy - min_qy
 
-	KillWaves/Z tmp_qy
-
-	delQy = max_qy - min_qy
+	endif
 
 	return (delQy)
 End
+

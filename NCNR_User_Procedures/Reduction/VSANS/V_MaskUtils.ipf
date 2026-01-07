@@ -1811,13 +1811,19 @@ Function V_ShowAvgRangeButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 					if(cmpstr(carrStr, "B") == 0)
 						detStr = carrStr
 						// is the mask already there?
-						WAVE/Z overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_" + detStr + ":AvgOverlay_" + detStr)
+						WAVE overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_" + detStr + ":AvgOverlay_" + detStr)
 						CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 						if(V_Flag == 1) //overlay is present, set state = 0 to remove overlay
 							state = 0
 						else
 							state = 1
 						endif
+						
+						// 2026-01-07 SRK add in combination (anding) of masks for B
+						// this was not done in past
+						WAVE reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B:Overlay_B")
+						WAVE overlay  = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B:AvgOverlay_B")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
 
 						V_OverlayFourAvgMask(folderStr, "B", state)
 						return (0)

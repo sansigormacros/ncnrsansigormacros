@@ -918,7 +918,8 @@ Function VC_Preset_ConvergingPinholes()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
+	// was 6.7A, as of 2025? the new value is 8.36A for 14 lenses
+	SetVariable VCALCCtrl_0b,value=_NUM:8.36,disable=2			// 
 
 	//number of guides
 //	Slider VCALCCtrl_0a,value= 0
@@ -995,7 +996,8 @@ Function VC_Preset_NarrowSlit()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
+	// set the wavelength to white beam conditions
+	SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2
 
 	//number of guides
 	V_GuideSliderProc("VCALCCtrl_0a",0,1)		//Set Ng=0, resets the aperture string to the new string
