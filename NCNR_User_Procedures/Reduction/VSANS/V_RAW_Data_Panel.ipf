@@ -510,9 +510,9 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 		sc = 0.7
 	endif
 	
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 	variable isDenex        = 0
-	string   detDescription = ""
+//	string   detDescription = ""
 
 	switch(tca.eventCode)
 		case 2: // mouse up
@@ -528,7 +528,7 @@ Function V_DataTabProc(STRUCT WMTabControlAction &tca) : TabControl
 			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
 
 // DENEX-TOFIX-DONE
-			if(cmpstr("Denex", V_IdentifyBackDetectorType(dataType)) == 0)
+			if(cmpstr("Denex", V_IdentifyBackDetectorType(dataType,1)) == 0)
 				isDenex = 1
 			endif
 

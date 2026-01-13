@@ -3471,6 +3471,56 @@ Function V_fPatch_SampleAperture2(variable lo, variable hi, string ShapeStr, var
 	return (0)
 End
 
+
+
+//
+// to patch data with "fake" Denex data, since the method that looks for the detector uses the file
+// collection time to determine which detector was used (anything collected later than 1/1/2025 is assumed
+// to be Denex, not CCD
+// -- the "V_getDetDescription" field is not totally reliable, since it can't be guaranteed to be filled in
+// 		correctly by NICE - in the past, "fancy model" is the answer for all of the detector panels F-M-B
+//
+Proc V_Patch_DataStartTime(lo, hi, yearStr)
+	variable lo, hi
+	string yearStr = "2025"
+
+	V_fPatch_DataStartTime(lo, hi, yearStr)
+EndMacro
+
+//
+//		V_writeDataStartTime(string fname, string str)
+//
+//  Function/S V_getDataStartTime(string fname)
+//
+Function V_fPatch_DataStartTime(variable lo, variable hi, string yearStr)
+
+	variable jj
+	string   fname,tmpStr
+
+	//loop over all files
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+			tmpStr = V_getDataStartTime(fname)
+			//print tmpStr
+		
+			tmpstr[0,3] = yearStr
+			//print tmpStr
+			
+			V_writeDataStartTime(fname, tmpStr)
+
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+	return (0)
+End
+
+
+
+
 Proc V_Patch_MonochromatorType(lo, hi, typeStr)
 	variable lo, hi
 	string typeStr = "super_white_beam"

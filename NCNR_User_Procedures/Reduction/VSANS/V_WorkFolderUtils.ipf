@@ -483,7 +483,7 @@ Function V_Raw_to_work(string newType)
 
 // DENEX-TOFIX-DONE
 	variable isDenex = 0
-	if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
+	if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW",1)) == 0)
 		isDenex = 1
 	endif
 

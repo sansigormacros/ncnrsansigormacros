@@ -1007,7 +1007,7 @@ Function V_UpdatePanelDisp()
 		ModifyGraph tlOffset=-2
 
 // DENEX-TOFIX-DONE
-		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder))  == 0)
+		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder,1))  == 0)
 			variable nx = V_getDet_pixel_num_x(folder, "B")
 			variable ny = V_getDet_pixel_num_y(folder, "B")
 			ModifyGraph height={Aspect, ny / nx}
@@ -1040,7 +1040,7 @@ Function V_UpdatePanelDisp()
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
 
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
 	//be sure the aspect ratio is correct for the L panel, since it may have been
 	// set to 1 if the Denex (back) panel was displayed
 	//	ModifyGraph height={Aspect,425/200}		// based on the aspect ratio of L panel as declared

@@ -1009,7 +1009,7 @@ Function V_GenerateDefaultMask()
 // DENEX-TOFIX-DONE
 			// binning will still be the defult value of 4 even if it's the Denex detector
 			variable isDenex = 0
-			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
+			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW",1)) == 0)
 				isDenex = 1
 			endif
 
@@ -1421,8 +1421,8 @@ Function V_UpdateFourPanelDisp()
 		ModifyGraph tlOffset=-2
 
 // DENEX-TOFIX-DONE
-		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder)) == 0)
-			ModifyGraph height={Aspect, 1}
+		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder,1)) == 0)
+			ModifyGraph height={Aspect, 1}		//square display
 		endif
 
 		SetActiveSubwindow ##
@@ -1450,7 +1450,12 @@ Function V_UpdateFourPanelDisp()
 	ModifyGraph tkLblRot(left)=90
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
+//	ModifyGraph height=0		// back to auto height-width if B was previously displayed (this does NOT work)
+//	ModifyGraph height={Aspect,2.05}		// force aspect ratio of L panel (hard-wired value)
+	ModifyGraph height=( (425 + 80) * sc - (45 + 80) * sc - 14 - 14)  // hard-wire it back in, = T-B-margin-margin
 	SetActiveSubwindow ##
+
+	DoUpdate
 
 	//	RemoveImage/Z/W=VSANS_Det_Panels#Panel_T data
 	if(isVCALC)

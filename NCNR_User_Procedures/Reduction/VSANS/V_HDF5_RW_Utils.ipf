@@ -43,6 +43,9 @@ Proc Read_HDF5_Raw_No_Attributes()
 EndMacro
 
 // (DONE):
+//
+//  MAIN LOADING ROUTINE FOR RAW DATA, DIV DATA, and MSK DATA
+//
 //  x- move the initialization of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
 // x- as needed, get rid of the fake redimension of the data from 3D->2D and from 128x128 to something else for VSANS
@@ -132,7 +135,7 @@ Function V_LoadHDF5Data(string file, string folder)
 
 			// since det_B does not exist... test for Denex will always FAIL
 			// I need a different way to do this..
-			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
+			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW",1)) == 0)
 				isDenex = 1
 				nx      = kNum_x_Denex
 				ny      = kNum_y_Denex

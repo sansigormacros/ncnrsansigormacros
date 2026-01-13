@@ -67,6 +67,7 @@ Menu "VSANS"
 		"Patch Sample Aperture", V_Patch_SampleAperture2()
 		"-"
 		"Patch Back Detector Denex Values", V_Patch_Back_Detector_Denex()  // DENEX-TOFIX
+		"Patch Data Start Time",V_Patch_DataStartTime()		//only to "fake" Denex time
 		"Use Zero Point Tables?", V_UseZeroPointTables()
 		"Visualize Adjusted Tubes", V_ShiftDetectorPanel()
 	End

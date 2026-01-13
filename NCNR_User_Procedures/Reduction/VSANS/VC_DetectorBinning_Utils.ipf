@@ -697,6 +697,7 @@ Function V_SetDeltaQ(string folderStr, string detStr)
 	// -- this will handle the too-fine resolution of 1x1 binning?
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 
+// force the binning to be 4x for the CCD detector
 	if(cmpstr(detStr, "B") == 0 && gHighResBinning == 1)
 		delQ = 4 * delQ
 		Print "Reset delta Q for binning the back detector to 4x pix = ", delQ

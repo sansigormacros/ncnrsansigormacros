@@ -512,17 +512,22 @@ Function V_CloseEnough(variable v1, variable v2, variable tol)
 End
 
 
-// TODO -- this may not be needed if detector "type" returns something I can key on
-// - otherwise I need something like this to switch based on date
+// Returns the type string indentifying the back detector type, to key on for
+// data processing
 //
 // returns null string if the type cannot be deduced, calling procedure is responsible
 //  for properly handling this error condition
 //
 // fname is the filename or folder
 //
+// use one of two methods:
+// 1 = directly check the detector description
+// 2 = use the method based on comparison to the arbitrary time of > 1/1/2025
+//
+// return values are the same for both methods
 //
 // my definition is to return:
-// "CCD" for the "old high-res detector
+// "CCD" for the "old" high-res detector
 // "Denex" for the new detector
 //
 // As of 2025, the Denex has not yet been installed at VSANS, and the CCD has been dead for years
@@ -537,29 +542,39 @@ End
 // (note that the -0500 appears to be incorrect - should be -05:00)
 //
 //
-// DENEX-TOFIX
-Function/S V_IdentifyBackDetectorType(string fname)
+// DENEX-TOFIX-DONE
+Function/S V_IdentifyBackDetectorType(string fname, variable method)
 
 	string typeStr = ""
 	string startTime = ""
 	string useDenexTime = "2025-01-01T11:11:00-05:00"
 	variable retval
 	
-	startTime = V_getDataStartTime(fname)
-//	print startTime
-
-
-// 1 if iso1 is greater than iso2 (meaning iso1 is more RECENT)
-// 2 if iso2 is greater than iso1 (meaning iso2 is more RECENT)
-// 0 if they are the same time
-	retVal = V_Compare_ISO_Dates(startTime, useDenexTime)
+	if(method == 1)
 	
-	if(retVal == 1)		// == 1 == current data is more recent than Denex install time
-		typeStr = "Denex"
-	else
-		typeStr = "CCD"
+		typeStr = V_getDetDescription(fname,"B")
+		if(cmpstr(typeStr,"Denex") != 0 )		// string is NOT "Denex"
+			typeStr = "CCD"							// assume it's "CCD"
+		endif
+		
+	else		// check the time
+	
+		startTime = V_getDataStartTime(fname)
+	//	print startTime
+	
+	
+	// 1 if iso1 is greater than iso2 (meaning iso1 is more RECENT)
+	// 2 if iso2 is greater than iso1 (meaning iso2 is more RECENT)
+	// 0 if they are the same time
+		retVal = V_Compare_ISO_Dates(startTime, useDenexTime)
+		
+		if(retVal == 1)		// == 1 == current data is more recent than Denex install time
+			typeStr = "Denex"
+		else
+			typeStr = "CCD"
+		endif
+	
 	endif
-	
 
 	return (typeStr)
 End
