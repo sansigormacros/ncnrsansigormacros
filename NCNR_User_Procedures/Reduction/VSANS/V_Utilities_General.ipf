@@ -1535,7 +1535,7 @@ Function V_RemoveNaNsQIS(WAVE theXWave, WAVE theYWave, WAVE theZWave)
 End
 
 //
-////// utilities for the back detector to diagnose saturation issues
+////// utilities for the back detector -- CCD -- to diagnose saturation issues
 //
 //
 // as of March 2019, the detector data is processed differently, with more

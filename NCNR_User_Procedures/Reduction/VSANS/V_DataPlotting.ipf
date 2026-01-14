@@ -877,6 +877,10 @@ EndMacro
 //  one;two;four;slit
 // winNameStr = the name of the target window
 //
+//
+//  nothing CCD or Denex-specific here
+//
+//
 ////////////to plot the back panel I(q)
 Proc V_Back_IQ_Graph(fullPathToFolder, binType, winNameStr)
 	string   fullPathToFolder

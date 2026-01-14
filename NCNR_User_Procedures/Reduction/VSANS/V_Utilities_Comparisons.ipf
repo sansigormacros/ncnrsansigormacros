@@ -578,3 +578,21 @@ Function/S V_IdentifyBackDetectorType(string fname, variable method)
 
 	return (typeStr)
 End
+
+
+// returns the truth of whether the back detector is Denex, no information if it's not
+//
+// saves comparison steps when simply verifying if data is Denex or not
+//
+Function isDenex(string fname, variable method)
+
+	String backDetType = V_IdentifyBackDetectorType(fname, method)
+	Variable retVal = 0
+	
+	if(cmpstr("Denex",backDetType) == 0)
+		retVal = 1			// it is Denex
+	endif
+
+	return(retVal)
+end
+

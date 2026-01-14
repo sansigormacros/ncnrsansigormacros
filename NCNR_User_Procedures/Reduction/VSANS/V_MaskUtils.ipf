@@ -854,7 +854,7 @@ Proc H_Setup_VSANS_MASK_Structure()
 
 	//	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 	NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_B
-	if(root:Packages:NIST:VSANS:Globals:gHighResBinning == 1)
+	if(root:Packages:NIST:VSANS:Globals:gHighResBinning == 1)				//DENEX-OK (can't test here)
 		// TODOHIGHRES - the pixel values are hard-wired
 		Make/O/I/N=(2720, 6624) data = 0
 
@@ -991,7 +991,7 @@ Function V_GenerateDefaultMask()
 
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 	NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B
-	switch(gHighResBinning)
+	switch(gHighResBinning)					// DENEX-OK
 		case 1:
 			// TODOHIGHRES - the pix values are hard-wired
 			Make/O/I/N=(2720, 6624) data = 0
@@ -1008,12 +1008,8 @@ Function V_GenerateDefaultMask()
 		case 4:
 // DENEX-TOFIX-DONE
 			// binning will still be the defult value of 4 even if it's the Denex detector
-			variable isDenex = 0
-			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW",1)) == 0)
-				isDenex = 1
-			endif
 
-			if(isDenex)
+			if(isDenex("RAW",1))				//trusting that RAW data exists here
 // DENEX-TOFIX-DONE
 				variable nx = V_getDet_pixel_num_x("RAW", "B")
 				variable ny = V_getDet_pixel_num_y("RAW", "B")

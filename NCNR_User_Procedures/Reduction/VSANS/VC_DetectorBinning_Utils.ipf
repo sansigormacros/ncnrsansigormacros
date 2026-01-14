@@ -694,11 +694,12 @@ Function V_SetDeltaQ(string folderStr, string detStr)
 	endif
 
 	// (DONE)_HIGHRES
-	// -- this will handle the too-fine resolution of 1x1 binning?
-	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
-
+	// -- this will handle the too-fine resolution of 1x1 binning
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning		//DENEX-OK
+	String backDetType = V_IdentifyBackDetectorType(folderStr, 1)
+	
 // force the binning to be 4x for the CCD detector
-	if(cmpstr(detStr, "B") == 0 && gHighResBinning == 1)
+	if(cmpstr(detStr, "B") == 0 && gHighResBinning == 1 && cmpstr(backDetType,"CCD") == 0)
 		delQ = 4 * delQ
 		Print "Reset delta Q for binning the back detector to 4x pix = ", delQ
 	endif
@@ -1079,6 +1080,8 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	// (DONE) -- nq is larger for the back detector
 	//
 	// - the needs for the back detector keep shrinkng as the CCDs die...
+	//
+	//  DENEX-TOFIX   is nq large enough (or too large) for the # of points generated
 	//
 
 	if(cmpstr(type, "B") == 0)

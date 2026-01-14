@@ -32,6 +32,8 @@ Function FrontView_1x()
 	NVAR M_TB_w = root:Packages:NIST:VSANS:VCALC:gMiddle_TB_w
 	NVAR M_TB_h = root:Packages:NIST:VSANS:VCALC:gMiddle_TB_h
 
+// DENEX-TOFIX		//these constants need to be updated in VCALC for Denex dimensions
+// -- see the VCALC definition file to be sure to catch them all.
 	NVAR B_h = root:Packages:NIST:VSANS:VCALC:gBack_h
 	NVAR B_w = root:Packages:NIST:VSANS:VCALC:gBack_w
 

@@ -432,11 +432,11 @@ EndMacro
 //(the function Add_Raw_to_work(type) adds multiple runs together - and is LOW priority)
 //
 // JUL 2018
-// now removes a constant kReadNoiseLevel from the back detector (this is a constant value, not time
+// now removes a constant kReadNoiseLevel from the back detector (CCD only) (this is a constant value, not time
 //  or count dependent). It does not appear to be dependent on gain, and is hoepfully stable over time.
 //
 // May 2019
-// If present, a detector image of the back detector containing the read noise (non-uniform values)
+// If present, a detector image of the back detector (CCD only) containing the read noise (non-uniform values)
 //  is subtracted rather than a single constant value.
 //
 //the current display type is updated to newType (global)
@@ -482,14 +482,8 @@ Function V_Raw_to_work(string newType)
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 
 // DENEX-TOFIX-DONE
-	variable isDenex = 0
-	if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW",1)) == 0)
-		isDenex = 1
-	endif
-
-// DENEX-TOFIX-DONE
 // this only executes if back detector is used and is not Denex
-	if(gIgnoreDetB == 0 && !isDenex)
+	if(gIgnoreDetB == 0 && !isDenex("RAW",1))
 		// it's the old CCD HighRes
 		WAVE w = V_getDetectorDataW(fname, "B")
 		// I hate to hard-wire this, but the data must be in this specific location...
@@ -500,7 +494,7 @@ Function V_Raw_to_work(string newType)
 			w -= w_ReadNoise
 			Print "Subtracting ReadNoise Array"
 		else
-			NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+			NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning			//DENEX-OK
 
 			switch(gHighResBinning)
 				case 1:
@@ -641,7 +635,7 @@ Function V_Raw_to_work(string newType)
 			WAVE w     = V_getDetectorDataW(fname, detStr)
 			WAVE cal_x = V_getDet_cal_x(fname, detStr)
 			WAVE cal_y = V_getDet_cal_y(fname, detStr)
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE (this is OK, as long as the calibration values are correct in the metadata
 			V_NonLinearCorrection_B(fname, w, cal_x, cal_y, detStr, destPath)
 
 			// "B" is always naturally defined in terms of a pixel center. This can be converted to mm,

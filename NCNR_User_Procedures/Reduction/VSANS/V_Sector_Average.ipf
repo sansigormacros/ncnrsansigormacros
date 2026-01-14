@@ -547,7 +547,7 @@ Function V_fDoSectorBin_QxQy2D(string folderStr, string type, string collimation
 		iErr4 = sqrt(inten4 + 0.75) // -- here I'm just using some fictional value
 	endif
 
-	// -- nq will need to be larger, once the back detector is installed
+	// -- nq will need to be larger (or smaller), once the Denex replaces the CCD
 	//
 	// DENEX-TOFIX
 	if(cmpstr(type, "B") == 0)

@@ -178,8 +178,8 @@ Proc V_Initialize()
 	V_InitFolders()
 
 	V_InitFakeProtocols()
-	V_InitGlobals()
-	V_InitFacilityGlobals()
+	V_InitGlobals()						//preferences and zero point tables are initialized here, after folders are generated
+	V_InitFacilityGlobals()			//currently does nothing. these values are now in the file metadata
 	DoWindow/F Main_VSANS_Panel
 	if(V_flag == 0)
 		//draw panel
@@ -517,7 +517,8 @@ Function BeforeExperimentSaveHook(variable rN, string fileName, string path, str
 	V_CleanupData_w_Progress(0, 1)
 	Printf "Hook cleaned out RawVSANS, experiment saved\r"
 
-	NVAR/Z gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	NVAR/Z gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning		//DENEX-OK
+	
 	if(gHighResBinning == 1)
 		// these KillDF are a bad idea - it wipes out all of the current work
 		// whenever a save is done - which is the opposite of what you want

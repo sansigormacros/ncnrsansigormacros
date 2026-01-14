@@ -307,8 +307,8 @@ End
 //
 // Since only the first element is used, the "correction" is linear.
 //
-// -- MAR 2023 -- this will work fine for the Denex, as long as cal_x and cal_y are set correctly
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE -- MAR 2023 -- this will work fine for the Denex, as long as cal_x and cal_y are set correctly
+//		(need to verify the values)
 //
 Function V_NonLinearCorrection_B(string folder, WAVE dataW, WAVE cal_x, WAVE cal_y, string detStr, string destPath)
 
@@ -972,7 +972,7 @@ End
 //
 //
 // -- MAR 2023 -- this should be fine for the Denex detector which is a grid like the
-//                previous highRes detector
+//                previous highRes detector, and uses the cos^3 calculation
 // DENEX-TOFIX
 //
 Function V_SolidAngleCorrection(WAVE w, WAVE w_err, string fname, string detStr, string destPath)
@@ -1049,7 +1049,8 @@ Function V_SolidAngleCorrection(WAVE w, WAVE w_err, string fname, string detStr,
 
 	else
 		//
-		//different calculation for the tubes, different calculation based on XY orientation
+		// updated calculation for the tubes, different calculation based on XY orientation
+		// not cos^3 as for wire grid detectors
 		//
 		if(cmpstr(orientation, "vertical") == 0)
 			// L/R panels, tube axis is y-direction
@@ -1599,10 +1600,13 @@ End
 //
 // currently, data is not added together and averaged, but it could be
 //
-// DENEX-TOFIX
+// DENEX-TOFIX-DONE
+//
+// nothing to fix here for Denex, other than to be sure that this function is NEVER
+// called for the Denex, since there should be no shifting
 Function V_ShiftBackDetImage(WAVE w, WAVE adjW)
 
-	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning		//DENEX-OK (can't test here)
 
 	// this is necessary for some old data with the 150x150 back (dummy) panel
 	// the proper back detector has an x-dimension of 680 pixels. Don't do the shift
@@ -1673,9 +1677,14 @@ EndMacro
 
 Function V_MedianFilterBack(string folder)
 
+	if(isDenex(folder,1) == 1)
+		Abort "V_MedianFilterBack should not be called for Denex data"
+		return(0)
+	endif
+
 	WAVE w = V_getDetectorDataW(folder, "B")
 
-	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning		//DENEX-OK
 	switch(gHighResBinning)
 		case 1:
 			MatrixFilter/N=11/P=1 median, w //		/P=n flag sets the number of passes (default is 1 pass)
@@ -1721,10 +1730,15 @@ EndMacro
 
 Function V_MedianAndReadNoiseBack(string folder, variable readNoise)
 
+	if(isDenex(folder,1) == 1)
+		Abort "V_MedianFilterBack should not be called for Denex data"
+		return(0)
+	endif
+
 	WAVE w = V_getDetectorDataW(folder, "B")
 	w -= readNoise // a constant value
 
-	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning		//DENEX-OK
 	switch(gHighResBinning)
 		case 1:
 			MatrixFilter/N=11/P=1 median, w //		/P=n flag sets the number of passes (default is 1 pass)

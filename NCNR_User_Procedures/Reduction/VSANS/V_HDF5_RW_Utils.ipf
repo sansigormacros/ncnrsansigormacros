@@ -130,13 +130,11 @@ Function V_LoadHDF5Data(string file, string folder)
 		if(WaveExists(testB) == 0) // null wave reference
 
 // DENEX-TOFIX-DONE
-			variable isDenex = 0
 			variable nx, ny, ctrX, ctrY
 
 			// since det_B does not exist... test for Denex will always FAIL
 			// I need a different way to do this..
-			if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW",1)) == 0)
-				isDenex = 1
+			if( isDenex("RAW",1) )
 				nx      = kNum_x_Denex
 				ny      = kNum_y_Denex
 				ctrX    = trunc(kNum_x_Denex/2)
@@ -314,16 +312,18 @@ Function V_LoadHDF5Data(string file, string folder)
 		// the data wave is altered
 		// the linear_data wave is not altered
 
-// DENEX-TOFIX
-		WAVE adjW = V_getDetectorDataW(folder, "B")
-		WAVE w    = V_getDetectorLinearDataW(folder, "B")
-		V_ShiftBackDetImage(w, adjW)
-
-		// and repeat for the error wave
-		WAVE adjW = V_getDetectorDataErrW(folder, "B")
-		WAVE w    = V_getDetectorLinearDataErrW(folder, "B")
-		V_ShiftBackDetImage(w, adjW)
-
+// DENEX-TOFIX-DONE
+	//only shift the data if the back detector data is NOT Denex (asssumed CCD)
+		if( !(isDenex(folder,1)) )		
+			WAVE adjW = V_getDetectorDataW(folder, "B")
+			WAVE w    = V_getDetectorLinearDataW(folder, "B")
+			V_ShiftBackDetImage(w, adjW)
+	
+			// and repeat for the error wave
+			WAVE adjW = V_getDetectorDataErrW(folder, "B")
+			WAVE w    = V_getDetectorLinearDataErrW(folder, "B")
+			V_ShiftBackDetImage(w, adjW)
+		endif
 		/// END DATA CORRECTIONS FOR LOADER
 
 	endif

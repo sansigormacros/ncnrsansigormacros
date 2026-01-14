@@ -1666,13 +1666,15 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_x = 64
 	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_y = 55
 
-	//// BACK DETECTOR
+	//// BACK DETECTOR -- DENEX-TOFIX
 	variable/G gBack_w = 22.2 //w and h for the back detector [cm]
 	variable/G gBack_h = 50.4
 
 	// all of this is correct, hard-wired values
 	// -- can't use a switch so I'm using an if(), where the default is 4x4 binning
-	if(root:Packages:NIST:VSANS:Globals:gHighResBinning == 1)
+	// can't test for the detctor type, since real data may not exist when VCALC is run
+	// must rely on gHighResBinning global as initialized
+	if(root:Packages:NIST:VSANS:Globals:gHighResBinning == 1)		//DENEX-OK
 		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.00845 // 340 micron resolution (units of [cm] here)
 		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.00845
 

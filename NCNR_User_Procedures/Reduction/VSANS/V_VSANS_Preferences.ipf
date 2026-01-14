@@ -121,13 +121,18 @@ Proc Initialize_VSANSPreferences()
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gUseZeroPointTables", 1)
 	variable/G root:Packages:NIST:VSANS:Globals:gUseZeroPointTables = 1
 
-	// TODOHIGHRES
+	// 
 	// OCT 2018
 	// new global to flag the highRes detector binning to accomodate the change in binning
 	//  that was set 10/16/18 (changed from 4x4 bin to 1x1= no binning)
 	// set this flag == 1 for 1x1
 	// set flag 4 == 4x4
-	variable/G root:Packages:NIST:VSANS:Globals:gHighResBinning = 4
+	// JAN 2026 - this binning in only used for the now-dead CCD camera. use nothing but 4x4 binning
+	// -- this flag has no meaning and does not affect the reduction of the Denex detector data
+	// ***BUT** do not change this value from 4, and do not skip the initialization. There are conditions
+	// where real data is not present to test, and the binning global is used to decide how/if to generate
+	// data for default masks, VCALC, etc.
+	variable/G root:Packages:NIST:VSANS:Globals:gHighResBinning = 4			//DENEX-OK
 
 	DoAlert 1, "Are you using the back detector? (This can be changed later in the Preferences Panel)"
 	if(V_flag == 1)

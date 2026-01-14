@@ -2519,9 +2519,10 @@ Function V_AskForAbsoluteParams_Quest(variable isBack)
 		// then determine the patch sum and proper error propogation.
 		//
 		// just do the median filter now, do the background subtraction later on the patch
-		if(isBack)
+		// this is only done on the CCD data, not the Denex
+		if(isBack && isDenex("RAW",1) != 1)
 			WAVE w               = V_getDetectorDataW("RAW", "B")
-			NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+			NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning			//DENEX-OK
 			switch(gHighResBinning)
 				case 1:
 					tmpReadNoiseLevel     = kReadNoiseLevel_bin1     // a constant value
@@ -2552,10 +2553,11 @@ Function V_AskForAbsoluteParams_Quest(variable isBack)
 		Print "empty counts = ", emptyCts
 		Print "empty err/counts = ", empty_ct_err / emptyCts
 
-		// if it's the back panel, find the read noise to subtract
+		// if it's the back panel AND CCD, find the read noise to subtract
 		// shift the marquee to the right to (hopefully) a blank spot
+		// skip this if using the Denex
 		variable noiseCts, noiseCtsErr, delta, nPixInBox
-		if(isBack)
+		if(isBack && isDenex("RAW",1) != 1)
 
 			//			delta = xyBoxW[1] - xyBoxW[0]
 			//			noiseCts = V_SumCountsInBox(xyBoxW[1],xyBoxW[1]+delta,xyBoxW[2],xyBoxW[3],noiseCtsErr,"RAW",detPanel_toSum)

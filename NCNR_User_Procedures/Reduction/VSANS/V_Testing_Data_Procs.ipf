@@ -196,13 +196,23 @@ Function V_WritePerfectSpatialCalib(string filename)
 	KillWaves tmpCalib
 
 	// and for the back detector "B"
-	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning		//DENEX-OK
 	variable tmpPix
-	if(gHighResBinning == 1)
-		tmpPix = 0.00845 //[cm]
+	//DENEX-TOFIX		need correct spatial resolution
+	// is the resolution in X and Y the same??
+
+	if(isDenex(filename,1))
+		tmpPix = 0.15			//WRONG 0.15 cm resolution
+		// is the resolution in X and Y the same??
 	else
-		//binning 4x4 assumed
-		tmpPix = 0.034
+			//assume CCD
+		if(gHighResBinning == 1)
+			tmpPix = 0.00845 //[cm]
+		else
+			//binning 4x4 assumed
+			tmpPix = 0.034
+		endif
 	endif
 
 	Make/O/D/N=3 tmpCalib
