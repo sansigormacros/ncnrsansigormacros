@@ -92,7 +92,9 @@ Proc Load_Nexus_V_Template()
 	RenameDataFolder $("root:" + base_name), V_Nexus_Template
 EndMacro
 
-Proc Fill_Nexus_V_Template()
+// only called from a commented out menu item
+//=likely garbage
+Proc Fill_Nexus_V_Template()		
 	H_Fill_VSANS_Template_wSim()
 EndMacro
 

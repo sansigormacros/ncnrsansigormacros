@@ -5,6 +5,11 @@
 #pragma IgorVersion=7.00
 
 //************************
+//
+// JAN 2026 -- started modification with switches to choose between CCD and Denex for back detector
+//
+
+
 
 //
 //*************************
@@ -296,7 +301,10 @@ Function V_ResetToSavedProtocol(string nameStr)
 	SVAR gEndPtsStr = root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
 	gEndPtsStr = w[8]
 
-	//9 = unused
+	//9 = collimation type for reduction
+	// [9]	used but written in at at time of reduction after collimation is identified
+	
+	
 	//10 = unused
 	//11 = unused
 
@@ -1045,6 +1053,8 @@ Window V_ProtocolPanel()
 		sc = 0.7
 	endif
 
+	Variable denex = isDenex("RAW",1)		// ==1 if Denex
+
 	PauseUpdate; Silent 1 // building window...
 	NewPanel/W=(1180 * sc, 332 * sc, 1530 * sc, 932 * sc)/K=1 as "VSANS Reduction Protocol"
 	ModifyPanel cbRGB=(56589, 50441, 50159) //, fixedSize=1
@@ -1082,7 +1092,10 @@ Window V_ProtocolPanel()
 	PopupMenu popup_HRN, pos={sc * 10, 48 * sc}, size={sc * 51, 23 * sc}, proc=V_HRNoiseFilePopMenuProc
 	PopupMenu popup_HRN, mode=1, value=#"V_getBGDList()"
 	PopupMenu popup_HRN, title="HR Read Noise"
-
+	if(denex)
+		PopupMenu popup_HRN, disable=1		//disable it for Denex
+	endif
+	
 	CheckBox prot_check, pos={sc * 6, 163 * sc}, size={sc * 74, 14 * sc}, title="Background"
 	CheckBox prot_check, help={"If checked, the specified background file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check, value=1
@@ -1130,7 +1143,10 @@ Window V_ProtocolPanel()
 	SetVariable HRNStr, pos={sc * 6, 72 * sc}, size={sc * 250, 15 * sc}, title="file:"
 	SetVariable HRNStr, help={"Filename of the high-resolution read noise file to be used in the data reduction"}
 	SetVariable HRNStr, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Protocols:gHRNoise
-
+	if(denex)
+		SetVariable HRNStr, disable=1z		//disable it for Denex
+	endif
+	
 	SetVariable samStr, pos={sc * 6, 130 * sc}, size={sc * 250, 15 * sc}, title="file:"
 	SetVariable samStr, help={"Filename of the sample file(s) to be used in the data reduction"}
 	SetVariable samStr, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Protocols:gSAM

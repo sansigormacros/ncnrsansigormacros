@@ -3,6 +3,16 @@
 #pragma rtGlobals=3 // Use modern global access method and strict wave access.
 #pragma IgorVersion=7.00
 
+//
+// JAN 2026
+// not sure how out of date this file is, or if it is used anywhere...
+// may be able to ignore this file...
+// (only one function in file, called from Fill_Nexus_V_Template, which is a commented out
+//  menu item - so this is likely garbage)
+//
+// whatever functionality this file had, has been superceded by something else better
+//
+
 ///
 // for the simulator, routines to be able to write out a proper Nexus file
 // based on a template
