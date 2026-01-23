@@ -199,7 +199,7 @@ Function V_WritePerfectSpatialCalib(string filename)
 	
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning		//DENEX-OK
 	variable tmpPix
-	//DENEX-TOFIX		need correct spatial resolution
+	//DENEX-TOFIX-WHEN-INSTALLED		need correct spatial resolution
 	// is the resolution in X and Y the same??
 
 	if(isDenex(filename,1))

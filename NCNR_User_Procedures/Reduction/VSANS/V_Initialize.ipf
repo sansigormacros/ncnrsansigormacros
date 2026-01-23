@@ -134,7 +134,7 @@ Constant kNum_y_HighRes_CCD = 1656
 
 //////// HIGH RESOLUTION (DENEX) DETECTOR  ///////////////
 
-// DENEX-TOFIX
+// DENEX-TOFIX-WHEN-INSTALLED
 Constant kNum_x_Denex = 512 // TODO -- as of April 2023, these values are not known
 Constant kNum_y_Denex = 512
 

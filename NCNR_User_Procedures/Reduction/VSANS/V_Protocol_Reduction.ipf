@@ -2536,7 +2536,7 @@ Function V_AskForAbsoluteParams_Quest(variable isBack)
 		//
 		// just do the median filter now, do the background subtraction later on the patch
 		// this is only done on the CCD data, not the Denex
-		if(isBack && isDenex("RAW",1) != 1)
+		if(isBack && !(isDenex("RAW",1)) )
 			WAVE w               = V_getDetectorDataW("RAW", "B")
 			NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning			//DENEX-OK
 			switch(gHighResBinning)
@@ -2573,7 +2573,7 @@ Function V_AskForAbsoluteParams_Quest(variable isBack)
 		// shift the marquee to the right to (hopefully) a blank spot
 		// skip this if using the Denex
 		variable noiseCts, noiseCtsErr, delta, nPixInBox
-		if(isBack && isDenex("RAW",1) != 1)
+		if(isBack && !(isDenex("RAW",1)) )
 
 			//			delta = xyBoxW[1] - xyBoxW[0]
 			//			noiseCts = V_SumCountsInBox(xyBoxW[1],xyBoxW[1]+delta,xyBoxW[2],xyBoxW[3],noiseCtsErr,"RAW",detPanel_toSum)

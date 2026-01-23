@@ -2744,7 +2744,7 @@ EndMacro
 // as of March 2023 - this procedure takes CCD HighRes data and "converts"
 // it to FAKE Denex data
 //
-// DENEX-TOFIX
+// DENEX-TOFIX-WHEN-INSTALLED
 Proc V_Patch_Back_Detector_Denex(lo, hi)
 	variable lo, hi
 
@@ -3078,7 +3078,7 @@ End
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
-// DENEX-TOFIX
+// DENEX-TOFIX-WHEN-INSTALLED
 Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 
 	//	Abort "this replaces the detector data. only for making fake data. modify function for patching"
@@ -3090,7 +3090,7 @@ Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 	variable pixNum_x, pixNum_y
 	variable fwhm_x, fwhm_y, dead_time
 
-// DENEX-TOFIX
+// DENEX-TOFIX-WHEN-INSTALLED
 	pixSize_x = 0.5 // [mm]
 	pixSize_y = 0.5 // [mm]
 	pixNum_x  = 512
@@ -3103,7 +3103,7 @@ Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 	detStr         = "B"
 	descriptionStr = "Denex"
 
-// DENEX-TOFIX
+// DENEX-TOFIX-WHEN-INSTALLED
 	Make/O/D/N=3 cal_x, cal_y
 	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
 	cal_x[1] = 1              // values to ensure linear behavior in calculation

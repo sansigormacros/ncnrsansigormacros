@@ -1666,7 +1666,7 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_x = 64
 	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_y = 55
 
-	//// BACK DETECTOR -- DENEX-TOFIX
+	//// BACK DETECTOR -- DENEX-TOFIX-WHEN-INSTALLED
 	variable/G gBack_w = 22.2 //w and h for the back detector [cm]
 	variable/G gBack_h = 50.4
 
@@ -1699,7 +1699,8 @@ Proc VC_Initialize_Space()
 
 		// HARD WIRED DENEX VAULES (that are WRONG)
 		// as of APRIL 2023
-		// DENEX-TOFIX
+		// DENEX-TOFIX-WHEN-INSTALLED
+		// 
 		//
 		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.15 // 1.5 mm resolution (units of [cm] here)
 		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.15

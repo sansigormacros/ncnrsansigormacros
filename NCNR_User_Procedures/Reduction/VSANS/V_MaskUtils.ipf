@@ -878,10 +878,10 @@ Proc H_Setup_VSANS_MASK_Structure()
 
 // DENEX-TOFIX-DONE
 		if(isDenex)
-			variable nx = V_getDet_pixel_num_x("RAW", "B")
-			variable ny = V_getDet_pixel_num_y("RAW", "B")
+			//variable nx = V_getDet_pixel_num_x("RAW", "B")
+			//variable ny = V_getDet_pixel_num_y("RAW", "B")
 
-			Make/O/I/N=(nx, ny) data = 0
+			Make/O/I/N=(kNum_x_Denex, kNum_y_Denex) data = 0
 
 			data[][0, 10]           = 1
 			data[][ny - 11, ny - 1] = 1
@@ -1243,12 +1243,16 @@ Proc V_Display_Det_Panels()
 	//MSK will exist (at least a default based on RAW dimensions)
 	//	Variable nx = V_getDet_pixel_num_x("MSK","B")		//this fails, since these fields are not in MSK data
 	//	Variable ny = V_getDet_pixel_num_y("MSK","B")
-	variable nx = V_getDet_pixel_num_x("RAW", "B") // call RAW, since I already trust it's there
-	variable ny = V_getDet_pixel_num_y("RAW", "B")
+//	variable nx = V_getDet_pixel_num_x("RAW", "B") // call RAW, since I already trust it's there
+//	variable ny = V_getDet_pixel_num_y("RAW", "B")
 
-	Make/O/B/N=(nx, ny) tmpB
-	//	Make/O/B/N=(kNum_x_HighRes_CCD,kNum_y_HighRes_CCD) tmpB
-
+// dimensions of the back detector based on type
+	if (isDenex("RAW",1) )
+		Make/O/B/N=(kNum_x_Denex, kNum_y_Denex) tmpB
+	else
+		Make/O/B/N=(kNum_x_HighRes_CCD,kNum_y_HighRes_CCD) tmpB
+	endif
+	
 	tmpLR = 1
 	tmpTB = 1
 	tmpB  = 1

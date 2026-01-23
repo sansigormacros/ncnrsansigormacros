@@ -20,7 +20,7 @@
 //
 // NOTE - this is a VCALC only routine, so it's not been made completely generic
 //
-// DENEX-TOFIX
+// DENEX-TOFIX-OK
 Function FillPanel_wModelData(WAVE det, WAVE qTot, string type)
 
 	//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
@@ -1081,7 +1081,7 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	//
 	// - the needs for the back detector keep shrinkng as the CCDs die...
 	//
-	//  DENEX-TOFIX   is nq large enough (or too large) for the # of points generated
+	//  DENEX-TOFIX-WHEN-INSTALLED   is nq large enough (or too large) for the # of points generated
 	//
 
 	if(cmpstr(type, "B") == 0)
