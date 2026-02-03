@@ -1608,13 +1608,20 @@ End
 //	endif
 //End
 
+//
+// DENEX-TOFIX
+// -- need to be sure that detStr="B" returning:
+//  "  The specified wave does not exist: entry:instrument:detector_B:event_file_name"
+// will not be a problem for the file loader, if the wave/file name does not exist
+//
 Function/S V_getDetEventFileName(string fname, string detStr)
 
 	string   path = "entry:instrument:detector_" + detStr + ":event_file_name"
 	variable num  = 60
-	if(cmpstr(detStr, "B") == 0) //return null string for B
-		return ("")
-	endif
+	// this was previously un-commented since the CCD detector did not have event mode data, Denex will
+//	if(cmpstr(detStr, "B") == 0) //return null string for B
+//		return ("")
+//	endif
 	return (V_getStringFromHDF5(fname, path, num))
 End
 

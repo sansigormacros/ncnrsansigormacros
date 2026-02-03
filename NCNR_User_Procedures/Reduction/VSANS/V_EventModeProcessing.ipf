@@ -1499,7 +1499,7 @@ Function V_LoadEvents()
 	// - Use GBLoadWave to read the 64-bit events in
 
 	/// globals to report the header back for use or status
-	SVAR gVSANSStr = root:Packages:NIST:VSANS:Event:gVsansStr
+	SVAR gVSANSStr = root:Packages:NIST:VSANS:Event:gVSANSStr
 	NVAR gRevision = root:Packages:NIST:VSANS:Event:gRevision
 	NVAR gOffset   = root:Packages:NIST:VSANS:Event:gOffset // = 22 bytes if no disabled tubes
 	NVAR gTime1    = root:Packages:NIST:VSANS:Event:gTime1
