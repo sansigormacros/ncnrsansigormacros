@@ -1400,7 +1400,7 @@ Function V_MakeFakeEventWave(variable num)
 
 	//	num = 1e3
 
-	//	// /l=64 bit, /U=unsigned
+	//	// /L = 64 bit, /U=unsigned
 	Make/O/L/U/N=(num) eventWave
 	eventWave = 0
 

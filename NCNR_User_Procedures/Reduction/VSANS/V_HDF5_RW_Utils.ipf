@@ -127,14 +127,14 @@ Function V_LoadHDF5Data(string file, string folder)
 		// check for the data wave directly in the file. The data wave in the RAW data folder
 		// may exist if the data display is open and folder is simply overwritten
 		WAVE/Z testB = V_getDetectorDataW(file, "B")
-		if(WaveExists(testB) == 0) // null wave reference
+		if(WaveExists(testB) == 0) // null wave reference, need to make fake data
 
 // DENEX-TOFIX-DONE
 			variable nx, ny, ctrX, ctrY
 
 			// since det_B does not exist... test for Denex will always FAIL
 			// I need a different way to do this..
-			if( isDenex("RAW",1) )
+			if( isDenex("RAW",2) )			//use method 2 based on time, since det_B is not there
 				nx      = kNum_x_Denex
 				ny      = kNum_y_Denex
 				ctrX    = trunc(kNum_x_Denex/2)

@@ -584,6 +584,10 @@ End
 //
 // saves comparison steps when simply verifying if data is Denex or not
 //
+// use one of two methods:
+// 1 = directly check the detector description
+// 2 = use the method based on comparison to the arbitrary time of > 1/1/2025
+//
 Function isDenex(string fname, variable method)
 
 	String backDetType = V_IdentifyBackDetectorType(fname, method)

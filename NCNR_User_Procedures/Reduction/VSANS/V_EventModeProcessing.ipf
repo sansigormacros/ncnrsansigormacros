@@ -302,9 +302,11 @@ Proc VSANS_EventModePanel()
 
 	CheckBox chkbox1_4, pos={sc * 30, 125 * sc}, size={sc * 37, 14 * sc}, title="F", fSize=10 * sc
 	CheckBox chkbox1_4, proc=V_EventCarrRadioProc, value=1, mode=1
-	CheckBox chkbox1_5, pos={sc * 90, 125 * sc}, size={sc * 37, 14 * sc}, title="M", fSize=10 * sc
+	CheckBox chkbox1_5, pos={sc * 80, 125 * sc}, size={sc * 37, 14 * sc}, title="M", fSize=10 * sc
 	CheckBox chkbox1_5, proc=V_EventCarrRadioProc, value=0, mode=1
-
+	CheckBox chkbox1_6, pos={sc * 130, 125 * sc}, size={sc * 37, 14 * sc}, title="B", fSize=10 * sc	
+	CheckBox chkbox1_6, proc=V_EventCarrRadioProc, value=0, mode=1
+	
 	GroupBox group0_0, pos={sc * 5, 5 * sc}, size={sc * 174, 140 * sc}, title="(1) Loading Mode", fSize=12 * sc, fStyle=1
 	GroupBox group0_3, pos={sc * 191, 5 * sc}, size={sc * 165, 130 * sc}, title="(2) Edit Events", fSize=12 * sc, fStyle=1
 	GroupBox group0_1, pos={sc * 372, 5 * sc}, size={sc * 350, 130 * sc}, title="(3) Bin Events", fSize=12 * sc, fStyle=1
@@ -486,17 +488,25 @@ Function V_EventModeRadioProc(string name, variable value)
 	return (0)
 End
 
+// added button for Denex, now has event mode 
 Function V_EventCarrRadioProc(string name, variable value)
 
 	strswitch(name)
 		case "chkbox1_4":
 			CheckBox chkbox1_4, value=1
 			CheckBox chkbox1_5, value=0
+			CheckBox chkbox1_6, value=0
 			break
 		case "chkbox1_5":
 			CheckBox chkbox1_4, value=0
 			CheckBox chkbox1_5, value=1
+			CheckBox chkbox1_6, value=0
 			break
+		case "chkbox1_6":
+			CheckBox chkbox1_4, value=0
+			CheckBox chkbox1_5, value=0
+			CheckBox chkbox1_6, value=1
+			break	
 		default:
 			// no default action
 			break
@@ -1095,7 +1105,8 @@ End
 //
 // -- The "file too large" check has currently been set to 1.5 GB
 //
-//
+// DENEX-TO-FIX  start here, lots to fix to accommodate back detector
+// 
 Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 
 	NVAR     mode = root:Packages:NIST:VSANS:Event:gEvent_mode
@@ -1177,6 +1188,9 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	variable t1 = ticks
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
+	// if not loading from raw, still need to know which panel - now that Denex added
+	// DENEX-TOFIX - changes how data is loaded and processed!
+	
 	// load in the event file and decode it
 
 	//	V_readFakeEventFile(fileName)
@@ -1485,7 +1499,7 @@ Function V_LoadEvents()
 	// - Use GBLoadWave to read the 64-bit events in
 
 	/// globals to report the header back for use or status
-	SVAR gVSANSStr = root:Packages:NIST:VSANS:Event:gVsansStr
+	SVAR gVSANSStr = root:Packages:NIST:VSANS:Event:gVSANSStr
 	NVAR gRevision = root:Packages:NIST:VSANS:Event:gRevision
 	NVAR gOffset   = root:Packages:NIST:VSANS:Event:gOffset // = 22 bytes if no disabled tubes
 	NVAR gTime1    = root:Packages:NIST:VSANS:Event:gTime1

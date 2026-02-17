@@ -973,7 +973,7 @@ End
 //
 // -- MAR 2023 -- this should be fine for the Denex detector which is a grid like the
 //                previous highRes detector, and uses the cos^3 calculation
-// DENEX-TOFIX
+// DENEX-TOFIX-WHEN-INSTALLED
 //
 Function V_SolidAngleCorrection(WAVE w, WAVE w_err, string fname, string detStr, string destPath)
 
