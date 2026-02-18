@@ -1444,7 +1444,7 @@ Function SetLinearBins(WAVE binEndTime, WAVE timeWidth, variable nslices, variab
 		t2                 = (ii + 1) * del
 		binEndTime[ii + 1] = t2
 	endfor
-	binEndTime[ii + 1] = t_longest * (1 - 1e-6) //otherwise floating point errors such that the last time point is off the end of the Binary search
+	binEndTime[ii] = t_longest * (1 - 1e-6) //otherwise floating point errors such that the last time point is off the end of the Binary search
 
 	timeWidth = binEndTime[p + 1] - binEndTime[p]
 
@@ -1468,7 +1468,7 @@ Function SetLogBins(WAVE binEndTime, WAVE timeWidth, variable nslices, variable 
 	for(ii = 0; ii < nslices; ii += 1)
 		binEndTime[ii + 1] = alog(log(tMin) + (ii + 1) * ((log(t_longest) - log(tMin)) / nslices))
 	endfor
-	binEndTime[ii + 1] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
+	binEndTime[ii] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
 
 	timeWidth = binEndTime[p + 1] - binEndTime[p]
 
@@ -1509,7 +1509,7 @@ Function SetFibonacciBins(WAVE binEndTime, WAVE timeWidth, variable nslices, var
 		t2                 = sum(fibo, 0, ii) / total * t_longest
 		binEndTime[ii + 1] = t2
 	endfor
-	binEndTime[ii + 1] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
+	binEndTime[ii] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
 
 	timeWidth = binEndTime[p + 1] - binEndTime[p]
 

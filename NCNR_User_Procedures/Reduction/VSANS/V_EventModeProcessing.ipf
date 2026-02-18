@@ -109,7 +109,7 @@
 //
 
 //
-// x- these dimensions are hard-wired
+// x- these dimensions are hard-wired for the Front and Middle carriages
 //
 // XBINS is for an individual panel
 // NTUBES is the total number of tubes = (4)(48)=192
@@ -117,6 +117,10 @@
 Constant XBINS  = 48
 Constant NTUBES = 192
 Constant YBINS  = 128
+
+// for the Back (Denex) use the x and y pixel dimensions as defined in Initialize.ipf:
+//Constant kNum_x_Denex = 512 // TODO -- as of April 2023, these values are not known
+//Constant kNum_y_Denex = 512
 
 static Constant MODE_STREAM = 0
 static Constant MODE_OSCILL = 1
@@ -200,6 +204,8 @@ Function V_Init_Event()
 	// for editing (unused)
 	variable/G root:Packages:NIST:VSANS:Event:gStepTolerance = 5 // 5 = # of standard deviations from mean. See PutCursorsAtStep()
 
+	// for keeping track of which carriage is being loaded, set by the radio buttons
+	string/G root:Packages:NIST:VSANS:Event:gEventCarriage = "F"		//initial position of button is on "F"
 	SetDataFolder root:
 End
 
@@ -361,13 +367,13 @@ Function V_CopySlicesForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
-			string detStr = ""
-			ControlInfo chkbox1_4
-			if(V_value == 1)
-				detStr = "F"
-			else
-				detStr = "M"
-			endif
+			SVAR detStr = root:Packages:NIST:VSANS:Event:gEventCarriage
+//			ControlInfo chkbox1_4
+//			if(V_value == 1)
+//				detStr = "F"
+//			else
+//				detStr = "M"
+//			endif
 			//
 			V_SplitBinnedToPanels()
 			//
@@ -491,21 +497,26 @@ End
 // added button for Denex, now has event mode 
 Function V_EventCarrRadioProc(string name, variable value)
 
+	SVAR carriage = root:Packages:NIST:VSANS:Event:gEventCarriage 
+	
 	strswitch(name)
-		case "chkbox1_4":
+		case "chkbox1_4":			// "F"
 			CheckBox chkbox1_4, value=1
 			CheckBox chkbox1_5, value=0
 			CheckBox chkbox1_6, value=0
+			carriage = "F"
 			break
-		case "chkbox1_5":
+		case "chkbox1_5":			// "M"
 			CheckBox chkbox1_4, value=0
 			CheckBox chkbox1_5, value=1
 			CheckBox chkbox1_6, value=0
+			carriage = "M"
 			break
-		case "chkbox1_6":
+		case "chkbox1_6":			// "B"
 			CheckBox chkbox1_4, value=0
 			CheckBox chkbox1_5, value=0
 			CheckBox chkbox1_6, value=1
+			carriage = "B"
 			break	
 		default:
 			// no default action
@@ -914,9 +925,10 @@ Function V_Stream_ProcessEventLog(string ctrlName)
 
 	//
 	// for VSANS, the stream data shows time reversal due to the communication
-	// cycling between the 4 panels (I think), so sort the data to remove this.
+	// cycling between the 4 panels, so sort the data to remove this.
 	// unfortunately, this removes any chance of seeing other time errors.
-	// fortunately, no time encoding errors have been seen with the tubes.
+	// fortunately, no time encoding errors have been seen with the tubes, and the
+	// time reversal errors > 16 ms are removed in a previous step (16 ms per Phil)
 	//
 	// -- still, sorting is not routinely done (there is no need)
 	//
@@ -1030,7 +1042,7 @@ Function V_SetLinearBins(WAVE binEndTime, WAVE timeWidth, variable nslices, vari
 		t2                 = (ii + 1) * del
 		binEndTime[ii + 1] = t2
 	endfor
-	binEndTime[ii + 1] = t_longest * (1 - 1e-6) //otherwise floating point errors such that the last time point is off the end of the Binary search
+	binEndTime[ii] = t_longest * (1 - 1e-6) //otherwise floating point errors such that the last time point is off the end of the Binary search
 
 	timeWidth = binEndTime[p + 1] - binEndTime[p]
 
@@ -1054,7 +1066,7 @@ Function V_SetLogBins(WAVE binEndTime, WAVE timeWidth, variable nslices, variabl
 	for(ii = 0; ii < nslices; ii += 1)
 		binEndTime[ii + 1] = alog(log(tMin) + (ii + 1) * ((log(t_longest) - log(tMin)) / nslices))
 	endfor
-	binEndTime[ii + 1] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
+	binEndTime[ii] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
 
 	timeWidth = binEndTime[p + 1] - binEndTime[p]
 
@@ -1095,7 +1107,7 @@ Function V_SetFibonacciBins(WAVE binEndTime, WAVE timeWidth, variable nslices, v
 		t2                 = sum(fibo, 0, ii) / total * t_longest
 		binEndTime[ii + 1] = t2
 	endfor
-	binEndTime[ii + 1] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
+	binEndTime[ii] = t_longest //otherwise floating point errors such that the last time point is off the end of the Binary search
 
 	timeWidth = binEndTime[p + 1] - binEndTime[p]
 
@@ -1130,15 +1142,10 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	// load from raw?
 	// if so, which carriage?
 	string loadFromRAW = "No"
-	string detStr
+	SVAR detStr = root:Packages:NIST:VSANS:Event:gEventCarriage		//1-char string of carriage
+	
 	if(cmpstr(ctrlName, "button23") == 0)
 		loadFromRAW = "Yes"
-		ControlInfo chkbox1_4
-		if(V_value == 1)
-			detStr = "F"
-		else
-			detStr = "M"
-		endif
 	endif
 
 	//	Prompt loadFromRAW,"Load from RAW?",popup,"Yes;No;"
@@ -1210,8 +1217,8 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 
 	WAVE eventTime = eventTime
 	WAVE tube = tube
-	WAVE xLoc = xLoc
-	WAVE yLoc = yLoc
+	WAVE/Z xLoc = xLoc
+	WAVE/Z yLoc = yLoc
 	WAVE location = location
 		
 	KillWaves/Z timePt, xLoc, yLoc
@@ -3050,16 +3057,17 @@ Function V_MakeEventFileTable()
 
 	rawList = V_GetRawDataFileList()
 	num     = itemsinlist(rawList)
-	Make/O/T/N=(num) RawFiles, Event_Front, Event_Middle
+	Make/O/T/N=(num) RawFiles, Event_Front, Event_Middle, Event_Back
 	for(ii = 0; ii < num; ii += 1)
 		item = StringFromList(ii, rawList)
 
 		RawFiles[ii]     = item
 		Event_Front[ii]  = V_getDetEventFileName(item, "FL")
 		Event_Middle[ii] = V_getDetEventFileName(item, "ML")
+		Event_Back[ii] = V_getDetEventFileName(item, "B")
 	endfor
 
-	Edit RawFiles, Event_Front, Event_Middle
+	Edit RawFiles, Event_Front, Event_Middle, Event_Back
 
 	return (0)
 End

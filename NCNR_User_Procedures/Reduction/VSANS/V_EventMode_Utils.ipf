@@ -376,6 +376,9 @@ Function V_DuplicateRAWForExport()
 	return (0)
 End
 
+//
+// the bin timing waves overwrite each time a carriage is copied, so the timing had better be the same...
+//
 Function V_CopySlicesForExport(string detStr)
 
 	if(cmpstr(detStr, "M") == 0)
@@ -387,8 +390,10 @@ Function V_CopySlicesForExport(string detStr)
 		Duplicate/O root:Packages:NIST:VSANS:Event:binEndTime, root:export:entry:reduction:binEndTime_M
 		Duplicate/O root:Packages:NIST:VSANS:Event:timeWidth, root:export:entry:reduction:timeWidth_M
 		Duplicate/O root:Packages:NIST:VSANS:Event:binCount, root:export:entry:reduction:binCount_M
+	endif
+	
 
-	else
+	if(cmpstr(detStr, "F") == 0)
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_B, root:export:entry:instrument:detector_FB:slices
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_T, root:export:entry:instrument:detector_FT:slices
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_L, root:export:entry:instrument:detector_FL:slices
@@ -397,9 +402,16 @@ Function V_CopySlicesForExport(string detStr)
 		Duplicate/O root:Packages:NIST:VSANS:Event:binEndTime, root:export:entry:reduction:binEndTime_F
 		Duplicate/O root:Packages:NIST:VSANS:Event:timeWidth, root:export:entry:reduction:timeWidth_F
 		Duplicate/O root:Packages:NIST:VSANS:Event:binCount, root:export:entry:reduction:binCount_F
-
 	endif
 
+	if(cmpstr(detStr, "B") == 0)
+		Duplicate/O root:Packages:NIST:VSANS:Event:slices_B, root:export:entry:instrument:detector_B:slices
+
+		Duplicate/O root:Packages:NIST:VSANS:Event:binEndTime, root:export:entry:reduction:binEndTime_B
+		Duplicate/O root:Packages:NIST:VSANS:Event:timeWidth, root:export:entry:reduction:timeWidth_B
+		Duplicate/O root:Packages:NIST:VSANS:Event:binCount, root:export:entry:reduction:binCount_B
+	endif
+	
 	return (0)
 End
 
@@ -1437,6 +1449,59 @@ Function V_MakeFakeEventWave(variable num)
 End
 
 //
+// DENEX-TOFIX
+//
+// using a fake Nx and Ny dimension, constants defined in V_Initialize.ipf
+// kNum_x_Denex, kNum_y_Denex
+//
+// -assuming that the xPos is first, then the yPos, then the time
+//
+//
+Function V_MakeFakeEventWave_Denex(variable num)
+
+	variable ii
+
+	//	num = 1e3
+
+	//	// /L = 64 bit, /U=unsigned
+	Make/O/L/U/N=(num) eventWave
+	eventWave = 0
+
+	// for each 64-bit value:
+	// byte 1: xPos index [0,kNum_x_Denex-1]
+	// byte 2: yPos index [0,kNum_y_Denex-1]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+
+	uint64 i64_num, b1, b2
+	uint64 i64_ticks, i64_start
+
+	i64_start = ticks
+	for(ii = 0; ii < num; ii += 1)
+		//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
+
+		b1 = trunc(abs(enoise(kNum_x_Denex)))		//since truncated, need 192 as highest random to give 191 after trunc
+		//b1 = trunc(mod(ii, kNum_x_Denex))
+
+		b2 = trunc(abs(enoise(kNum_y_Denex))) // same here, to get results [0,127]
+
+		//		i64_ticks = ticks-i64_start
+		i64_ticks = ii + 1
+
+		// don't shift b1
+		b2        = b2 << 8
+		i64_ticks = i64_ticks << 16
+
+		i64_num = b1 + b2 + i64_ticks
+
+		eventWave[ii] = i64_num
+	endfor
+
+	return (0)
+End
+
+
+
+//
 // TODO:
 // -- can this be multithreaded (eliminating the loop)?
 //
@@ -2064,6 +2129,10 @@ End
 //	(2 b)  d2 05: HV Value  (0x05d2 = 1490)
 //	(4 b)  80 96 98 00: timestamp clock frequency (0x989680 = 10000000)
 
+//
+// reads and prints out the header in readable format
+// ** also prints out all of the header read as bytes **
+//
 Function V_ReadEventHeader()
 
 	string gVSANSStr = ""
