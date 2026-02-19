@@ -135,8 +135,8 @@ Constant kNum_y_HighRes_CCD = 1656
 //////// HIGH RESOLUTION (DENEX) DETECTOR  ///////////////
 
 // DENEX-TOFIX-WHEN-INSTALLED
-Constant kNum_x_Denex = 512 // TODO -- as of April 2023, these values are not known
-Constant kNum_y_Denex = 512
+Constant kNum_x_Denex = 100 	// TODO -- as of Feb 2026, these values are not exactly known
+Constant kNum_y_Denex = 100		// 100x100 is Phil's current numbers, before real neutron operation
 
 
 ////////////////////////
@@ -499,7 +499,10 @@ End
 
 // Clean out the RawVSANS folder before saving
 //
-// Also, ask if the user wants to delete the event data (to save space and speed)
+// Also, ask if the user wants to delete the event data (to save space and mostly, for SPEED in saving the file
+//   which can take minutes if large event files are present)
+//
+// could replace this with IgorBeforeNewHook(), but that would not solve the speed issue
 //
 Function BeforeExperimentSaveHook(variable rN, string fileName, string path, string type, string creator, variable kind)
 

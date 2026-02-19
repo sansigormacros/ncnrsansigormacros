@@ -1085,7 +1085,7 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	//
 
 	if(cmpstr(type, "B") == 0)
-		nq = 8000
+		nq = 800
 	else
 		nq = 600
 	endif

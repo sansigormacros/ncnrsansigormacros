@@ -869,18 +869,21 @@ Proc H_Setup_VSANS_MASK_Structure()
 	// DENEX-TOFIX-DONE
 		// binning will always be 4, even if Denex, so it will drop here
 		variable isDenex = 0
-		if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW")) == 0)
+		if(cmpstr("Denex", V_IdentifyBackDetectorType("RAW",1)) == 0)
 			isDenex = 1
 		endif
 
 		// fill the same description string in the MSK file so that the (B) panel will display correctly
-		string detType = V_IdentifyBackDetectorType("RAW")
+		string detType = V_IdentifyBackDetectorType("RAW",1)
 
 // DENEX-TOFIX-DONE
 		if(isDenex)
 			//variable nx = V_getDet_pixel_num_x("RAW", "B")
 			//variable ny = V_getDet_pixel_num_y("RAW", "B")
 
+			variable nx = kNum_x_Denex
+			variable ny = kNum_y_Denex
+			
 			Make/O/I/N=(kNum_x_Denex, kNum_y_Denex) data = 0
 
 			data[][0, 10]           = 1

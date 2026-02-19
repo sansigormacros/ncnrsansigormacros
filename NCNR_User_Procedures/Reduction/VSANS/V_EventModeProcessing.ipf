@@ -119,8 +119,8 @@ Constant NTUBES = 192
 Constant YBINS  = 128
 
 // for the Back (Denex) use the x and y pixel dimensions as defined in Initialize.ipf:
-//Constant kNum_x_Denex = 512 // TODO -- as of April 2023, these values are not known
-//Constant kNum_y_Denex = 512
+//Constant kNum_x_Denex = xx
+//Constant kNum_y_Denex = xx
 
 static Constant MODE_STREAM = 0
 static Constant MODE_OSCILL = 1
@@ -364,6 +364,8 @@ End
 //
 Function V_CopySlicesForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+
 	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
@@ -375,7 +377,9 @@ Function V_CopySlicesForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 //				detStr = "M"
 //			endif
 			//
-			V_SplitBinnedToPanels()
+			if(!gEventCarriage_is_B)			// don't try to split back carriage data
+				V_SplitBinnedToPanels()
+			endif
 			//
 			V_CopySlicesForExport(detStr)
 			//
@@ -440,11 +444,14 @@ End
 //
 Function V_GraphPanels_Button(STRUCT WMButtonAction &ba) : ButtonControl
 
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+	
 	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
+						
 			DoWindow/F VSANS_EventPanels
-			if(V_flag == 0)
+			if(V_flag == 0 && !gEventCarriage_is_B)		// won't try to draw back panel
 				Execute "VSANS_EventPanels()"
 			endif
 			//
@@ -1143,22 +1150,31 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	// if so, which carriage?
 	string loadFromRAW = "No"
 	SVAR detStr = root:Packages:NIST:VSANS:Event:gEventCarriage		//1-char string of carriage
+
+// set global here that I can use for processing of this file
+// global will change if new file is loaded
+// can't use identification  functions for raw data, since this is event data for a particular carriage
+	if(cmpstr(detStr,"B") == 0)
+		Variable/G root:Packages:NIST:VSANS:Event:gEventCarriage_is_B = 1
+	else
+		Variable/G root:Packages:NIST:VSANS:Event:gEventCarriage_is_B = 0
+	endif
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+
 	
 	if(cmpstr(ctrlName, "button23") == 0)
 		loadFromRAW = "Yes"
 	endif
 
-	//	Prompt loadFromRAW,"Load from RAW?",popup,"Yes;No;"
-	//	Prompt detStr,"Carriage",popup,"M;F;"
-	//	DoPrompt "Load data from...",loadFromRAW,detStr
 
-	//	if(V_flag)		//user cancel
-	//		return(0)
-	//	endif
 
 	if(cmpstr(loadFromRAW, "Yes") == 0)
 		PathInfo catPathName
-		filename = S_Path + V_getDetEventFileName("RAW", detStr + "L")
+		if(gEventCarriage_is_B)
+			filename = S_Path + V_getDetEventFileName("RAW", detStr)
+		else
+			filename = S_Path + V_getDetEventFileName("RAW", detStr + "L")
+		endif
 
 		// check here to see if the file can be found. if not report the error and exit
 		Open/R/Z=1 fileref as fileName
@@ -1177,6 +1193,7 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 			return (1)
 		endif
 	endif
+	
 	//  keep this	, but set to 1.5 GB
 	// since I'm now in 64-bit space
 	/// Abort if the files are too large
@@ -1197,15 +1214,19 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 
 	// if not loading from raw, still need to know which panel - now that Denex added
 	// DENEX-TOFIX - changes how data is loaded and processed!
+	// LoadEvents is generic for reading and decoding the event file. for Denex:
+	// location = xPos
+	// tube = yPos
+	// eventTime = as normal
 	
 	// load in the event file and decode it
 
 	//	V_readFakeEventFile(fileName)
-	V_LoadEvents() // this now loads, decodes, and returns location, tube, and timePt
-	SetDataFolder root:Packages:NIST:VSANS:Event: //GBLoadWave in V_LoadEvents sets back to root:
+	V_LoadEvents() // this now loads, decodes, and returns location, tube, and eventTime
+	SetDataFolder root:Packages:NIST:VSANS:Event: //get in the correct folder--GBLoadWave in V_LoadEvents sets back to root:
 
 	// Now, I have tube, location, and timePt (no units yet)
-	// assign to the proper panels
+	// assign to the proper panels or positions
 
 	//
 	// x- (YES - this is MUCH faster)  if I do the JointHistogram first, then break out the blocks of the
@@ -1217,11 +1238,9 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 
 	WAVE eventTime = eventTime
 	WAVE tube = tube
-	WAVE/Z xLoc = xLoc
-	WAVE/Z yLoc = yLoc
 	WAVE location = location
 		
-	KillWaves/Z timePt, xLoc, yLoc
+	KillWaves/Z timePt, xLoc, yLoc		//cleanup, just in case
 	
 	Duplicate/O eventTime, timePt
 
@@ -1237,7 +1256,8 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	Redimension/D xLoc, yLoc, timePt
 
 	//v_tic()
-	//	V_SortAndSplitEvents()
+	// this is not used any more-- split into panels is done last, as needed, with faster methods
+	//	V_SortAndSplitEvents() 
 	//
 	//Printf "File sort and split time (s) = "
 	//v_toc()
@@ -1256,7 +1276,7 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	WAVE timePt = timePt
 	WAVE xLoc   = xLoc
 	WAVE yLoc   = yLoc
-	V_CleanupTimes(xLoc, yLoc, timePt) //remove zeroes
+	V_CleanupTimes(xLoc, yLoc, timePt) //removes bad data where x == y == time == 0
 
 	NVAR gResol = root:Packages:NIST:VSANS:Event:gResol //timeStep in clock frequency (Hz)
 	Printf "Time Step = 1/Frequency (ns) = %g\r", (1 / gResol) * 1e9
@@ -1316,6 +1336,13 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	// and any "bad" time steps are OK, just buffering
 	//
 	NVAR removeBadEvents = root:Packages:NIST:VSANS:Event:gRemoveBadEvents
+
+
+
+
+// for Denex, don't need to clean 4x, just once
+// V_EC_CleanAllPanels is now aware that the data is from the back detector
+
 
 	v_tic()
 	if(RemoveBadEvents)
@@ -1837,6 +1864,7 @@ End
 // -- this is ALL geared towards ordela event mode data and the 6.7s errors, and bad signal
 //   I don't know if I'll need any of this for the VSANS event data.
 //
+// All (most) of the associated functions are named "V_EC_" for "EventCorrection"
 //
 Proc V_ShowEventCorrectionPanel()
 	DoWindow/F V_EventCorrectionPanel
@@ -2291,8 +2319,8 @@ End
 //
 // Cleans all of the "bad" > 16 ms points from each panel
 //
-// then follow this call with a sort All, since the remaining steps are
-// simply a consequence of buffering
+// then follow this call with a sort All, since the remaining "steps" are
+// simply a consequence of buffering where data from different panels shows up in chunks
 //
 Function V_EC_CleanAllPanels()
 
@@ -2308,12 +2336,22 @@ Function V_EC_CleanAllPanels()
 	WAVE   tube             = tube
 	variable ii, num, pt, step16, jj
 
+
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+
+
 	for(jj = 1; jj <= 4; jj += 1)
 
 		// no need to run V_KeepOneGroup() - this is done in V_Differentiate_onePanel
 		// to be sure that the grouping has been immediately done.
 
-		V_Differentiate_onePanel(jj, -1) // do the whole data set
+// if back panel, bump jj up to exit after one pass, and be sure V_Differentiate_onePanel()
+// correctly handles the case of back event data
+		if(gEventCarriage_is_B)
+			jj = 10
+		endif
+		
+		V_Differentiate_onePanel(jj, -1) // do the whole data set, V_KeepOneGroup() will peel off each panel
 		// generates the wave onePanel_DIF and badPoints
 
 		WAVE bad = root:Packages:NIST:VSANS:Event:badPoints // these are the "time reversal" points

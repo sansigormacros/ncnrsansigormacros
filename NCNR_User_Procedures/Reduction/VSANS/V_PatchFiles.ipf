@@ -3093,8 +3093,8 @@ Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 // DENEX-TOFIX-WHEN-INSTALLED
 	pixSize_x = 0.5 // [mm]
 	pixSize_y = 0.5 // [mm]
-	pixNum_x  = 512
-	pixNum_y  = 512
+	pixNum_x  = kNum_x_Denex
+	pixNum_y  = kNum_y_Denex
 
 	fwhm_x    = 0.05  // [cm]
 	fwhm_y    = 0.05  // [cm]
@@ -3113,7 +3113,7 @@ Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 	cal_y[2] = 10000
 
 	//////////////
-	//	Make/O/I/N=(kNum_x_Denex,kNum_y_Denex) tmpData=1
+		Make/O/I/N=(kNum_x_Denex,kNum_y_Denex) tmpData=1
 	//////////////
 
 	//loop over all files
@@ -3149,13 +3149,23 @@ Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 			///////////////
 			//		// fake data by taking the real CCD data and trimming the center 512x512 out of it
 			//			Wave data = V_getDetectorDataW(fname,detStr)
-			//			tmpData[][] = data[p+100][q+520]
+			//			tmpData[][] = data[p+100][q+520]			//if 512x512 desired
+			//			tmpData[][] = data[p+306][q+526]			//if 100x100
 			//			V_writeDetectorData(fname,detStr,tmpData)
 
 			// update the integrated count on the "detector"
 			//			V_writeDet_IntegratedCount(fname,detStr,sum(tmpData))
 			///////////////
 
+//			//		// fake data by taking the center 100x100 out of the previous 512x512
+//						Wave data = V_getDetectorDataW(fname,detStr)
+//						tmpData[][] = data[p+206][q+206]
+//						V_writeDetectorData(fname,detStr,tmpData)
+//
+//			// update the integrated count on the "detector"
+//						V_writeDet_IntegratedCount(fname,detStr,sum(tmpData))
+//			///////////////
+			
 			// write the detector description as "Denex" so it can be identified
 			V_writeDetDescription(fname, detStr, descriptionStr)
 

@@ -49,6 +49,8 @@
 // -- do I want to do the time binning first?
 // -- does it really matter?
 //
+// this is not used any more-- split into panels is done last as needed, with faster methods
+//
 Function V_SortAndSplitEvents()
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
@@ -230,6 +232,12 @@ End
 //
 //
 Function V_SplitBinnedToPanels()
+
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+	if(gEventCarriage_is_B)
+		DoAlert 0,"Event data is from back carriage and can't be split into panels"
+		return(0)
+	endif
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 	WAVE slicedData = slicedData //this is 3D
@@ -1959,9 +1967,17 @@ EndMacro
 //
 // panelVal = 1,2,3,4
 // numPt = number of points to duplicate
+//
+// if data is from the back panel, "panelVal" passed in is bogus (probably some number > 4)
+// - be sure to skip over steps that are not needed for the back detector
+//
+//
 Function V_Differentiate_onePanel(variable panelVal, variable numPt)
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
+	
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+	
 	WAVE tube         = tube
 	WAVE rescaledTime = rescaledTime
 	if(numPt == -1)
@@ -1975,40 +1991,50 @@ Function V_Differentiate_onePanel(variable panelVal, variable numPt)
 	WAVE w  = tube_panel
 	WAVE ti = rescaledTime_panel
 
-	// do strictly in this order, so that the reassignment works
-	// wave is unsigned byte
-	// max tube number is 191, so assign to a larger number temporarily
-	MultiThread w = (w[p] < 48) ? 201 : w[p]
-	MultiThread w = (w[p] < 96) ? 202 : w[p]
-	MultiThread w = (w[p] < 144) ? 203 : w[p]
-	MultiThread w = (w[p] < 192) ? 204 : w[p]
-	MultiThread w -= 200
+// if back panel, skip the numbering of panels
 
-	//	Variable num=numpnts(w)
-	//	Variable ii,val
-	//
-	//
-	//	for(ii=0;ii<num;ii+=1)
-	//		val=0
-	//		if(w[ii] < 48)
-	//			val = 1
-	//		endif
-	//		if(w[ii] > 47 && w[ii] < 96)
-	//			val = 2
-	//		endif
-	//		if(w[ii] > 95 && w[ii] < 144)
-	//			val = 3
-	//		endif
-	//		if(w[ii] > 143)
-	//			val = 4
-	//		endif
-	//
-	//		w[ii] = val
-	//
-	//	endfor
+	if(!gEventCarriage_is_B)
 
-	//
-	V_KeepOneGroup(panelVal)
+		// do strictly in this order, so that the reassignment works
+		// wave is unsigned byte
+		// max tube number is 191, so assign to a larger number temporarily
+		MultiThread w = (w[p] < 48) ? 201 : w[p]
+		MultiThread w = (w[p] < 96) ? 202 : w[p]
+		MultiThread w = (w[p] < 144) ? 203 : w[p]
+		MultiThread w = (w[p] < 192) ? 204 : w[p]
+		MultiThread w -= 200
+		
+	// SLOW WAY -- use the assignments above which are MUCH faster
+		//	Variable num=numpnts(w)
+		//	Variable ii,val
+		//
+		//
+		//	for(ii=0;ii<num;ii+=1)
+		//		val=0
+		//		if(w[ii] < 48)
+		//			val = 1
+		//		endif
+		//		if(w[ii] > 47 && w[ii] < 96)
+		//			val = 2
+		//		endif
+		//		if(w[ii] > 95 && w[ii] < 144)
+		//			val = 3
+		//		endif
+		//		if(w[ii] > 143)
+		//			val = 4
+		//		endif
+		//
+		//		w[ii] = val
+		//
+		//	endfor
+	 endif
+
+// if back panel, skip V_KeepOneGroup and simply duplicate the necessary wave (onePanel)
+	if(gEventCarriage_is_B)
+		Duplicate/O ti, onePanel		//not splitting anything off, keep it all
+	else
+		V_KeepOneGroup(panelVal)
+	endif
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 	WAVE onePanel = onePanel //generated in V_KeepOneGroup()

@@ -1705,8 +1705,8 @@ Proc VC_Initialize_Space()
 		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.15 // 1.5 mm resolution (units of [cm] here)
 		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.15
 
-		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 512 // detector pixels in x-direction
-		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 512
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = kNum_x_Denex // detector pixels in x-direction
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = kNum_y_Denex
 
 		// pixel beam center - HDF style
 		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 255.1 // == x beam center, in pixels +0.1 so I know it's from here
