@@ -869,12 +869,21 @@ End
 // XBINS is for an individual panel
 // NTUBES is the total number of tubes = (4)(48)=192
 //
+// DENEX-TOFIX
+// - added conditionals to switch base on back data
+// -- NEED to do the same fixes for OSC and TOF ProcessEventLog functions
+//
 Function V_Stream_ProcessEventLog(string ctrlName)
 
 	//	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
 
-	//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
-	Make/O/D/N=(NTUBES, YBINS) root:Packages:NIST:VSANS:Event:binnedData
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+	if(gEventCarriage_is_B)
+		Make/O/D/N=(kNum_x_Denex, kNum_y_Denex) root:Packages:NIST:VSANS:Event:binnedData
+	else
+		//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
+		Make/O/D/N=(NTUBES, YBINS) root:Packages:NIST:VSANS:Event:binnedData
+	endif
 
 	WAVE binnedData = root:Packages:NIST:VSANS:Event:binnedData
 	WAVE xLoc       = root:Packages:NIST:VSANS:Event:xLoc
@@ -893,8 +902,13 @@ Function V_Stream_ProcessEventLog(string ctrlName)
 
 	WAVE slicedData   = slicedData
 	WAVE rescaledTime = rescaledTime
-	//	Make/O/D/N=(XBINS,YBINS) tmpData
-	Make/O/D/N=(NTUBES, YBINS) tmpData
+	if(gEventCarriage_is_B)
+		Make/O/D/N=(kNum_x_Denex, kNum_y_Denex) tmpData
+	else
+		//	Make/O/D/N=(XBINS,YBINS) tmpData
+		Make/O/D/N=(NTUBES, YBINS) tmpData
+	endif
+
 	Make/O/D/N=(nslices + 1) binEndTime, binCount //,binStartTime
 	Make/O/D/N=(nslices) timeWidth
 	WAVE binEndTime = binEndTime
@@ -1901,7 +1915,7 @@ Proc V_EventCorrectionPanel()
 		endif
 		SetAxis bottom, 0, 0.10 * numpnts(rescaledTime) //show 1st 10% of data for speed in displaying
 
-		ControlBar 100
+		ControlBar 120
 		Button button0, pos={sc * 20, 12 * sc}, size={sc * 70, 20 * sc}, proc=V_EC_AddCursorButtonProc, title="Cursors"
 		Button button1, pos={sc * 20, 38 * sc}, size={sc * 80, 20 * sc}, proc=V_EC_ShowAllButtonProc, title="All Data"
 		Button button2, pos={sc * 20, 64 * sc}, size={sc * 80, 20 * sc}, proc=V_EC_ColorizeTimeButtonProc, title="Colorize"
@@ -1920,14 +1934,14 @@ Proc V_EventCorrectionPanel()
 		Button button6, pos={sc * 290, 38 * sc}, size={sc * 110, 20 * sc}, proc=V_EC_DoDifferential, title="Differential-One"
 		Button button9, pos={sc * 290, 64 * sc}, size={sc * 110, 20 * sc}, proc=V_EC_TrimPointsButtonProc, title="Clean-One"
 
-		SetVariable setVar0, pos={sc * 290, 88 * sc}, size={sc * 130, 20 * sc}, title="Panel Number", value=_NUM:1
+		SetVariable setVar0, pos={sc * 290, 94 * sc}, size={sc * 130, 20 * sc}, title="Panel Number", value=_NUM:1
 		SetVariable setvar0, limits={1, 4, 1}
 
 		Button buttonCleanAll, pos={sc * (290 + 150), 12 * sc}, size={sc * 110, 20 * sc}, proc=V_EC_SortTimeButtonProc, title="Sort-All"
 		Button button10, pos={sc * (290 + 150), 64 * sc}, size={sc * 110, 20 * sc}, proc=V_EC_SaveWavesButtonProc, title="Save Waves"
 
 		Button button11, pos={sc * 683, 12 * sc}, size={sc * 30, 20 * sc}, proc=V_EC_HelpButtonProc, title="?"
-		Button button12, pos={sc * 658, 90 * sc}, size={sc * 60, 20 * sc}, proc=V_EC_DoneButtonProc, title="Done"
+		Button button12, pos={sc * 658, 64 * sc}, size={sc * 60, 20 * sc}, proc=V_EC_DoneButtonProc, title="Done"
 
 	else
 		DoAlert 0, "Please load some event data, then you'll have something to edit."
