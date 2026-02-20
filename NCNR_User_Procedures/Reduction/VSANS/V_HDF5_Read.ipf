@@ -320,6 +320,8 @@ End
 //	return(V_getStringFromHDF5(fname,path,num))
 //end
 
+
+// this is the value that I use for the absolute scaling, not entry:collection_time
 Function V_getCount_time(string fname)
 
 	string path = "entry:control:count_time"
@@ -1167,6 +1169,7 @@ Function/S V_getBeamMonLowType(string fname)
 End
 
 //beam_monitor_norm (data folder)
+// this is the beam monitor that I use for everything ---
 Function V_getBeamMonNormData(string fname)
 
 	string path = "entry:instrument:beam_monitor_norm:data"

@@ -413,7 +413,7 @@ Function V_CopySlicesForExport(string detStr)
 	endif
 
 	if(cmpstr(detStr, "B") == 0)
-		Duplicate/O root:Packages:NIST:VSANS:Event:slices_B, root:export:entry:instrument:detector_B:slices
+		Duplicate/O root:Packages:NIST:VSANS:Event:slicedData, root:export:entry:instrument:detector_B:slices
 
 		Duplicate/O root:Packages:NIST:VSANS:Event:binEndTime, root:export:entry:reduction:binEndTime_B
 		Duplicate/O root:Packages:NIST:VSANS:Event:timeWidth, root:export:entry:reduction:timeWidth_B
@@ -668,7 +668,7 @@ End
 // rescale the count time
 // update the sample label
 //
-// TODO -- and I missing anything that is done at the normal RAW load time
+// TODO -- am I missing anything that is done at the normal RAW load time
 // that I am not doing here simply by copying over
 // -- like... data error, nonlinear corrections, etc.
 // the nonlinear corrections need only be done once, since the detector is the same for all slices.
@@ -679,10 +679,12 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 	string detStr, fname
 	// varNum is the only meaningful input, the slice number
 
-	// copy STO to RAW
+	// copy STO to RAW (copies everything from the "total" data file)
 	V_CopyHDFToWorkFolder("STO", "RAW")
 
-	// switch data to point to the correct slice
+	// switch data to be the selected slice
+	// and update values specific to each panel for the current slice
+	
 	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:instrument:"
 
 	fname = "RAW"
@@ -693,12 +695,20 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 
 		WAVE/Z slices = $("root:Packages:NIST:VSANS:RAW:entry:instrument:detector_" + detStr + ":slices")
 		data = slices[p][q][varNum]
-		V_MakeDataError(tmpStr + "detector_" + detStr) //update the error wave to match the slice
+		
+		//update the error wave to match the slice
+		V_MakeDataError(tmpStr + "detector_" + detStr) 		// makes data_error, linear_data, and linear_data_error waves
+		
+		//integrated count on each detector panel
+		V_putDet_IntegratedCount("RAW", detStr, sum(data))
 	endfor
 
-	// TODO: update the times and counts
-	// use a special "put", not "write" so it is written to the RAW folder, not the file
+	// TODO: update the times and counts +? for the whole "slice"
 	//
+	// use a special "put", not "write" so it is written to the RAW folder, NOT wriiten the file
+	//
+	// there are _F, _M, and possibly _B time bins in :reduction. Currently I'm assuming that they are all the same
+	// and that _F definitely exists
 	WAVE binEnd_F    = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime_F
 	WAVE timeWidth_F = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth_F
 
@@ -717,9 +727,12 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 	// mon ct
 	V_putBeamMonNormData("RAW", mon_STO * timeFract)
 	// ct time
-	V_putCount_time("RAW", ctTime_STO * timeFract)
+//	V_putCount_time("RAW", ctTime_STO * timeFract)
+	V_putCount_time("RAW", timeWidth_F[varNum])			//use the bin time width directly
 	// label
 	V_putSampleDescription("RAW", label_STO + " slice " + num2str(varNum))
+
+
 
 	return (0)
 End
@@ -1027,9 +1040,10 @@ Function V_ExecuteProtocol_Event(string protStr, string samStr, variable sliceNu
 	// SAM
 	//////////////////////////////
 
-	// move the selected slice number to RAW, then to SAM
+	// move the selected slice number to RAW
 	V_ChangeSliceViewSetVar("", sliceNum, "", "")
 
+	// then to SAM
 	//Execute "V_Convert_to_Workfile()"
 	err = V_Raw_to_work("SAM")
 

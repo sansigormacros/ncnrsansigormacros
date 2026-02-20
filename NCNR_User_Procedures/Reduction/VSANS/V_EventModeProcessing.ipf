@@ -345,7 +345,11 @@ Function V_DuplRAWForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
-			V_DuplicateRAWForExport()
+			
+			DoAlert 1,"This will overwrite EVERYTHING in the export folder and start fresh.   Do you want to do this?"
+			if(V_flag == 1)	// only do it if "yes"
+				V_DuplicateRAWForExport()
+			endif
 			//
 			break
 		case -1: // control being killed
@@ -876,13 +880,25 @@ End
 Function V_Stream_ProcessEventLog(string ctrlName)
 
 	//	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
-
+	NVAR yesSortStream = root:Packages:NIST:VSANS:Event:gSortStreamEvents //do I sort the events?
+	NVAR t_longest     = root:Packages:NIST:VSANS:Event:gEvent_t_longest
+	NVAR nslices       = root:Packages:NIST:VSANS:Event:gEvent_nslices
+	
+	// dimension the waves correctly for the different carriages
 	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
 	if(gEventCarriage_is_B)
 		Make/O/D/N=(kNum_x_Denex, kNum_y_Denex) root:Packages:NIST:VSANS:Event:binnedData
+		Make/O/D/N=(kNum_x_Denex, kNum_y_Denex) root:Packages:NIST:VSANS:Event:tmpData
+		Make/D/O/N=(kNum_x_Denex, kNum_y_Denex, nslices) root:Packages:NIST:VSANS:Event:slicedData
 	else
 		//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
 		Make/O/D/N=(NTUBES, YBINS) root:Packages:NIST:VSANS:Event:binnedData
+		
+		//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:tmpData
+		Make/O/D/N=(NTUBES, YBINS) root:Packages:NIST:VSANS:Event:tmpData
+		
+		//	Make/D/O/N=(XBINS,YBINS,nslices) root:Packages:NIST:VSANS:Event:slicedData
+		Make/D/O/N=(NTUBES, YBINS, nslices) root:Packages:NIST:VSANS:Event:slicedData	
 	endif
 
 	WAVE binnedData = root:Packages:NIST:VSANS:Event:binnedData
@@ -891,23 +907,11 @@ Function V_Stream_ProcessEventLog(string ctrlName)
 
 	// now with the number of slices and max time, process the events
 
-	NVAR yesSortStream = root:Packages:NIST:VSANS:Event:gSortStreamEvents //do I sort the events?
-	NVAR t_longest     = root:Packages:NIST:VSANS:Event:gEvent_t_longest
-	NVAR nslices       = root:Packages:NIST:VSANS:Event:gEvent_nslices
-
 	SetDataFolder root:Packages:NIST:VSANS:Event //don't count on the folder remaining here
-
-	//	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
-	Make/D/O/N=(NTUBES, YBINS, nslices) slicedData
 
 	WAVE slicedData   = slicedData
 	WAVE rescaledTime = rescaledTime
-	if(gEventCarriage_is_B)
-		Make/O/D/N=(kNum_x_Denex, kNum_y_Denex) tmpData
-	else
-		//	Make/O/D/N=(XBINS,YBINS) tmpData
-		Make/O/D/N=(NTUBES, YBINS) tmpData
-	endif
+	WAVE tmpData = tmpData
 
 	Make/O/D/N=(nslices + 1) binEndTime, binCount //,binStartTime
 	Make/O/D/N=(nslices) timeWidth

@@ -1144,7 +1144,7 @@ Window V_ProtocolPanel()
 	SetVariable HRNStr, help={"Filename of the high-resolution read noise file to be used in the data reduction"}
 	SetVariable HRNStr, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Protocols:gHRNoise
 	if(denex)
-		SetVariable HRNStr, disable=1z		//disable it for Denex
+		SetVariable HRNStr, disable=1		//disable it for Denex
 	endif
 	
 	SetVariable samStr, pos={sc * 6, 130 * sc}, size={sc * 250, 15 * sc}, title="file:"

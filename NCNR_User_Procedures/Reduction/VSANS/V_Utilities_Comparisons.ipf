@@ -600,3 +600,31 @@ Function isDenex(string fname, variable method)
 	return(retVal)
 end
 
+//
+// compare two numeric waves element-by-element and return the truth (0|1)
+// if ALL elements are equal, given the input tolerance (to account for floating point differences)
+//
+// used in event mode to ensure that the bins used for each panel are identical before writing data
+//
+// pass in tol as some reasonably small value based on the inputs, possibly some allowable % difference
+// rather than an absolute value
+//
+Function V_AreWavesEqual(wave wave1, wave wave2, variable tol)
+    
+    if(DimSize(wave1, 0) != DimSize(wave2, 0))
+        return 0 // Not equal if dimensions differ
+    endif
+
+    Variable ii
+    for(ii = 0; ii < DimSize(wave1, 0); ii += 1)
+    
+    		if(abs(wave1[ii] - wave2[ii]) > tol)			// set tol to some reasonably small value
+//        if(wave1[ii] != wave2[ii]) 		//direct comparison, could fail for floating point values
+        
+            return(0)	// Found a difference, waves are not equal, stop now
+        
+        endif
+    endfor
+    
+    return(1)	 // No differences found, waves are equal
+End
