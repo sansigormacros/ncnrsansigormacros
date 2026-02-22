@@ -3,6 +3,11 @@
 #pragma rtGlobals=3 // Use modern global access method.
 #pragma IgorVersion=7.00
 
+
+// in progress-- V_ExportStatus_Button
+
+
+
 /////////////
 //VSANS Event File Format
 // (Phil Chabot)
@@ -206,6 +211,11 @@ Function V_Init_Event()
 
 	// for keeping track of which carriage is being loaded, set by the radio buttons
 	string/G root:Packages:NIST:VSANS:Event:gEventCarriage = "F"		//initial position of button is on "F"
+	
+	// simpler variable to track if "B" is the active carriage
+	//initial position of button is on "F", so "is_B" == 0
+	Variable/G root:Packages:NIST:VSANS:Event:gEventCarriage_is_B = 0 
+	
 	SetDataFolder root:
 End
 
@@ -242,7 +252,7 @@ Proc VSANS_EventModePanel()
 	Button button0, fSize=12 * sc
 	Button button23, pos={sc * 14, 100 * sc}, size={sc * 150, 20 * sc}, proc=V_LoadEventLog_Button, title="Load From RAW"
 	Button button23, fSize=12 * sc
-	TitleBox tb1, pos={sc * 475, 450 * sc}, size={sc * 266, 86 * sc}, fSize=10
+	TitleBox tb1, pos={sc * 475, 500 * sc}, size={sc * 266, 86 * sc}, fSize=10
 	TitleBox tb1, variable=root:Packages:NIST:VSANS:Event:gEventDisplayString
 
 	CheckBox chkbox2, pos={sc * 376, 151 * sc}, size={sc * 81, 15 * sc}, proc=V_LogIntEvent_Proc, title="Log Intensity"
@@ -284,6 +294,7 @@ Proc VSANS_EventModePanel()
 	Button button24, pos={sc * 488, 270 * sc}, size={sc * 180, 20 * sc}, proc=V_DuplRAWForExport_Button, title="Duplicate RAW for Export"
 	Button button25, pos={sc * 488, 300 * sc}, size={sc * 180, 20 * sc}, proc=V_CopySlicesForExport_Button, title="Copy Slices for Export"
 	Button button26, pos={sc * 488, 330 * sc}, size={sc * 180, 20 * sc}, proc=V_SaveExportedNexus_Button, title="Save Exported to Nexus"
+	Button button27, pos={sc * 488, 360 * sc}, size={sc * 80, 20 * sc}, proc=V_ExportStatus_Button, title="Status"
 
 	//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
 	//	Button button14,pos={sc*488,350*sc},size={sc*120,20*sc},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
@@ -316,7 +327,7 @@ Proc VSANS_EventModePanel()
 	GroupBox group0_0, pos={sc * 5, 5 * sc}, size={sc * 174, 140 * sc}, title="(1) Loading Mode", fSize=12 * sc, fStyle=1
 	GroupBox group0_3, pos={sc * 191, 5 * sc}, size={sc * 165, 130 * sc}, title="(2) Edit Events", fSize=12 * sc, fStyle=1
 	GroupBox group0_1, pos={sc * 372, 5 * sc}, size={sc * 350, 130 * sc}, title="(3) Bin Events", fSize=12 * sc, fStyle=1
-	GroupBox group0_2, pos={sc * 477, 169 * sc}, size={sc * 310, 250 * sc}, title="(4) View / Export", fSize=12 * sc, fStyle=1
+	GroupBox group0_2, pos={sc * 477, 169 * sc}, size={sc * 310, 320 * sc}, title="(4) View / Export", fSize=12 * sc, fStyle=1
 
 	//	GroupBox group0_4,pos={sc*474,278*sc},size={sc*312,200*sc},title="Split / Accumulate Files",fSize=12
 	//	GroupBox group0_4,fStyle=1
@@ -337,6 +348,44 @@ Proc VSANS_EventModePanel()
 	RenameWindow #, Event_slicegraph
 	SetActiveSubwindow ##
 EndMacro
+
+
+// status button to show if/what data has been copied into the export folders
+//		-- are the slices there in each carriage
+//
+// checks to be sure that all of the bin waves are identical
+//		-- check the waves for each carriage present in reduction block
+// 		-- use V_AreWavesEqual(wave wave1, wave wave2, variable tol)
+//
+// checks to see that the number of slices in each panel is identical
+//		-- easy check for proper dimsensions
+//
+// report back to the user what the results are - text and visuals (but not just color)
+//
+Function V_ExportStatus_Button(STRUCT WMButtonAction &ba) : ButtonControl
+
+	switch(ba.eventCode)
+		case 2: // mouse up
+			// click code here
+			
+			Print "status button"
+//			V_DuplicateRAWForExport()
+			
+			//
+			break
+		case -1: // control being killed
+			break
+		default:
+			// no default action
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+
 
 //
 //
@@ -1172,12 +1221,13 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 // set global here that I can use for processing of this file
 // global will change if new file is loaded
 // can't use identification  functions for raw data, since this is event data for a particular carriage
-	if(cmpstr(detStr,"B") == 0)
-		Variable/G root:Packages:NIST:VSANS:Event:gEventCarriage_is_B = 1
-	else
-		Variable/G root:Packages:NIST:VSANS:Event:gEventCarriage_is_B = 0
-	endif
 	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+
+	if(cmpstr(detStr,"B") == 0)
+		gEventCarriage_is_B = 1
+	else
+		gEventCarriage_is_B = 0
+	endif
 
 	
 	if(cmpstr(ctrlName, "button23") == 0)
