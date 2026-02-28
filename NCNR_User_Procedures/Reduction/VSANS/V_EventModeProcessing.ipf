@@ -288,14 +288,18 @@ Proc VSANS_EventModePanel()
 	Button button1, pos={sc * 389, 103 * sc}, size={sc * 120, 20 * sc}, proc=V_ProcessEventLog_Button, title="Bin Event Data"
 
 	// NEW FOR VSANS
-	Button button21, pos={sc * 488, 205 * sc}, size={sc * 120, 20 * sc}, proc=V_SplitToPanels_Button, title="Split to Panels"
-	Button button22, pos={sc * 488, 240 * sc}, size={sc * 120, 20 * sc}, proc=V_GraphPanels_Button, title="Show Panels"
+	Button button21, pos={sc * 488, 205 * sc}, size={sc * 110, 20 * sc}, proc=V_SplitToPanels_Button, title="Split to Panels"
+	Button button22, pos={sc * 620, 205 * sc}, size={sc * 110, 20 * sc}, proc=V_GraphPanels_Button, title="Show Panels"
 
-	Button button24, pos={sc * 488, 270 * sc}, size={sc * 180, 20 * sc}, proc=V_DuplRAWForExport_Button, title="Duplicate RAW for Export"
-	Button button25, pos={sc * 488, 300 * sc}, size={sc * 180, 20 * sc}, proc=V_CopySlicesForExport_Button, title="Copy Slices for Export"
-	Button button26, pos={sc * 488, 330 * sc}, size={sc * 180, 20 * sc}, proc=V_SaveExportedNexus_Button, title="Save Exported to Nexus"
-	Button button27, pos={sc * 488, 360 * sc}, size={sc * 80, 20 * sc}, proc=V_ExportStatus_Button, title="Status"
+	Button button24, pos={sc * 488, 240 * sc}, size={sc * 180, 20 * sc}, proc=V_DuplRAWForExport_Button, title="Duplicate RAW for Export"
+	Button button25, pos={sc * 488, 290 * sc}, size={sc * 180, 20 * sc}, proc=V_CopySlicesForExport_Button, title="Copy Slices for Export"
+	Button button26, pos={sc * 488, 320 * sc}, size={sc * 80, 20 * sc}, proc=V_ExportStatus_Button, title="Status"
+	Button button27, pos={sc * 488, 460 * sc}, size={sc * 180, 20 * sc}, proc=V_SaveExportedNexus_Button, title="Save Exported to Nexus"
+	SetVariable setvar3, pos={sc * 510, 265 * sc}, size={sc * 200, 16 * sc}, title="FILE = ", fSize=10 * sc
+	SetVariable setvar3, value=root:export:gFileList
+	SetVariable setvar3, limits={0,1,0},noedit=1
 
+	
 	//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
 	//	Button button14,pos={sc*488,350*sc},size={sc*120,20*sc},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
 	//	Button button19,pos={sc*649,350*sc},size={sc*120,20*sc},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
@@ -398,6 +402,8 @@ Function V_DuplRAWForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 			DoAlert 1,"This will overwrite EVERYTHING in the export folder and start fresh.   Do you want to do this?"
 			if(V_flag == 1)	// only do it if "yes"
 				V_DuplicateRAWForExport()
+				// update the  SetVariable to show the current global
+				SetVariable setvar3, value=root:export:gFileList
 			endif
 			//
 			break
