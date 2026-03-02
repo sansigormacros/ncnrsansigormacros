@@ -216,6 +216,10 @@ Function V_Init_Event()
 	//initial position of button is on "F", so "is_B" == 0
 	Variable/G root:Packages:NIST:VSANS:Event:gEventCarriage_is_B = 0 
 	
+	// for display of the file name of the current RAW file duplicated for export
+	String/G root:Packages:NIST:VSANS:Event:gCurrentRAWFileName = "no export file selected"
+	
+	
 	SetDataFolder root:
 End
 
@@ -296,7 +300,7 @@ Proc VSANS_EventModePanel()
 	Button button26, pos={sc * 488, 320 * sc}, size={sc * 80, 20 * sc}, proc=V_ExportStatus_Button, title="Status"
 	Button button27, pos={sc * 488, 460 * sc}, size={sc * 180, 20 * sc}, proc=V_SaveExportedNexus_Button, title="Save Exported to Nexus"
 	SetVariable setvar3, pos={sc * 510, 265 * sc}, size={sc * 200, 16 * sc}, title="FILE = ", fSize=10 * sc
-	SetVariable setvar3, value=root:export:gFileList
+	SetVariable setvar3, value=root:Packages:NIST:VSANS:Event:gCurrentRAWFileName
 	SetVariable setvar3, limits={0,1,0},noedit=1
 
 	
@@ -403,7 +407,9 @@ Function V_DuplRAWForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 			if(V_flag == 1)	// only do it if "yes"
 				V_DuplicateRAWForExport()
 				// update the  SetVariable to show the current global
-				SetVariable setvar3, value=root:export:gFileList
+				SVAR dispStr = root:Packages:NIST:VSANS:Event:gCurrentRAWFileName
+				SVAR curFile = root:export:gFileList
+				dispStr = curFile
 			endif
 			//
 			break
