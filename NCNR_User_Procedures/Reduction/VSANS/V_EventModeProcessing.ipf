@@ -218,7 +218,8 @@ Function V_Init_Event()
 	
 	// for display of the file name of the current RAW file duplicated for export
 	String/G root:Packages:NIST:VSANS:Event:gCurrentRAWFileName = "no export file selected"
-	
+	// and the status
+	String/G root:Packages:NIST:VSANS:Event:gExportStatusDisplayString = "export status"	
 	
 	SetDataFolder root:
 End
@@ -303,6 +304,8 @@ Proc VSANS_EventModePanel()
 	SetVariable setvar3, value=root:Packages:NIST:VSANS:Event:gCurrentRAWFileName
 	SetVariable setvar3, limits={0,1,0},noedit=1
 
+	TitleBox tb2, pos={sc * 488, 345 * sc}, size={sc * 300, 80 * sc}, fSize=11, fColor=(0,0,0)
+	TitleBox tb2, variable=root:Packages:NIST:VSANS:Event:gExportStatusDisplayString
 	
 	//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
 	//	Button button14,pos={sc*488,350*sc},size={sc*120,20*sc},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
@@ -366,7 +369,7 @@ EndMacro
 // 		-- use V_AreWavesEqual(wave wave1, wave wave2, variable tol)
 //
 // checks to see that the number of slices in each panel is identical
-//		-- easy check for proper dimsensions
+//		-- easy check for proper dimensions
 //
 // report back to the user what the results are - text and visuals (but not just color)
 //
@@ -376,8 +379,89 @@ Function V_ExportStatus_Button(STRUCT WMButtonAction &ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			Print "status button"
-//			V_DuplicateRAWForExport()
+//			Print "status button"
+			SVAR dispStr = root:Packages:NIST:VSANS:Event:gExportStatusDisplayString
+			dispStr = ""
+			
+			// slices in F
+			Wave/z slices_F = root:export:entry:instrument:detector_FB:slices
+			if(waveExists(slices_F))
+//				Printf "Slices exist in F, N = %d\r",DimSize(slices_F,2)
+				dispStr += "Slices exist in F,  N = "+num2istr(DimSize(slices_F,2))+"\r"
+			else
+//				Printf "No slices in F\r"
+				dispStr += "No slices in F\r"
+			endif
+	
+			// slices in M
+			Wave/z slices_M = root:export:entry:instrument:detector_MB:slices
+			if(waveExists(slices_M))
+//				Printf "Slices exist in M, N = %d\r",DimSize(slices_M,2)
+				dispStr += "Slices exist in M,  N = "+num2istr(DimSize(slices_M,2))+"\r"
+			else
+//				Printf "No slices in M\r"
+				dispStr += "No slices in M\r"
+			endif
+			
+			// slices in B
+			Wave/z slices_B = root:export:entry:instrument:detector_B:slices
+			if(waveExists(slices_B))
+//				Printf "Slices exist in B, N = %d\r",DimSize(slices_B,2)
+				dispStr += "Slices exist in B,  N = "+num2istr(DimSize(slices_B,2))+"\r"
+			else
+//				Printf "No slices in B\r"
+				dispStr += "No slices in B\r"
+			endif	
+			
+			// are the times equal?
+			
+			//only test if the slices exist
+			
+			Wave/Z bt_F = root:export:entry:reduction:binEndTime_F
+			Wave/Z tw_F = root:export:entry:reduction:timeWidth_F
+			Wave/Z bt_M = root:export:entry:reduction:binEndTime_M
+			Wave/Z tw_M = root:export:entry:reduction:timeWidth_M		
+			Wave/Z bt_B = root:export:entry:reduction:binEndTime_B
+			Wave/Z tw_B = root:export:entry:reduction:timeWidth_B			
+			
+			if(WaveExists(bt_F) && WaveExists(bt_M))
+//				Print "F = M = ",V_AreWavesEqual(bt_F, bt_M, 1e-6)
+				if(V_AreWavesEqual(bt_F, bt_M, 1e-6))
+					dispStr += "Bin End Time waves F/M are EQUAL\r"
+				else
+					dispStr += "Bin End Time waves F/M are NOT EQUAL\r"
+				endif
+				
+//				Print "F = M = ",V_AreWavesEqual(tw_F, tw_M, 1e-6)
+				if(V_AreWavesEqual(tw_F, tw_M, 1e-6))
+					dispStr += "Time width waves F/M are EQUAL\r"
+				else
+					dispStr += "Time width waves F/M are NOT EQUAL\r"
+				endif
+			else
+				// nothing
+			endif
+			
+			if(WaveExists(bt_F) && WaveExists(bt_B))	
+//				Print "F = B = ",V_AreWavesEqual(bt_F, bt_B, 1e-6)
+				if(V_AreWavesEqual(bt_F, bt_B, 1e-6))
+					dispStr += "Bin End Time waves F/B are EQUAL\r"
+				else
+					dispStr += "Bin End Time waves F/B are NOT EQUAL\r"
+				endif
+				
+//				Print "F = B = ",V_AreWavesEqual(tw_F, tw_B, 1e-6)
+				if(V_AreWavesEqual(tw_F, tw_B, 1e-6))
+					dispStr += "Time width waves F/B are EQUAL"
+				else
+					dispStr += "Time width waves F/B are NOT EQUAL"		//last line, so no \r here
+				endif
+						
+			else
+			//
+			endif
+			
+			
 			
 			//
 			break

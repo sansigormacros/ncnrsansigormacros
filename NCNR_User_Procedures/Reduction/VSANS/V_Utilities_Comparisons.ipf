@@ -600,8 +600,12 @@ Function isDenex(string fname, variable method)
 	return(retVal)
 end
 
+
+// compare two numeric waves to see it they are "equal"
 //
-// compare two numeric waves element-by-element and return the truth (0|1)
+// 1) check the number of elements (exit if different dimensions)
+// then
+// 2) compare element-by-element and return the truth (0|1)
 // if ALL elements are equal, given the input tolerance (to account for floating point differences)
 //
 // used in event mode to ensure that the bins used for each panel are identical before writing data
