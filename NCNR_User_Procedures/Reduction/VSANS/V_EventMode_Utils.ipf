@@ -377,10 +377,20 @@ EndMacro
 // root:Packages:NIST:VSANS:RAW:gFileList		//name of the data file(s) in raw (take 1st from semi-list)
 //
 
+//
+// if I(q) waves were generated in the RAW folder, they will be duplicated here. Try to delete them
 Function V_DuplicateRAWForExport()
 
 	KillDataFolder/Z root:export
-	DuplicateDataFolder root:Packages:NIST:VSANS:RAW  root:export
+	// O=1 = completely overwrite, /Z = errors not fatal
+	DuplicateDataFolder/Z/O=1 root:Packages:NIST:VSANS:RAW  root:export
+	
+	SetDataFolder root:export
+//	root:export:qBin_qxqy_FL
+	KillWaves/A/Z			//in root:export only, this should be safe to do
+	
+	SetDataFolder root:
+	
 	return (0)
 End
 
@@ -659,6 +669,9 @@ Function V_EVR_LoadAndSTO(string PathButton) : ButtonControl
 	value = 0
 	V_ChangeSliceViewSetVar("", 0, "", "")
 
+// to get the display to update (this will open the RAW data display if needed)
+	V_UpdateDisplayInformation("RAW")
+
 	return (0)
 End
 
@@ -687,20 +700,27 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 	
 	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:instrument:"
 
-	fname = "RAW"
-	Variable nn = ItemsInList(ksDetectorListNoB)
-	for(ii = 0; ii < nn; ii += 1)
-		detStr = StringFromList(ii, ksDetectorListNoB, ";")
-		WAVE data = V_getDetectorDataW(fname, detStr)
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 
-		WAVE/Z slices = $("root:Packages:NIST:VSANS:RAW:entry:instrument:detector_" + detStr + ":slices")
-		data = slices[p][q][varNum]
+	fname = "RAW"
+	Variable nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		
-		//update the error wave to match the slice
-		V_MakeDataError(tmpStr + "detector_" + detStr) 		// makes data_error, linear_data, and linear_data_error waves
-		
-		//integrated count on each detector panel
-		V_putDet_IntegratedCount("RAW", detStr, sum(data))
+		if(cmpstr(detStr, "B") == 0 && gIgnoreDetB == 1)
+			// do nothing
+		else	//proceed as ususal
+			WAVE data = V_getDetectorDataW(fname, detStr)
+	
+			WAVE/Z slices = $("root:Packages:NIST:VSANS:RAW:entry:instrument:detector_" + detStr + ":slices")
+			data = slices[p][q][varNum]
+			
+			//update the error wave to match the slice
+			V_MakeDataError(tmpStr + "detector_" + detStr) 		// makes data_error, linear_data, and linear_data_error waves
+			
+			//integrated count on each detector panel
+			V_putDet_IntegratedCount("RAW", detStr, sum(data))
+		endif
 	endfor
 
 	// TODO: update the times and counts +? for the whole "slice"
@@ -726,13 +746,13 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 
 	// mon ct
 	V_putBeamMonNormData("RAW", mon_STO * timeFract)
+	
 	// ct time
 //	V_putCount_time("RAW", ctTime_STO * timeFract)
 	V_putCount_time("RAW", timeWidth_F[varNum])			//use the bin time width directly
+	
 	// label
 	V_putSampleDescription("RAW", label_STO + " slice " + num2str(varNum))
-
-
 
 	return (0)
 End
@@ -762,10 +782,24 @@ Function V_EVR_TimeBins(string PathButton) : ButtonControl
 	WAVE binEnd_M    = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime_M
 	WAVE timeWidth_M = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth_M
 	WAVE binCount_M  = root:Packages:NIST:VSANS:RAW:entry:reduction:binCount_M
+	
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+// B waves may not exist
+	if(!gIgnoreDetB)
+		WAVE binEnd_B    = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime_B
+		WAVE timeWidth_B = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth_B
+		WAVE binCount_B  = root:Packages:NIST:VSANS:RAW:entry:reduction:binCount_B
+	endif
+
 
 	DoWindow/F V_EVR_BinTable
 	if(V_flag == 0)
-		edit/K=1/N=V_EVR_BinTable binEnd_F, binEnd_M, binCount_F, binCount_M, timeWidth_F, timeWidth_M
+		if(gIgnoreDetB)
+			edit/K=1/N=V_EVR_BinTable binEnd_F, binEnd_M, binCount_F, binCount_M, timeWidth_F, timeWidth_M
+		else
+			edit/K=1/N=V_EVR_BinTable binEnd_F, binEnd_M, binEnd_B, binCount_F, binCount_M, binCount_B timeWidth_F, timeWidth_M, timeWidth_B
+		endif
 	endif
 
 	DoWindow/F V_EVR_F_BarGraph
@@ -814,6 +848,33 @@ Function V_EVR_TimeBins(string PathButton) : ButtonControl
 		Label left, "\\Z14Number of Events"
 	endif
 
+	if(!gIgnoreDetB)
+		DoWindow/F V_EVR_B_BarGraph
+		if(V_flag == 0)
+			PauseUpdate; Silent 1 // building window...
+	
+			SetDataFolder root:Packages:NIST:VSANS:RAW:
+			Display/W=(730, 222, 1030, 486)/N=V_EVR_B_BarGraph/K=1 binCount_B vs binEnd_B
+	
+			ModifyGraph mode=5
+			ModifyGraph marker=19
+			ModifyGraph lSize=2
+			ModifyGraph rgb=(0, 0, 0)
+			ModifyGraph msize=2
+			ModifyGraph hbFill=2
+			ModifyGraph gaps=0
+			ModifyGraph usePlusRGB=1
+			ModifyGraph toMode=0
+			ModifyGraph useBarStrokeRGB=1
+			ModifyGraph standoff=0
+			SetAxis left, 0, *
+			Label bottom, "\\Z14Time (seconds)"
+			Label left, "\\Z14Number of Events"
+		endif
+
+	endif
+	
+	
 	SetDataFolder root:
 
 	return (0)
@@ -1040,7 +1101,10 @@ Function V_ExecuteProtocol_Event(string protStr, string samStr, variable sliceNu
 	// SAM
 	//////////////////////////////
 
+	//
 	// move the selected slice number to RAW
+	// this function does a lot of steps to make the slice appear as a normal RAW data file
+	//
 	V_ChangeSliceViewSetVar("", sliceNum, "", "")
 
 	// then to SAM
@@ -1456,7 +1520,8 @@ Function V_MakeFakeEventWave(variable num)
 		b2 = trunc(abs(enoise(128))) // same here, to get results [0,127]
 
 		//		i64_ticks = ticks-i64_start
-		i64_ticks = ii + 1
+//		i64_ticks = ii + 1
+		i64_ticks = 1000*(ii + 1)		// stretch the time out to something longer
 
 		// don't shift b1
 		b2        = b2 << 8
@@ -1499,15 +1564,16 @@ Function V_MakeFakeEventWave_Denex(variable num)
 
 	i64_start = ticks
 	for(ii = 0; ii < num; ii += 1)
-		//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
+//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
 
-		b1 = trunc(abs(enoise(kNum_x_Denex)))		//since truncated, need 192 as highest random to give 191 after trunc
+		b1 = trunc(abs(enoise(kNum_x_Denex)))		//since truncated, need N as highest value to get N-1 after trunc
 		//b1 = trunc(mod(ii, kNum_x_Denex))
 
 		b2 = trunc(abs(enoise(kNum_y_Denex))) // same here, to get results [0,127]
 
 		//		i64_ticks = ticks-i64_start
-		i64_ticks = ii + 1
+//		i64_ticks = ii + 1
+		i64_ticks = 1000*(ii + 1)		// stretch the time out to something longer
 
 		// don't shift b1
 		b2        = b2 << 8

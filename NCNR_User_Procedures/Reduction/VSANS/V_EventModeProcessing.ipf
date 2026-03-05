@@ -257,12 +257,12 @@ Proc VSANS_EventModePanel()
 	Button button0, fSize=12 * sc
 	Button button23, pos={sc * 14, 100 * sc}, size={sc * 150, 20 * sc}, proc=V_LoadEventLog_Button, title="Load From RAW"
 	Button button23, fSize=12 * sc
-	TitleBox tb1, pos={sc * 475, 500 * sc}, size={sc * 266, 86 * sc}, fSize=10
+	TitleBox tb1, pos={sc * 475, 500 * sc}, size={sc * 266, 86 * sc}, fSize=12
 	TitleBox tb1, variable=root:Packages:NIST:VSANS:Event:gEventDisplayString
 
 	CheckBox chkbox2, pos={sc * 376, 151 * sc}, size={sc * 81, 15 * sc}, proc=V_LogIntEvent_Proc, title="Log Intensity"
-	CheckBox chkbox2, fSize=10 * sc, variable=root:Packages:NIST:VSANS:Event:gEvent_logint
-	CheckBox chkbox3, pos={sc * 14, 150 * sc}, size={sc * 119, 15 * sc}, title="Remove Bad Events?", fSize=10 * sc
+	CheckBox chkbox2, fsize=12 * sc, variable=root:Packages:NIST:VSANS:Event:gEvent_logint
+	CheckBox chkbox3, pos={sc * 14, 150 * sc}, size={sc * 119, 15 * sc}, title="Remove Bad Events?", fsize=12 * sc
 	CheckBox chkbox3, variable=root:Packages:NIST:VSANS:Event:gRemoveBadEvents
 
 	Button doneButton, pos={sc * 738, 36 * sc}, size={sc * 50, 20 * sc}, proc=V_EventDone_Proc, title="Done"
@@ -280,15 +280,15 @@ Proc VSANS_EventModePanel()
 	Button button18, pos={sc * 211, 90 * sc}, size={sc * 120, 20 * sc}, proc=V_EC_ImportWavesButtonProc, title="Import Edited"
 
 	SetVariable setvar0, pos={sc * 208, 149 * sc}, size={sc * 160, 16 * sc}, proc=V_sliceSelectEvent_Proc, title="Display Time Slice"
-	SetVariable setvar0, fSize=10 * sc
+	SetVariable setvar0, fsize=12 * sc
 	SetVariable setvar0, limits={0, 1000, 1}, value=root:Packages:NIST:VSANS:Event:gEvent_tsdisp
-	SetVariable setvar1, pos={sc * 389, 29 * sc}, size={sc * 160, 16 * sc}, title="Number of slices", fSize=10 * sc
+	SetVariable setvar1, pos={sc * 389, 29 * sc}, size={sc * 160, 16 * sc}, title="Number of slices", fsize=12 * sc
 	SetVariable setvar1, limits={1, 1000, 1}, value=root:Packages:NIST:VSANS:Event:gEvent_nslices
-	SetVariable setvar2, pos={sc * 389, 54 * sc}, size={sc * 160, 16 * sc}, title="Max Time (s)", fSize=10 * sc
+	SetVariable setvar2, pos={sc * 389, 54 * sc}, size={sc * 160, 16 * sc}, title="Max Time (s)", fsize=12 * sc
 	SetVariable setvar2, value=root:Packages:NIST:VSANS:Event:gEvent_t_longest
 
 	PopupMenu popup0, pos={sc * 389, 77 * sc}, size={sc * 119, 20 * sc}, proc=V_BinTypePopMenuProc, title="Bin Spacing"
-	PopupMenu popup0, fSize=10 * sc
+	PopupMenu popup0, fsize=12 * sc
 	PopupMenu popup0, mode=1, popvalue="Equal", value=#"\"Equal;Fibonacci;Custom;\""
 	Button button1, pos={sc * 389, 103 * sc}, size={sc * 120, 20 * sc}, proc=V_ProcessEventLog_Button, title="Bin Event Data"
 
@@ -300,11 +300,11 @@ Proc VSANS_EventModePanel()
 	Button button25, pos={sc * 488, 290 * sc}, size={sc * 180, 20 * sc}, proc=V_CopySlicesForExport_Button, title="Copy Slices for Export"
 	Button button26, pos={sc * 488, 320 * sc}, size={sc * 80, 20 * sc}, proc=V_ExportStatus_Button, title="Status"
 	Button button27, pos={sc * 488, 460 * sc}, size={sc * 180, 20 * sc}, proc=V_SaveExportedNexus_Button, title="Save Exported to Nexus"
-	SetVariable setvar3, pos={sc * 510, 265 * sc}, size={sc * 200, 16 * sc}, title="FILE = ", fSize=10 * sc
+	SetVariable setvar3, pos={sc * 510, 265 * sc}, size={sc * 200, 16 * sc}, title="FILE = ", fsize=12 * sc
 	SetVariable setvar3, value=root:Packages:NIST:VSANS:Event:gCurrentRAWFileName
 	SetVariable setvar3, limits={0,1,0},noedit=1
 
-	TitleBox tb2, pos={sc * 488, 345 * sc}, size={sc * 300, 80 * sc}, fSize=11, fColor=(0,0,0)
+	TitleBox tb2, pos={sc * 488, 345 * sc}, size={sc * 300, 80 * sc}, fsize=12, fColor=(0,0,0)
 	TitleBox tb2, variable=root:Packages:NIST:VSANS:Event:gExportStatusDisplayString
 	
 	//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
@@ -312,27 +312,27 @@ Proc VSANS_EventModePanel()
 	//	Button button19,pos={sc*649,350*sc},size={sc*120,20*sc},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
 	//	Button button20,pos={sc*680,376*sc},size={sc*90,20*sc},proc=V_ShowList_ToLoad,title="Show List",disable=2
 	//	SetVariable setvar3,pos={sc*487,378*sc},size={sc*150,16*sc},title="Decimation factor",disable=2
-	//	SetVariable setvar3,fSize=10
+	//	SetVariable setvar3,fsize=12
 	//	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:VSANS:Event:gDecimation
 	//
 	//	Button button15_0,pos={sc*488,425*sc},size={sc*110,20*sc},proc=V_AccumulateSlicesButton,title="Add First Slice",disable=2
 	//	Button button16_1,pos={sc*488,450*sc},size={sc*110,20*sc},proc=V_AccumulateSlicesButton,title="Add Next Slice",disable=2
 	//	Button button17_2,pos={sc*620,425*sc},size={sc*110,20*sc},proc=V_AccumulateSlicesButton,title="Display Total",disable=2
 
-	CheckBox chkbox1_0, pos={sc * 25, 30 * sc}, size={sc * 69, 14 * sc}, title="Oscillatory", fSize=10 * sc
+	CheckBox chkbox1_0, pos={sc * 25, 30 * sc}, size={sc * 69, 14 * sc}, title="Oscillatory", fsize=12 * sc
 	CheckBox chkbox1_0, mode=1, proc=V_EventModeRadioProc, value=0
-	CheckBox chkbox1_1, pos={sc * 25, 50 * sc}, size={sc * 53, 14 * sc}, title="Stream", fSize=10 * sc
+	CheckBox chkbox1_1, pos={sc * 25, 50 * sc}, size={sc * 53, 14 * sc}, title="Stream", fsize=12 * sc
 	CheckBox chkbox1_1, proc=V_EventModeRadioProc, value=1, mode=1
-	//	CheckBox chkbox1_2,pos={sc*104,59*sc},size={sc*53,14*sc},title="TISANE",fSize=10
+	//	CheckBox chkbox1_2,pos={sc*104,59*sc},size={sc*53,14*sc},title="TISANE",fsize=12
 	//	CheckBox chkbox1_2,proc=V_EventModeRadioProc,value=0,mode=1
-	CheckBox chkbox1_3, pos={sc * 104, 30 * sc}, size={sc * 37, 14 * sc}, title="TOF", fSize=10 * sc
+	CheckBox chkbox1_3, pos={sc * 104, 30 * sc}, size={sc * 37, 14 * sc}, title="TOF", fsize=12 * sc
 	CheckBox chkbox1_3, proc=V_EventModeRadioProc, value=0, mode=1
 
-	CheckBox chkbox1_4, pos={sc * 30, 125 * sc}, size={sc * 37, 14 * sc}, title="F", fSize=10 * sc
+	CheckBox chkbox1_4, pos={sc * 30, 125 * sc}, size={sc * 37, 14 * sc}, title="F", fsize=12 * sc
 	CheckBox chkbox1_4, proc=V_EventCarrRadioProc, value=1, mode=1
-	CheckBox chkbox1_5, pos={sc * 80, 125 * sc}, size={sc * 37, 14 * sc}, title="M", fSize=10 * sc
+	CheckBox chkbox1_5, pos={sc * 80, 125 * sc}, size={sc * 37, 14 * sc}, title="M", fsize=12 * sc
 	CheckBox chkbox1_5, proc=V_EventCarrRadioProc, value=0, mode=1
-	CheckBox chkbox1_6, pos={sc * 130, 125 * sc}, size={sc * 37, 14 * sc}, title="B", fSize=10 * sc	
+	CheckBox chkbox1_6, pos={sc * 130, 125 * sc}, size={sc * 37, 14 * sc}, title="B", fsize=12 * sc	
 	CheckBox chkbox1_6, proc=V_EventCarrRadioProc, value=0, mode=1
 	
 	GroupBox group0_0, pos={sc * 5, 5 * sc}, size={sc * 174, 140 * sc}, title="(1) Loading Mode", fSize=12 * sc, fStyle=1
@@ -2823,7 +2823,7 @@ Proc V_CustomBinPanel()
 	Button button1, pos={sc * 663, 14 * sc}, size={sc * 40, 20 * sc}, proc=V_CB_HelpButtonProc, title="?"
 	Button button2, pos={sc * 216, 42 * sc}, size={sc * 80, 20 * sc}, title="Update", proc=V_CB_UpdateWavesButton
 	SetVariable setvar1, pos={sc * 23, 13 * sc}, size={sc * 160, 20 * sc}, title="Number of slices"
-	SetVariable setvar1, proc=CB_NumSlicesSetVarProc, value=root:Packages:NIST:VSANS:Event:gEvent_nslices
+	SetVariable setvar1, proc=V_CB_NumSlicesSetVarProc, value=root:Packages:NIST:VSANS:Event:gEvent_nslices
 	SetVariable setvar2, pos={sc * 24, 44 * sc}, size={sc * 160, 20 * sc}, title="Max Time (s)", fSize=10
 	SetVariable setvar2, value=root:Packages:NIST:VSANS:Event:gEvent_t_longest
 

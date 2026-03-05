@@ -717,6 +717,11 @@ Function Init_Event()
 	// for editing (unused)
 	variable/G root:Packages:NIST:Event:gStepTolerance = 5 // 5 = # of standard deviations from mean. See PutCursorsAtStep()
 
+	// to show what RAW is ready for export, and status
+	String/G root:Packages:NIST:Event:gCurrentRAWFileName = "no file selected"
+	
+	String/G root:Packages:NIST:Event:gExportStatusDisplayString = "status"
+	
 	SetDataFolder root:
 End
 
@@ -789,8 +794,18 @@ Proc SANS_EventModePanel()
 
 	Button button24, pos={sc * 488, 270 * sc}, size={sc * 180, 20 * sc}, proc=DuplRAWForExport_Button, title="Duplicate RAW for Export", fSize=12 * sc
 	Button button25, pos={sc * 488, 300 * sc}, size={sc * 180, 20 * sc}, proc=CopySlicesForExport_Button, title="Copy Slices for Export", fSize=12 * sc
-	Button button26, pos={sc * 488, 330 * sc}, size={sc * 180, 20 * sc}, proc=SaveExportedNexus_Button, title="Save Exported to Nexus", fSize=12 * sc
+	
+	Button button27, pos={sc * 488, 320 * sc}, size={sc * 80, 20 * sc}, proc=ExportStatus_Button, title="Status"
 
+	Button button26, pos={sc * 488, 340 * sc}, size={sc * 180, 20 * sc}, proc=SaveExportedNexus_Button, title="Save Exported to Nexus", fSize=12 * sc
+
+	SetVariable setvar3, pos={sc * 510, 265 * sc}, size={sc * 200, 16 * sc}, title="FILE = ", fSize=10 * sc
+	SetVariable setvar3, value=root:Packages:NIST:Event:gCurrentRAWFileName
+	SetVariable setvar3, limits={0,1,0},noedit=1
+
+	TitleBox tb2, pos={sc * 488, 345 * sc}, size={sc * 300, 80 * sc}, fSize=11, fColor=(0,0,0)
+	TitleBox tb2, variable=root:Packages:NIST:Event:gExportStatusDisplayString
+	
 	//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=SplitFileButtonProc,title="Split Big File",disable=2
 	//	Button button14,pos={sc*488,350*sc},size={sc*120,20*sc},proc=Stream_LoadDecim,title="Load Split List",disable=2
 	//	Button button19,pos={sc*649,350*sc},size={sc*120,20*sc},proc=Stream_LoadAdjustedList,title="Load Edited List",disable=2
@@ -849,7 +864,14 @@ Function DuplRAWForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
-			DuplicateRAWForExport()
+			DoAlert 1,"This will overwrite EVERYTHING in the export folder and start fresh.   Do you want to do this?"
+			if(V_flag == 1)	// only do it if "yes"
+				DuplicateRAWForExport()
+				// update the  SetVariable to show the current global
+				SVAR dispStr = root:Packages:NIST:Event:gCurrentRAWFileName
+				SVAR curFile = root:export:FileList
+				dispStr = curFile
+			endif
 			//
 			break
 		case -1: // control being killed
@@ -861,6 +883,47 @@ Function DuplRAWForExport_Button(STRUCT WMButtonAction &ba) : ButtonControl
 
 	return 0
 End
+
+// status button to show if/what data has been copied into the export folders
+//		-- are the slices there
+//
+// unlike VSANS, only one detector, so no need to check equivalence of each carriage
+// 		-- use V_AreWavesEqual(wave wave1, wave wave2, variable tol)
+//
+// report back to the user what the results are - text and visuals (but not just color)
+//
+Function ExportStatus_Button(STRUCT WMButtonAction &ba) : ButtonControl
+
+	switch(ba.eventCode)
+		case 2: // mouse up
+			// click code here
+			
+//			Print "status button"
+			SVAR dispStr = root:Packages:NIST:Event:gExportStatusDisplayString
+			dispStr = ""
+			
+			// slices present
+			Wave/z slices = root:export:entry:instrument:detector:slices
+			if(waveExists(slices))
+//				Printf "Slices exist, N = %d\r",DimSize(slices,2)
+				dispStr += "Slices exist,  N = "+num2istr(DimSize(slices,2))+"\r"
+			else
+//				Printf "No slices\r"
+				dispStr += "No slices\r"
+			endif
+			
+			//
+			break
+		case -1: // control being killed
+			break
+		default:
+			// no default action
+			break
+	endswitch
+
+	return 0
+End
+
 
 //
 // Split the binned to panels right before copying the slices

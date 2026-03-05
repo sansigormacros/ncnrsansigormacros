@@ -57,16 +57,24 @@
 // save the data file, giving a new name to not overwrite the original data file
 //
 
+// if I(q) waves were generated in the RAW folder, they will be duplicated here. Try to delete them
 Function DuplicateRAWForExport()
 
 	KillDataFolder/Z root:export
 
 	if(DataFolderExists("root:Packages:NIST:RAW:Entry") == 1)
-		DuplicateDataFolder root:Packages:NIST:RAW root:export
+		// O=1 = completely overwrite, /Z = errors not fatal
+		DuplicateDataFolder/Z/O=1 root:Packages:NIST:RAW root:export
 	else
 		DoAlert 0, "No RAW data folder exists. Please load the correct RAW data file and repeat this Duplicate step"
 	endif
 
+	SetDataFolder root:export
+
+	KillWaves/A/Z			//in root:export only, this should be safe to do
+	
+	SetDataFolder root:
+	
 	return (0)
 End
 
