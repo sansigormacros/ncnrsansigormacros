@@ -792,18 +792,18 @@ Proc SANS_EventModePanel()
 	PopupMenu popup0, mode=1, popvalue="Equal", value=#"\"Equal;Fibonacci;Custom;\"", fSize=12 * sc
 	Button button1, pos={sc * 389, 103 * sc}, size={sc * 120, 20 * sc}, proc=ProcessEventLog_Button, title="Bin Event Data", fSize=12 * sc
 
-	Button button24, pos={sc * 488, 270 * sc}, size={sc * 180, 20 * sc}, proc=DuplRAWForExport_Button, title="Duplicate RAW for Export", fSize=12 * sc
-	Button button25, pos={sc * 488, 300 * sc}, size={sc * 180, 20 * sc}, proc=CopySlicesForExport_Button, title="Copy Slices for Export", fSize=12 * sc
+	Button button24, pos={sc * 488, 210 * sc}, size={sc * 180, 20 * sc}, proc=DuplRAWForExport_Button, title="Duplicate RAW for Export", fSize=12 * sc
+	Button button25, pos={sc * 488, 270 * sc}, size={sc * 180, 20 * sc}, proc=CopySlicesForExport_Button, title="Copy Slices for Export", fSize=12 * sc
 	
-	Button button27, pos={sc * 488, 320 * sc}, size={sc * 80, 20 * sc}, proc=ExportStatus_Button, title="Status"
+	Button button27, pos={sc * 488, 300 * sc}, size={sc * 80, 20 * sc}, proc=ExportStatus_Button, title="Status"
 
-	Button button26, pos={sc * 488, 340 * sc}, size={sc * 180, 20 * sc}, proc=SaveExportedNexus_Button, title="Save Exported to Nexus", fSize=12 * sc
+	Button button26, pos={sc * 488, 390 * sc}, size={sc * 180, 20 * sc}, proc=SaveExportedNexus_Button, title="Save Exported to Nexus", fSize=12 * sc
 
-	SetVariable setvar3, pos={sc * 510, 265 * sc}, size={sc * 200, 16 * sc}, title="FILE = ", fSize=10 * sc
+	SetVariable setvar3, pos={sc * 488, 240 * sc}, size={sc * 200, 16 * sc}, title="FILE = ", fSize=10 * sc
 	SetVariable setvar3, value=root:Packages:NIST:Event:gCurrentRAWFileName
 	SetVariable setvar3, limits={0,1,0},noedit=1
 
-	TitleBox tb2, pos={sc * 488, 345 * sc}, size={sc * 300, 80 * sc}, fSize=11, fColor=(0,0,0)
+	TitleBox tb2, pos={sc * 488, 325 * sc}, size={sc * 300, 80 * sc}, fSize=11, fColor=(0,0,0)
 	TitleBox tb2, variable=root:Packages:NIST:Event:gExportStatusDisplayString
 	
 	//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=SplitFileButtonProc,title="Split Big File",disable=2
@@ -3055,7 +3055,7 @@ Function EC_HelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[Correcting Errors in VSANS Event Data]"
+			DisplayHelpTopic/Z "Event Mode Data - 10m SANS[Correcting Errors in SANS Tube Event Data]"
 			break
 		case -1: // control being killed
 			break
@@ -3320,7 +3320,7 @@ Function CB_HelpButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			//
-			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[Setting up Custom Bin Widths - VSANS]"
+			DisplayHelpTopic/Z "Event Mode Data - 10m SANS[Setting up Custom Bin Widths]"
 
 			break
 		case -1: // control being killed

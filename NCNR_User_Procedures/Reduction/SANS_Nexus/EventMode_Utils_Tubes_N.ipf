@@ -410,10 +410,13 @@ Function ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr, 
 	mon_STO    = getBeamMonNormData("STO")
 	label_STO  = getSampleDescription("STO")
 
+	//integrated count on detector 
+	putDet_IntegratedCount("RAW", sum(data))
 	// mon ct
 	putBeamMonNorm_Data("RAW", mon_STO * timeFract)
 	// ct time
-	putCount_time("RAW", ctTime_STO * timeFract)
+//	putCount_time("RAW", ctTime_STO * timeFract)
+	putCount_time("RAW", timeWidth[varNum])  //use the bin time width directly
 	// label
 	putSampleDescription("RAW", label_STO + " slice " + num2str(varNum))
 
@@ -478,9 +481,9 @@ End
 Proc ShowEVRHelp(ctrlName) : ButtonControl
 	string ctrlName
 
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Reducing Event Data]"
+	DisplayHelpTopic/Z/K=1 "Event Mode Data - 10m SANS[Reducing SANS Tube Event Data]"
 	if(V_flag != 0)
-		DoAlert 0, "The VSANS Data Reduction Tutorial Help file could not be found"
+		DoAlert 0, "The Event Mode Data - 10m SANS Help file could not be found"
 	endif
 EndMacro
 
