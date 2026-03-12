@@ -926,10 +926,17 @@ Function AfterFileOpenHook(refNum,file,pathName,type,creator,kind)
 	Variable refNum,kind
 	String file,pathName,type,creator
 
+	String str
+	Variable ll,tt,rr,bb,dum
+	
 	if(kind == 1)		// an Igor experiment, not any other kind of file
 	
 		Print "Re-initialization running"
-		
+//		print igorinfo(0)		
+		str = 	StringByKey("SCREEN1",IgorInfo(0),":",";")
+		sscanf str,"DEPTH=%d,RECT=%d,%d,%d,%d",dum,ll,tt,rr,bb
+		Print dum,ll,tt,rr,bb
+
 		// check for VSANS
 		if(exists("Initialize_VSANS") > 2)
 			Execute/P "Initialize_VSANS()"

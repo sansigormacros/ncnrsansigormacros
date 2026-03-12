@@ -257,7 +257,7 @@ Proc VSANS_EventModePanel()
 	Button button0, fSize=12 * sc
 	Button button23, pos={sc * 14, 100 * sc}, size={sc * 150, 20 * sc}, proc=V_LoadEventLog_Button, title="Load From RAW"
 	Button button23, fSize=12 * sc
-	TitleBox tb1, pos={sc * 475, 500 * sc}, size={sc * 266, 86 * sc}, fSize=12
+	TitleBox tb1, pos={sc * 475, 500 * sc}, size={sc * 266, 86 * sc}, fSize=12 * sc
 	TitleBox tb1, variable=root:Packages:NIST:VSANS:Event:gEventDisplayString
 
 	CheckBox chkbox2, pos={sc * 376, 151 * sc}, size={sc * 81, 15 * sc}, proc=V_LogIntEvent_Proc, title="Log Intensity"
@@ -304,7 +304,7 @@ Proc VSANS_EventModePanel()
 	SetVariable setvar3, value=root:Packages:NIST:VSANS:Event:gCurrentRAWFileName
 	SetVariable setvar3, limits={0,1,0},noedit=1
 
-	TitleBox tb2, pos={sc * 488, 345 * sc}, size={sc * 300, 80 * sc}, fsize=12, fColor=(0,0,0)
+	TitleBox tb2, pos={sc * 488, 345 * sc}, size={sc * 300, 80 * sc}, fSize=12 * sc, fColor=(0,0,0)
 	TitleBox tb2, variable=root:Packages:NIST:VSANS:Event:gExportStatusDisplayString
 	
 	//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
