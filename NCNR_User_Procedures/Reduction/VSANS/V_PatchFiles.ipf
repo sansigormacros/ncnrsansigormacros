@@ -1770,10 +1770,10 @@ Proc V_DeadtimePatchPanel() : Panel
 	ModifyPanel cbRGB=(16266, 47753, 2552, 23355)
 
 	SetDrawLayer UserBack
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 85 * sc, 99 * sc, "Current Values"
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 18 * sc, 258 * sc, "Write to all files (inclusive)"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 80 * sc, 99 * sc, "Current Values"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 10 * sc, 258 * sc, "Write to all files (inclusive)"
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 209 * sc, 30 * sc, "Dead Time Constants"
 	SetDrawEnv fsize=14 * sc, fstyle=1
@@ -2099,10 +2099,10 @@ Proc V_CalibrationPatchPanel() : Panel
 	ModifyPanel cbRGB=(16266, 47753, 2552, 23355)
 
 	SetDrawLayer UserBack
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 85 * sc, 99 * sc, "Current Values"
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 18 * sc, 258 * sc, "Write to all files (inclusive)"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 80 * sc, 99 * sc, "Current Values"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 10 * sc, 258 * sc, "Write to all files (inclusive)"
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 227 * sc, 28 * sc, "Quadratic Calibration Constants per Tube"
 	SetDrawEnv fsize=14 * sc, fstyle=1
@@ -2514,10 +2514,11 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	SetDrawLayer UserBack
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 72 * sc, (dn + 116) * sc, "Current Values"
-	SetDrawEnv fsize=14 * sc, fstyle=1
+	SetDrawEnv fsize=13 * sc, fstyle=1
 	DrawText 12 * sc, (dn + 258) * sc, "Write to all files(inclusive)"
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 12 * sc, (dn + 144) * sc, "Run Number(s)"
+	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 262 * sc, 30 * sc, "Beam Center [cm]"
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 5 * sc, 40 * sc, "Select Open Beam Files"

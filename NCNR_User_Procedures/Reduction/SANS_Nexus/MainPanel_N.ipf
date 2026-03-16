@@ -451,7 +451,7 @@ Window Main_Panel()
 	//on tab(4) - Miscellaneous operations
 	//	Button MainButton_4a,pos={15,90},size={80,20},proc=Draw3D_MainButtonProc,title="3D Display"
 	//	Button MainButton_4a,help={"Plots a 3-D surface of the selected file type"}
-	Button MainButton_4b, pos={15, 120}, size={100, 20}, proc=ShowSchematic_MainButtonProc, title="Show Schematic"
+	Button MainButton_4b, pos={15, 120}, size={120, 20}, proc=ShowSchematic_MainButtonProc, title="Show Schematic"
 	Button MainButton_4b, help={"Use this to show a schematic of the data reduction process for a selected sample file and reduction protocol"}
 	Button MainButton_4c, pos={15, 150}, size={100, 20}, proc=ShowAvePanel_MainButtonProc, title="Average"
 	Button MainButton_4c, help={"Shows a panel for interactive selection of the 1-D averaging step"}

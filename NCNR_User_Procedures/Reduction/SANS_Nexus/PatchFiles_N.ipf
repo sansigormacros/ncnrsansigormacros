@@ -1320,14 +1320,14 @@ Proc DeadtimePatchPanel() : Panel
 	ModifyPanel cbRGB=(16266, 47753, 2552, 23355)
 
 	SetDrawLayer UserBack
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 85 * sc, 99 * sc, "Current Values"
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 18 * sc, 258 * sc, "Write to all files (inclusive)"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 80 * sc, 99 * sc, "Current Values"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 10 * sc, 258 * sc, "Write to all files (inclusive)"
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 209 * sc, 30 * sc, "Dead Time Constants"
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 18 * sc, 133 * sc, "Run Number(s)"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 10 * sc, 133 * sc, "Run Number(s)"
 
 	//	PopupMenu popup_0,pos={sc*20,40*sc},size={sc*109,20*sc},title="Detector Panel"
 	//	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
@@ -1632,14 +1632,14 @@ Proc CalibrationPatchPanel() : Panel
 	ModifyPanel cbRGB=(16266, 47753, 2552, 23355)
 
 	SetDrawLayer UserBack
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 85 * sc, 99 * sc, "Current Values"
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 18 * sc, 258 * sc, "Write to all files (inclusive)"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 80 * sc, 99 * sc, "Current Values"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 10 * sc, 258 * sc, "Write to all files (inclusive)"
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 227 * sc, 28 * sc, "Quadratic Calibration Constants per Tube"
-	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 18 * sc, 133 * sc, "Run Number(s)"
+	SetDrawEnv fsize=13 * sc, fstyle=1
+	DrawText 10 * sc, 133 * sc, "Run Number(s)"
 
 	//	PopupMenu popup_0,pos={sc*20,40*sc},size={sc*109,20*sc},title="Detector Panel"
 	//	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""

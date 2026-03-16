@@ -153,8 +153,11 @@ Function InitGlobals()
 	// was generated on the VAX, with larger per-point error. bin=2 much more closely replicates
 	// the VAX reduction
 	NVAR binWidth = root:Packages:NIST:gBinWidth
-	binWidth = 2
-
+	if(cmpstr(ksDetType,"Tubes") == 0)
+		binWidth = 2
+	else
+		binWidth = 1		// detector is Ordela and is not really tubes
+	endif
 	//
 
 	// set the lookup waves for log/lin display of the detector images
