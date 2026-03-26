@@ -55,7 +55,7 @@ Menu "Macros"
 //		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
 		"-"
-//		"Include Batch HDF Converter",LoadBatchHDFConverter()
+//		"Include Batch VAX-HDF Converter",LoadBatchHDFConverter()
 
 	End
 	
@@ -114,6 +114,14 @@ Function ConflictingPackage(loaded)
 
 End
 
+// this Proc was in the loader above, but I couldn't find it anywhere
+// it may or may not need to be visible on the macros menu, but it may be necessary to convert VAX data to Nexus for 
+// (1) testing of Nexus reduction and (2) to properly reduce event data (VAX only allows time in integer seconds)
+//
+Proc LoadBatchHDFConverter()
+	Execute/P "INSERTINCLUDE \"HDF5_ConvertVAX_to_HDF5\""
+	Execute/P "COMPILEPROCEDURES "
+end
 
 Proc LoadSANS_Nexus_Tubes()
 
