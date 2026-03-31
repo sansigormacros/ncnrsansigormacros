@@ -2307,7 +2307,7 @@ Proc EventCorrectionPanel()
 	
 	SetDataFolder root:
 	
-EndMacro
+End
 
 
 Function EC_AutoCorrectSteps(ba)
