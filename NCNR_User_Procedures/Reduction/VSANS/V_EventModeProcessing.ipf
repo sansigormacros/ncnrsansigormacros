@@ -2099,7 +2099,7 @@ Proc V_EventCorrectionPanel()
 
 	SetDataFolder root:
 
-EndMacro
+End
 
 // figure out which traces are on the graph - and put the cursors there
 //
@@ -3719,3 +3719,7 @@ End
 //	return(num)
 //end
 ///////////////////////////////
+
+
+
+///////////
