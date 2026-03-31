@@ -2928,8 +2928,10 @@ End
 //
 // don't un-do the sort, that was part of the necessary adjustments
 //
-// not implemented -- saving takes way too long...
+// previously not implemented -- saving takes way too long...
 // and the SANS data appears to be rather clean
+//
+// but implement just in case someone needs it
 //
 Function EC_SaveWavesButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 
@@ -2937,17 +2939,18 @@ Function EC_SaveWavesButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 
-			DoAlert 0, "Save not implemented"
+//			DoAlert 0, "Save not implemented"
 
-			//			SetDataFolder root:Packages:NIST:Event:
-			//
-			//			Wave rescaledTime = rescaledTime
-			//			Wave timePt = timePt
-			//			Wave xLoc = xLoc
-			//			Wave yLoc = yLoc
-			//			Wave tube = tube
-			//			Save/T xLoc,yLoc,timePt,rescaledTime,tube		//will ask for a name
-			//
+			SetDataFolder root:Packages:NIST:Event:
+
+			Wave rescaledTime = rescaledTime
+			Wave timePt = timePt
+			Wave xLoc = xLoc
+			Wave yLoc = yLoc
+//			Wave tube = tube
+//			Save/T xLoc,yLoc,timePt,rescaledTime,tube		//will ask for a name
+			Save/T xLoc,yLoc,timePt,rescaledTime				//will ask for a name
+			
 
 			SetDataFolder root:
 			break
@@ -4046,7 +4049,10 @@ End
 // for testing of unresponsive panel
 //
 
-Macro Test_EventCorrectionPanel()
+Macro Test_UnresponsivePanel()
+
+	Make/O/D/N=1000 rescaledTime=p
+
 //	variable sc = 1
 
 //	if(root:Packages:NIST:gLaptopMode == 1)
@@ -4058,9 +4064,9 @@ Macro Test_EventCorrectionPanel()
 
 //	if(exists("rescaledTime") == 1)
 		Display/W=(35, 44, 761, 533)/K=2 rescaledTime
-		DoWindow/C Test_EventCorrectionPanel
-//		ModifyGraph mode=4
-		ModifyGraph mode=0
+		DoWindow/C Test_UnresponsivePanel
+		ModifyGraph mode=4
+//		ModifyGraph mode=0
 //		ModifyGraph marker=19
 		ModifyGraph rgb=(0, 0, 0)
 //		ModifyGraph msize=1
@@ -4121,6 +4127,7 @@ Function Test_DoneButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 	switch(ba.eventCode)
 		case 2: // mouse up
 			// click code here
+			Print "Event 2: mouse up"
 			DoWindow/K Test_EventCorrectionPanel
 			break
 		case -1: // control being killed
