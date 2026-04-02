@@ -1339,7 +1339,7 @@ Function fBatchConvertToHDF5(lo,hi)
 			
 			// save it
 //			VAXSaveGroupAsHDF5("root:toExport", newfilename[0,7]+".nxs.ngb")
-			VAXSaveGroupAsHDF5("root:toExport", "sans"+num2str(ii)+".nxs.ngb")
+			VAXSaveGroupAsHDF5("root:toExport", "vaxd"+num2str(ii)+".nxs.ngb")
 
 		else
 			printf "run number %d not found\r",ii

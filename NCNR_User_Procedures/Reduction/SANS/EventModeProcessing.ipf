@@ -2273,6 +2273,9 @@ Proc EventCorrectionPanel()
 		Label left "\\Z14Time (seconds)"
 		Label bottom "\\Z14Event number"	
 		SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
+
+		// workaround to fix unresponsive panel buttons, only an issue in Igor 9, not Igor 8 or 10	
+		ShowTools/A
 		
 		ControlBar 100
 		Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"

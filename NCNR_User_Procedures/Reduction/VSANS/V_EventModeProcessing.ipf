@@ -2056,6 +2056,9 @@ Proc V_EventCorrectionPanel()
 		ModifyGraph msize=1
 		ErrorBars rescaledTime, OFF
 
+	// workaorund to make the panel buttons responsive. only an issue in Igor 9, not Igor 8 or 10
+		ShowTools/A				
+		
 		if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 			Label left, "\\Z10Time (seconds)"
 			Label bottom, "\\Z10Event number"
@@ -2093,9 +2096,11 @@ Proc V_EventCorrectionPanel()
 		Button button11, pos={sc * 683, 12 * sc}, size={sc * 30, 20 * sc}, proc=V_EC_HelpButtonProc, title="?"
 		Button button12, pos={sc * 658, 64 * sc}, size={sc * 60, 20 * sc}, proc=V_EC_DoneButtonProc, title="Done"
 
+//		HideTools/A			// don't hide the tools - must leave them up for the buttons to work
 	else
 		DoAlert 0, "Please load some event data, then you'll have something to edit."
 	endif
+
 
 	SetDataFolder root:
 
