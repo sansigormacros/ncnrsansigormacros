@@ -2529,7 +2529,7 @@ Function V_EC_CleanAllPanels()
 		step16 = 0
 
 		// loop through backwards so I don't shift the index
-		for(ii = num - 1; ii >= 0; ii -= 1)
+		for(ii = num - 1; ii > 0; ii -= 1)
 			pt = bad[ii] - 1 // actually want to delete the point before
 			// is the time step > 16 ms?
 			if((rescaledTime[ii] - rescaledTime[ii - 1]) > kBadStep_s)
