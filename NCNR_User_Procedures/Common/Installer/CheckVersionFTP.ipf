@@ -125,7 +125,7 @@ Proc CheckForLatestVersion()
 	return
 End
 
-Function OpenTracTicketPage()
+Function OpenTracTicketPage(string ctrlName) : ButtonControl
 //	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
 //	if(V_flag==1)
 //		BrowseURL "http://danse.chem.utk.edu/trac/newticket"

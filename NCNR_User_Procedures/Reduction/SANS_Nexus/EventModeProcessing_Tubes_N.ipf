@@ -4049,100 +4049,49 @@ End
 
 
 /////
-// for testing of unresponsive panel
+// for testing of unresponsive ControlBar on graph
+// (based on Event Correction Panel)
+// -- sent query to support@wavemetrics.com on 4/6/26
 //
 
-//Macro Test_UnresponsivePanel()
-//
-//	Make/O/D/N=1000 rescaledTime=p
-//
-////	variable sc = 1
-//
-////	if(root:Packages:NIST:gLaptopMode == 1)
-////		sc = 0.7
-////	endif
-//
-////	PauseUpdate; Silent 1 // building window...
-////	SetDataFolder root:Packages:NIST:Event:
-//
-////	if(exists("rescaledTime") == 1)
-//		Display/W=(35, 44, 761, 533)/K=2 rescaledTime
-//		DoWindow/C Test_UnresponsivePanel
-//		ModifyGraph mode=4
-////		ModifyGraph mode=0
-////		ModifyGraph marker=19
-//		ModifyGraph rgb=(0, 0, 0)
-////		ModifyGraph msize=1
-////		ErrorBars rescaledTime, OFF
-//
-////		if(root:Packages:NIST:gLaptopMode == 1)
-////			Label left, "\\Z10Time (seconds)"
-////			Label bottom, "\\Z10Event number"
-////		else
-////			Label left, "\\Z14Time (seconds)"
-////			Label bottom, "\\Z14Event number"
-////		endif
-////		SetAxis bottom *, *
-////		SetAxis bottom, 0, *	// 0.10 * numpnts(rescaledTime) //show 1st 10% of data for speed in displaying
-//
-//		ControlBar 100
-////		Button button0, pos={sc * 20, 12 * sc}, size={sc * 70, 20 * sc}, proc=EC_AddCursorButtonProc, title="Cursors", fSize=12 * sc
-////		Button button1, pos={sc * 20, 38 * sc}, size={sc * 80, 20 * sc}, proc=EC_ShowAllButtonProc, title="All Data", fSize=12 * sc
-//		//		Button button2,pos={sc*20,64*sc},size={sc*80,20*sc},proc=EC_ColorizeTimeButtonProc,title="Colorize"
-//
-//		//		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-All"
-//		//		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-One"
-//
-////		Button buttonDispZoom, pos={sc * 140, 12 * sc}, size={sc * 100, 20 * sc}, proc=EC_DisplayButtonProc, title="Display-Zoom", fSize=12 * sc
-//		//		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-One"
-//
-////		SetVariable setVar1, pos={sc * 140, 38 * sc}, size={sc * 100, 20 * sc}, title="Scale", value=_NUM:0.1
-////		SetVariable setvar1, limits={0.01, 1, 0.02}, fSize=12 * sc
-//
-////		Button button7, pos={sc * 140, 64 * sc}, size={sc * 100, 20 * sc}, proc=EC_FindOutlierButton, title="Zap Outlier"
-//
-//		//
-//		//		Button buttonDiffAll,pos={sc*290,12*sc},size={sc*110,20*sc},proc=EC_DoDifferential,title="Differential-All"
-//		//		Button button6,pos={sc*290,38*sc},size={sc*110,20*sc},proc=EC_DoDifferential,title="Differential-One"
-////		Button button9, pos={sc * 260, 12 * sc}, size={sc * 160, 20 * sc}, proc=EC_TrimPointsButtonProc, title="Trim Between Cursors"
-//		//
-//		//		SetVariable setVar0,pos={sc*290,88*sc},size={sc*130,20*sc},title="Panel Number",value=_NUM:1
-//		//		SetVariable setvar0,limits={1,4,1}
-//
-//		//		Button buttonCleanAll,pos={sc*(290+150),12*sc},size={sc*110,20*sc},proc=EC_SortTimeButtonProc,title="Sort-All"
-////		Button button10, pos={sc * (290 + 150), 64 * sc}, size={sc * 110, 20 * sc}, proc=EC_SaveWavesButtonProc, title="Save Waves", fSize=12 * sc
-//
-////		Button button11, pos={sc * 683, 12 * sc}, size={sc * 30, 20 * sc}, proc=EC_HelpButtonProc, title="?", fSize=12 * sc
-//
-//
-//		Button button12, pos={658, 64}, size={60, 20}, proc=Test_DoneButtonProc, title="Done", fSize=12
-//
-////	else
-////		DoAlert 0, "Please load some event data, then you'll have something to edit."
-////	endif
-//
-//	SetDataFolder root:
-//
-//End
-//
-//Function Test_DoneButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
-//
-//	switch(ba.eventCode)
-//		case 2: // mouse up
-//			// click code here
-//			Print "Event 2: mouse up"
-//			DoWindow/K Test_EventCorrectionPanel
-//			break
-//		case -1: // control being killed
-//			break
-//		default:
-//			// no default case needed
-//			break
-//	endswitch
-//
-//	return 0
-//End
-//
-//
+Proc Test_UnresponsiveControlBar()
+
+	Make/O/D/N=1000 rescaledTime=p
+
+	Display/W=(35, 44, 761, 533)/K=2 rescaledTime
+	DoWindow/C Test_UnresponsiveControlBar
+	ModifyGraph mode=4
+	ModifyGraph mode=0
+	ModifyGraph marker=19
+	ModifyGraph rgb=(0, 0, 0)
+	ModifyGraph msize=1
+	ErrorBars rescaledTime, OFF
+
+	ControlBar 100
+
+
+	Button button12, pos={658, 64}, size={60, 20}, proc=Test_DoneButtonProc, title="Done", fSize=12
+
+End
+
+Function Test_DoneButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
+
+	switch(ba.eventCode)
+		case 2: // mouse up
+			// click code here
+			Print "Event 2: mouse up"
+			DoWindow/K Test_UnresponsiveControlBar
+			break
+		case -1: // control being killed
+			break
+		default:
+			// no default case needed
+			break
+	endswitch
+
+	return 0
+End
+
+
 
 /////////////

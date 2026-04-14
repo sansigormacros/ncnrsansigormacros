@@ -298,9 +298,9 @@ Proc EventModePanel()
 	Button button22,pos={620,450},size={120,20},proc=Osc_LoadAdjList_BinOnFly,title="Load+Accumulate"
 
 	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
-	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
+	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=0
 	CheckBox chkbox1_1,pos={25,59},size={53,14},title="Stream",fSize=10
-	CheckBox chkbox1_1,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_1,proc=EventModeRadioProc,value=1,mode=1
 	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
 	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
 	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
