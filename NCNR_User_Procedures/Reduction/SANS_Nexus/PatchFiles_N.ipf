@@ -1859,10 +1859,10 @@ Function fPatchAttenTable(variable lo, variable hi, WAVE attW)
 	variable ii
 	string   fname
 
-	// check the dimensions of the attW (12,12)
-	if(DimSize(attW, 0) != 12 || DimSize(attW, 1) != 12)
-		Abort "attenuator table wave is not of proper dimension (12,12)"
-	endif
+//	// check the dimensions of the attW (12,12)
+//	if(DimSize(attW, 0) != 12 || DimSize(attW, 1) != 12)
+//		Abort "attenuator table wave is not of proper dimension (12,12)"
+//	endif
 
 	//loop over all files
 	for(ii = lo; ii <= hi; ii += 1)
@@ -2016,38 +2016,129 @@ Function WriteCSVAttTableButton(STRUCT WMButtonAction &ba) : ButtonControl
 			variable hi        = V_Value
 			WAVE     attenWave = root:myGlobals:Patch:attenWave
 
+			//which set of atteunator tables was loaded?
+			String prefix=""
+			if(exists("root:NGBlambda") != 0 )
+				//10m tables
+				prefix = "NGB"
+			endif
+			if(exists("root:ng7lambda") != 0 )
+				//10m tables
+				prefix = "ng7"
+			endif
+			if(exists("root:ng3lambda") != 0 )
+				//10m tables
+				prefix = "ng3"
+			endif			
+			if(strlen(prefix) == 0)
+				Abort "Attenuator tables not yet loaded"
+			endif
+
 			DoAlert 2, "Do you want to write these values to ALL runs from\r" + num2istr(lo) + " to " + num2istr(hi) + " ?"
 			if(V_Flag == 1) //yes, anything else is a no
 
-				WAVE NGBlambda = $("root:NGBlambda")
-				WAVE NGBatt0   = $("root:NGBatt0")
-				WAVE NGBatt1   = $("root:NGBatt1")
-				WAVE NGBatt2   = $("root:NGBatt2")
-				WAVE NGBatt3   = $("root:NGBatt3")
-				WAVE NGBatt4   = $("root:NGBatt4")
-				WAVE NGBatt5   = $("root:NGBatt5")
-				WAVE NGBatt6   = $("root:NGBatt6")
-				WAVE NGBatt7   = $("root:NGBatt7")
-				WAVE NGBatt8   = $("root:NGBatt8")
-				WAVE NGBatt9   = $("root:NGBatt9")
-				WAVE NGBatt10  = $("root:NGBatt10")
+	// write the waves, different number of wavelengths for each instrument
+	//10m @ NGB
+				if(cmpstr(prefix,"NGB") == 0 )
+					WAVE NGxlambda = $("root:"+prefix+"lambda")
+					WAVE NGxatt0   = $("root:"+prefix+"att0")
+					WAVE NGxatt1   = $("root:"+prefix+"att1")
+					WAVE NGxatt2   = $("root:"+prefix+"att2")
+					WAVE NGxatt3   = $("root:"+prefix+"att3")
+					WAVE NGxatt4   = $("root:"+prefix+"att4")
+					WAVE NGxatt5   = $("root:"+prefix+"att5")
+					WAVE NGxatt6   = $("root:"+prefix+"att6")
+					WAVE NGxatt7   = $("root:"+prefix+"att7")
+					WAVE NGxatt8   = $("root:"+prefix+"att8")
+					WAVE NGxatt9   = $("root:"+prefix+"att9")
+					WAVE NGxatt10  = $("root:"+prefix+"att10")
 
-				attenWave[][0]  = NGBlambda[p]
-				attenWave[][1]  = NGBatt0[p]
-				attenWave[][2]  = NGBatt1[p]
-				attenWave[][3]  = NGBatt2[p]
-				attenWave[][4]  = NGBatt3[p]
-				attenWave[][5]  = NGBatt4[p]
-				attenWave[][6]  = NGBatt5[p]
-				attenWave[][7]  = NGBatt6[p]
-				attenWave[][8]  = NGBatt7[p]
-				attenWave[][9]  = NGBatt8[p]
-				attenWave[][10] = NGBatt9[p]
-				attenWave[][11] = NGBatt10[p]
+					Make/O/D/N=(12, 12) root:myGlobals:Patch:attenWave = 0
+					WAVE     attenWave = root:myGlobals:Patch:attenWave	
+					attenWave[][0]  = NGxlambda[p]
+					attenWave[][1]  = NGxatt0[p]
+					attenWave[][2]  = NGxatt1[p]
+					attenWave[][3]  = NGxatt2[p]
+					attenWave[][4]  = NGxatt3[p]
+					attenWave[][5]  = NGxatt4[p]
+					attenWave[][6]  = NGxatt5[p]
+					attenWave[][7]  = NGxatt6[p]
+					attenWave[][8]  = NGxatt7[p]
+					attenWave[][9]  = NGxatt8[p]
+					attenWave[][10] = NGxatt9[p]
+					attenWave[][11] = NGxatt10[p]
+	
+					fPatchAttenTable(lo, hi, attenWave)
+				endif
 
-				fPatchAttenTable(lo, hi, attenWave)
+				//ng7
+				if(cmpstr(prefix,"ng7") == 0 )
+						WAVE NGxlambda = $("root:"+prefix+"lambda")
+						WAVE NGxatt0   = $("root:"+prefix+"att0")
+						WAVE NGxatt1   = $("root:"+prefix+"att1")
+						WAVE NGxatt2   = $("root:"+prefix+"att2")
+						WAVE NGxatt3   = $("root:"+prefix+"att3")
+						WAVE NGxatt4   = $("root:"+prefix+"att4")
+						WAVE NGxatt5   = $("root:"+prefix+"att5")
+						WAVE NGxatt6   = $("root:"+prefix+"att6")
+						WAVE NGxatt7   = $("root:"+prefix+"att7")
+						WAVE NGxatt8   = $("root:"+prefix+"att8")
+						WAVE NGxatt9   = $("root:"+prefix+"att9")
+						WAVE NGxatt10  = $("root:"+prefix+"att10")
+	
+		
+						Make/O/D/N=(10, 12) root:myGlobals:Patch:attenWave = 0
+						WAVE     attenWave = root:myGlobals:Patch:attenWave
+						attenWave[][0]  = NGxlambda[p]
+						attenWave[][1]  = NGxatt0[p]
+						attenWave[][2]  = NGxatt1[p]
+						attenWave[][3]  = NGxatt2[p]
+						attenWave[][4]  = NGxatt3[p]
+						attenWave[][5]  = NGxatt4[p]
+						attenWave[][6]  = NGxatt5[p]
+						attenWave[][7]  = NGxatt6[p]
+						attenWave[][8]  = NGxatt7[p]
+						attenWave[][9]  = NGxatt8[p]
+						attenWave[][10] = NGxatt9[p]
+						attenWave[][11] = NGxatt10[p]
+		
+						fPatchAttenTable(lo, hi, attenWave)
+				endif
+	
+	//ng3 (NGB30)
+				if(cmpstr(prefix,"ng3") == 0 )
+						WAVE NGxlambda = $("root:"+prefix+"lambda")
+						WAVE NGxatt0   = $("root:"+prefix+"att0")
+						WAVE NGxatt1   = $("root:"+prefix+"att1")
+						WAVE NGxatt2   = $("root:"+prefix+"att2")
+						WAVE NGxatt3   = $("root:"+prefix+"att3")
+						WAVE NGxatt4   = $("root:"+prefix+"att4")
+						WAVE NGxatt5   = $("root:"+prefix+"att5")
+						WAVE NGxatt6   = $("root:"+prefix+"att6")
+						WAVE NGxatt7   = $("root:"+prefix+"att7")
+						WAVE NGxatt8   = $("root:"+prefix+"att8")
+						WAVE NGxatt9   = $("root:"+prefix+"att9")
+						WAVE NGxatt10  = $("root:"+prefix+"att10")
+		
+					Make/O/D/N=(10, 12) root:myGlobals:Patch:attenWave = 0
+					WAVE     attenWave = root:myGlobals:Patch:attenWave
+						attenWave[][0]  = NGxlambda[p]
+						attenWave[][1]  = NGxatt0[p]
+						attenWave[][2]  = NGxatt1[p]
+						attenWave[][3]  = NGxatt2[p]
+						attenWave[][4]  = NGxatt3[p]
+						attenWave[][5]  = NGxatt4[p]
+						attenWave[][6]  = NGxatt5[p]
+						attenWave[][7]  = NGxatt6[p]
+						attenWave[][8]  = NGxatt7[p]
+						attenWave[][9]  = NGxatt8[p]
+						attenWave[][10] = NGxatt9[p]
+						attenWave[][11] = NGxatt10[p]
+		
+						fPatchAttenTable(lo, hi, attenWave)
+				endif
 			endif
-
+			
 			break
 		case -1: // control being killed
 			break
@@ -2151,10 +2242,10 @@ Function fPatchAttenErrTable(variable lo, variable hi, WAVE attErrW)
 	variable ii
 	string   fname
 
-	// check the dimensions of the attErrW (12,12)
-	if(DimSize(attErrW, 0) != 12 || DimSize(attErrW, 1) != 12)
-		Abort "attenuator Err table wave is not of proper dimension (12,12)"
-	endif
+//	// check the dimensions of the attErrW (12,12)
+//	if(DimSize(attErrW, 0) != 12 || DimSize(attErrW, 1) != 12)
+//		Abort "attenuator Err table wave is not of proper dimension (12,12)"
+//	endif
 
 	//loop over all files
 	for(ii = lo; ii <= hi; ii += 1)
@@ -2311,36 +2402,126 @@ Function WriteCSVAttErrTableButton(STRUCT WMButtonAction &ba) : ButtonControl
 			variable lo = V_Value
 			ControlInfo setvar1
 			variable hi           = V_Value
-			WAVE     attenErrWave = root:myGlobals:Patch:attenErrWave
+//			WAVE     attenErrWave = root:myGlobals:Patch:attenErrWave
 
-			WAVE NGBlambda    = $("root:NGBlambda")
-			WAVE NGBatt0_err  = $("root:NGBatt0_err")
-			WAVE NGBatt1_err  = $("root:NGBatt1_err")
-			WAVE NGBatt2_err  = $("root:NGBatt2_err")
-			WAVE NGBatt3_err  = $("root:NGBatt3_err")
-			WAVE NGBatt4_err  = $("root:NGBatt4_err")
-			WAVE NGBatt5_err  = $("root:NGBatt5_err")
-			WAVE NGBatt6_err  = $("root:NGBatt6_err")
-			WAVE NGBatt7_err  = $("root:NGBatt7_err")
-			WAVE NGBatt8_err  = $("root:NGBatt8_err")
-			WAVE NGBatt9_err  = $("root:NGBatt9_err")
-			WAVE NGBatt10_err = $("root:NGBatt10_err")
+			//which set of atteunator tables was loaded?
+			String prefix=""
+			if(exists("root:NGBlambda") != 0 )
+				//10m tables
+				prefix = "NGB"
+			endif
+			if(exists("root:ng7lambda") != 0 )
+				//10m tables
+				prefix = "ng7"
+			endif
+			if(exists("root:ng3lambda") != 0 )
+				//10m tables
+				prefix = "ng3"
+			endif			
+			if(strlen(prefix) == 0)
+				Abort "Attenuator tables not yet loaded"
+			endif
 
-			attenErrWave[][0]  = NGBlambda[p]
-			attenErrWave[][1]  = NGBatt0_err[p]
-			attenErrWave[][2]  = NGBatt1_err[p]
-			attenErrWave[][3]  = NGBatt2_err[p]
-			attenErrWave[][4]  = NGBatt3_err[p]
-			attenErrWave[][5]  = NGBatt4_err[p]
-			attenErrWave[][6]  = NGBatt5_err[p]
-			attenErrWave[][7]  = NGBatt6_err[p]
-			attenErrWave[][8]  = NGBatt7_err[p]
-			attenErrWave[][9]  = NGBatt8_err[p]
-			attenErrWave[][10] = NGBatt9_err[p]
-			attenErrWave[][11] = NGBatt10_err[p]
+// write the waves, different number of wavelengths for each instrument
+//10m @ NGB
+			if(cmpstr(prefix,"NGB") == 0 )
+				WAVE NGBlambda    = $("root:NGBlambda")
+				WAVE NGBatt0_err  = $("root:NGBatt0_err")
+				WAVE NGBatt1_err  = $("root:NGBatt1_err")
+				WAVE NGBatt2_err  = $("root:NGBatt2_err")
+				WAVE NGBatt3_err  = $("root:NGBatt3_err")
+				WAVE NGBatt4_err  = $("root:NGBatt4_err")
+				WAVE NGBatt5_err  = $("root:NGBatt5_err")
+				WAVE NGBatt6_err  = $("root:NGBatt6_err")
+				WAVE NGBatt7_err  = $("root:NGBatt7_err")
+				WAVE NGBatt8_err  = $("root:NGBatt8_err")
+				WAVE NGBatt9_err  = $("root:NGBatt9_err")
+				WAVE NGBatt10_err = $("root:NGBatt10_err")
+	
+				Make/O/D/N=(12, 12) root:myGlobals:Patch:attenErrWave = 0
+				WAVE     attenErrWave = root:myGlobals:Patch:attenErrWave
+				attenErrWave[][0]  = NGBlambda[p]
+				attenErrWave[][1]  = NGBatt0_err[p]
+				attenErrWave[][2]  = NGBatt1_err[p]
+				attenErrWave[][3]  = NGBatt2_err[p]
+				attenErrWave[][4]  = NGBatt3_err[p]
+				attenErrWave[][5]  = NGBatt4_err[p]
+				attenErrWave[][6]  = NGBatt5_err[p]
+				attenErrWave[][7]  = NGBatt6_err[p]
+				attenErrWave[][8]  = NGBatt7_err[p]
+				attenErrWave[][9]  = NGBatt8_err[p]
+				attenErrWave[][10] = NGBatt9_err[p]
+				attenErrWave[][11] = NGBatt10_err[p]
+	
+				fPatchAttenErrTable(lo, hi, attenErrWave)
+			endif
 
-			fPatchAttenErrTable(lo, hi, attenErrWave)
+//ng7
+			if(cmpstr(prefix,"ng7") == 0 )
+				WAVE ng7lambda    = $("root:ng7lambda")
+				WAVE ng7att0_err  = $("root:ng7att0_err")
+				WAVE ng7att1_err  = $("root:ng7att1_err")
+				WAVE ng7att2_err  = $("root:ng7att2_err")
+				WAVE ng7att3_err  = $("root:ng7att3_err")
+				WAVE ng7att4_err  = $("root:ng7att4_err")
+				WAVE ng7att5_err  = $("root:ng7att5_err")
+				WAVE ng7att6_err  = $("root:ng7att6_err")
+				WAVE ng7att7_err  = $("root:ng7att7_err")
+				WAVE ng7att8_err  = $("root:ng7att8_err")
+				WAVE ng7att9_err  = $("root:ng7att9_err")
+				WAVE ng7att10_err = $("root:ng7att10_err")
+	
+				Make/O/D/N=(10, 12) root:myGlobals:Patch:attenErrWave = 0
+				WAVE     attenErrWave = root:myGlobals:Patch:attenErrWave
+				attenErrWave[][0]  = ng7lambda[p]
+				attenErrWave[][1]  = ng7att0_err[p]
+				attenErrWave[][2]  = ng7att1_err[p]
+				attenErrWave[][3]  = ng7att2_err[p]
+				attenErrWave[][4]  = ng7att3_err[p]
+				attenErrWave[][5]  = ng7att4_err[p]
+				attenErrWave[][6]  = ng7att5_err[p]
+				attenErrWave[][7]  = ng7att6_err[p]
+				attenErrWave[][8]  = ng7att7_err[p]
+				attenErrWave[][9]  = ng7att8_err[p]
+				attenErrWave[][10] = ng7att9_err[p]
+				attenErrWave[][11] = ng7att10_err[p]
+	
+				fPatchAttenErrTable(lo, hi, attenErrWave)
+			endif
 
+//ng3 (NGB30)
+			if(cmpstr(prefix,"ng3") == 0 )
+				WAVE ng3lambda    = $("root:ng3lambda")
+				WAVE ng3att0_err  = $("root:ng3att0_err")
+				WAVE ng3att1_err  = $("root:ng3att1_err")
+				WAVE ng3att2_err  = $("root:ng3att2_err")
+				WAVE ng3att3_err  = $("root:ng3att3_err")
+				WAVE ng3att4_err  = $("root:ng3att4_err")
+				WAVE ng3att5_err  = $("root:ng3att5_err")
+				WAVE ng3att6_err  = $("root:ng3att6_err")
+				WAVE ng3att7_err  = $("root:ng3att7_err")
+				WAVE ng3att8_err  = $("root:ng3att8_err")
+				WAVE ng3att9_err  = $("root:ng3att9_err")
+				WAVE ng3att10_err = $("root:ng3att10_err")
+	
+				Make/O/D/N=(10, 12) root:myGlobals:Patch:attenErrWave = 0
+				WAVE     attenErrWave = root:myGlobals:Patch:attenErrWave
+				attenErrWave[][0]  = ng3lambda[p]
+				attenErrWave[][1]  = ng3att0_err[p]
+				attenErrWave[][2]  = ng3att1_err[p]
+				attenErrWave[][3]  = ng3att2_err[p]
+				attenErrWave[][4]  = ng3att3_err[p]
+				attenErrWave[][5]  = ng3att4_err[p]
+				attenErrWave[][6]  = ng3att5_err[p]
+				attenErrWave[][7]  = ng3att6_err[p]
+				attenErrWave[][8]  = ng3att7_err[p]
+				attenErrWave[][9]  = ng3att8_err[p]
+				attenErrWave[][10] = ng3att9_err[p]
+				attenErrWave[][11] = ng3att10_err[p]
+	
+				fPatchAttenErrTable(lo, hi, attenErrWave)
+			endif
+			
 			break
 		case -1: // control being killed
 			break
