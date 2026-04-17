@@ -2262,8 +2262,8 @@ Function V_ReadEventHeader()
 	FBinRead/F=2/U/B=3 refnum, gTime3
 	FBinRead/F=2/U/B=3 refnum, gTime4
 	FBinRead/F=2/U/B=3 refnum, gTime5
-	FBinRead/F=2/U/B=3 refnum, gTime6
-	//	FBinRead refnum, gDetStr
+//	FBinRead/F=2/U/B=3 refnum, gTime6
+//	FBinRead refnum, gDetStr
 	FBinRead/F=2/U/B=3 refnum, gVolt
 	FBinRead/F=3/U/B=3 refnum, gResol
 
@@ -2280,8 +2280,8 @@ Function V_ReadEventHeader()
 	Print "time part 3 = ", gTime3
 	Print "time part 4 = ", gTime4
 	Print "time part 5 = ", gTime5
-	Print "time part 6 = ", gTime6
-	//	Print "det group = ",gDetStr
+//	Print "time part 6 = ", gTime6
+//	Print "det group = ",gDetStr
 	Print "voltage (V) = ", gVolt
 	Print "clock freq (Hz) = ", gResol
 

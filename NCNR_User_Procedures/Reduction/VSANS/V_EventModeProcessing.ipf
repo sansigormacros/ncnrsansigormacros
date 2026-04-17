@@ -1741,8 +1741,8 @@ Function V_LoadEvents()
 	FBinRead/F=2/U refnum, gTime3
 	FBinRead/F=2/U refnum, gTime4
 	FBinRead/F=2/U refnum, gTime5
-	FBinRead/F=2/U refnum, gTime6
-	//	FBinRead refnum, gDetStr
+//	FBinRead/F=2/U refnum, gTime6		//don't read these bytes, only 10 bytes are written for time, not 12
+	//	FBinRead refnum, gDetStr			//don't read the detector identifier, it's not written out
 	FBinRead/F=2/U refnum, gVolt
 	FBinRead/F=3/U refnum, gResol
 

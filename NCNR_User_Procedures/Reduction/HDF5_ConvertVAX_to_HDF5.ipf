@@ -426,7 +426,7 @@ Function FillStructureFromRTI()
 		WAVE/T	name   	//"SANS:NGB"
 		WAVE/T	type   	//"SANS"
 		
-		local_contact = "Jeff Krzywon"
+		local_contact = "Not me"
 		name = "SANS_NGB"
 		type = "SANS"
 
@@ -442,7 +442,14 @@ Function FillStructureFromRTI()
 		WAVE		thickness 	//0.187559
 		WAVE/T		type   	//"PMMA"
 
+		WAVE/Z att_err = root:index_error_table		//copies from the globals, now copy to Nexus
+		WAVE/Z att_index = root:index_table
+		
 		num_atten_dropped = rw[3]
+		if(waveExists(att_index))			//these won't exist if I'm converting a DIV file
+			index_table = att_index
+			index_error_table = att_err	
+		endif
 		
 	SetDataFolder root:toExport:entry:instrument:beam_monitor_norm 
 		WAVE		data 	//19099
@@ -675,8 +682,9 @@ Function	FillDetector(rw,tw,iw)
 		detector_counts = sum(data,-inf,inf)
 
 		// approximate dead time per tube
-		dead_time = 5e-6
-		 
+//		dead_time = 5e-6
+// use the dead time that would be chosen from the globals for the particular instrument/date/time
+		dead_time = DetectorDeadtime(tw[3],tw[9],dateAndTimeStr=tw[1],dtime=rw[48])		 
 		 // perfect cailbration of tubes
 		 
 		spatial_calibration[0][] = -521
@@ -703,8 +711,10 @@ Function	FillDetector(rw,tw,iw)
 		data = linear_data // result data is (128,128)
 		
 			// approximate dead time (only a single value used)
-		dead_time = 1e-6
-		 
+//		dead_time = 1e-6
+// use the dead time that would be chosen from the globals for the particular instrument/date/time
+		dead_time = DetectorDeadtime(tw[3],tw[9],dateAndTimeStr=tw[1],dtime=rw[48])
+		
 		 // "perfect" cailbration of Ordela detector 64 cm in y-direction (=640 mm)
 		 
 		spatial_calibration[0][] = -320
@@ -1288,23 +1298,60 @@ End
 
 
 
+//need to have a DIV file loaded already
+
+Macro Convert_DIV_File(style)
+	String style="Tubes"
+	Prompt style, "Detector style", popup "Tubes;Ordela;"
+
+	String/G root:DetectorStyle = style
 
 
+	SetupStructure()
+	
+
+	//copy it to RAW
+	// need to make sure that the linear_data_error exists (it won't in a VAX file)
+	Duplicate/O root:Packages:NIST:DIV:data root:Packages:NIST:DIV:linear_data_error
+	root:Packages:NIST:DIV:linear_data_error = 0.01	
+	CopyWorkContents("DIV","RAW")
+	
+	
+	// fill the structure
+	FillStructureFromRTI()
+	
+	// tweak a few items
+	//linear data error
+	Duplicate/O root:toExport:entry:instrument:detector:data root:toExport:entry:instrument:detector:linear_data_error
+	root:toExport:entry:instrument:detector:linear_data_error = 0.01
+					
+	// save it
+	//don't use .nxs, or it'll be confused with raw data
+	// yes use DIV in the name - this is the only way to identify DIV data
+	VAXSaveGroupAsHDF5("root:toExport", "Nexus_Plex_DATE_DIV.hdf5")		
+
+End
 
 //////////////////////////////////////////////////
 
 
 
-Macro BatchConvertToHDF5(firstFile,lastFile,style)
+Macro BatchConvertToHDF5(firstFile,lastFile,style,instr)
 	Variable firstFile=1,lastFile=10
-	String style="Tubes"
+	String style="Tubes",instr="NG3"
 	Prompt firstFile, "Enter first run number"
 	Prompt lastFile, "Enter last run number"
 	Prompt style, "Detector style", popup "Tubes;Ordela;"
+	Prompt instr, "Instrument", popup "NG3;NG7;NGB;"
 
 	String/G root:DetectorStyle = style
+	String/G root:Instrument = instr
 
 	SetupStructure()
+	
+	PrintAttenuation(instr,6,6)		//just to generate the tables
+	FillAttenuatorTables(instr)
+
 	fBatchConvertToHDF5(firstFile,lastFile)
 
 End
@@ -1350,4 +1397,94 @@ Function fBatchConvertToHDF5(lo,hi)
 End
 
 
+//fill an index_table and index_error_table to add to the Nexus file
+Function 	FillAttenuatorTables(instr)
+	String instr
 
+	// write the waves, different number of wavelengths for each instrument
+	//10m @ NGB	
+	if(cmpstr(instr,"NGB") == 0 )
+		Make/O/D/N=(12, 12) root:index_table = 0
+		Make/O/D/N=(12, 12) root:index_error_table = 0
+		//be sure that the waves in the structure are the correct dimensions
+		Make/O/D/N=(12,12) root:toExport:entry:instrument:attenuator:index_table
+		Make/O/D/N=(12,12) root:toExport:entry:instrument:attenuator:index_error_table
+	endif
+	
+	if(cmpstr(instr,"NG3") == 0 )
+		Make/O/D/N=(10, 12) root:index_table = 0
+		Make/O/D/N=(10, 12) root:index_error_table = 0
+		//be sure that the waves in the structure are the correct dimensions
+		Make/O/D/N=(10,12) root:toExport:entry:instrument:attenuator:index_table
+		Make/O/D/N=(10,12) root:toExport:entry:instrument:attenuator:index_error_table
+	endif
+	
+	if(cmpstr(instr,"NG7") == 0 )
+		Make/O/D/N=(10, 12) root:index_table = 0
+		Make/O/D/N=(10, 12) root:index_error_table = 0
+		//be sure that the waves in the structure are the correct dimensions
+		Make/O/D/N=(10,12) root:toExport:entry:instrument:attenuator:index_table
+		Make/O/D/N=(10,12) root:toExport:entry:instrument:attenuator:index_error_table
+	endif
+	
+	WAVE     index_table = root:index_table	
+	WAVE     index_error_table = root:index_error_table	
+
+
+	WAVE NGxlambda = $("root:myGlobals:Attenuators:"+instr+"lambda")
+	WAVE NGxatt0   = $("root:myGlobals:Attenuators:"+instr+"att0")
+	WAVE NGxatt1   = $("root:myGlobals:Attenuators:"+instr+"att1")
+	WAVE NGxatt2   = $("root:myGlobals:Attenuators:"+instr+"att2")
+	WAVE NGxatt3   = $("root:myGlobals:Attenuators:"+instr+"att3")
+	WAVE NGxatt4   = $("root:myGlobals:Attenuators:"+instr+"att4")
+	WAVE NGxatt5   = $("root:myGlobals:Attenuators:"+instr+"att5")
+	WAVE NGxatt6   = $("root:myGlobals:Attenuators:"+instr+"att6")
+	WAVE NGxatt7   = $("root:myGlobals:Attenuators:"+instr+"att7")
+	WAVE NGxatt8   = $("root:myGlobals:Attenuators:"+instr+"att8")
+	WAVE NGxatt9   = $("root:myGlobals:Attenuators:"+instr+"att9")
+	WAVE NGxatt10  = $("root:myGlobals:Attenuators:"+instr+"att10")
+
+
+	index_table[][0]  = NGxlambda[p]
+	index_table[][1]  = NGxatt0[p]
+	index_table[][2]  = NGxatt1[p]
+	index_table[][3]  = NGxatt2[p]
+	index_table[][4]  = NGxatt3[p]
+	index_table[][5]  = NGxatt4[p]
+	index_table[][6]  = NGxatt5[p]
+	index_table[][7]  = NGxatt6[p]
+	index_table[][8]  = NGxatt7[p]
+	index_table[][9]  = NGxatt8[p]
+	index_table[][10] = NGxatt9[p]
+	index_table[][11] = NGxatt10[p]
+	
+	
+	WAVE NGxatt0_err   = $("root:myGlobals:Attenuators:"+instr+"att0_err")
+	WAVE NGxatt1_err   = $("root:myGlobals:Attenuators:"+instr+"att1_err")
+	WAVE NGxatt2_err   = $("root:myGlobals:Attenuators:"+instr+"att2_err")
+	WAVE NGxatt3_err   = $("root:myGlobals:Attenuators:"+instr+"att3_err")
+	WAVE NGxatt4_err   = $("root:myGlobals:Attenuators:"+instr+"att4_err")
+	WAVE NGxatt5_err   = $("root:myGlobals:Attenuators:"+instr+"att5_err")
+	WAVE NGxatt6_err   = $("root:myGlobals:Attenuators:"+instr+"att6_err")
+	WAVE NGxatt7_err   = $("root:myGlobals:Attenuators:"+instr+"att7_err")
+	WAVE NGxatt8_err   = $("root:myGlobals:Attenuators:"+instr+"att8_err")
+	WAVE NGxatt9_err   = $("root:myGlobals:Attenuators:"+instr+"att9_err")
+	WAVE NGxatt10_err  = $("root:myGlobals:Attenuators:"+instr+"att10_err")
+
+
+	index_error_table[][0]  = NGxlambda[p]
+	index_error_table[][1]  = NGxatt0_err[p]
+	index_error_table[][2]  = NGxatt1_err[p]
+	index_error_table[][3]  = NGxatt2_err[p]
+	index_error_table[][4]  = NGxatt3_err[p]
+	index_error_table[][5]  = NGxatt4_err[p]
+	index_error_table[][6]  = NGxatt5_err[p]
+	index_error_table[][7]  = NGxatt6_err[p]
+	index_error_table[][8]  = NGxatt7_err[p]
+	index_error_table[][9]  = NGxatt8_err[p]
+	index_error_table[][10] = NGxatt9_err[p]
+	index_error_table[][11] = NGxatt10_err[p]
+
+	
+	return(0)
+End
