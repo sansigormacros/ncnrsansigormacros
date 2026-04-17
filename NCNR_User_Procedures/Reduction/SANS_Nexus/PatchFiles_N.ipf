@@ -1941,9 +1941,9 @@ Proc DrawPatchAttenTablePanel() : Panel
 
 	SetDrawLayer UserBack
 	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 85 * sc, 99 * sc, "Current Values"
+	DrawText 77 * sc, 99 * sc, "Current Values"
 	SetDrawEnv fsize=14 * sc, fstyle=1
-	DrawText 18 * sc, 258 * sc, "Write to all files (inclusive)"
+	DrawText 12 * sc, 280 * sc, "Write to all files\r (inclusive)"
 	SetDrawEnv fsize=14 * sc, fstyle=1
 	DrawText 227 * sc, 28 * sc, "Attenuation Table"
 	SetDrawEnv fsize=14 * sc, fstyle=1

@@ -526,7 +526,9 @@ Function ReloadDIVButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			Execute "ReadWork_DIV()"
-			WaveStats root:SANS_DIV_file:entry:instrument:detector:data
+//			WaveStats root:SANS_DIV_file:entry:instrument:detector:data
+			WaveStats root:Packages:NIST:DIV:entry:instrument:detector:data
+			
 			//			WaveStats root:Packages:NIST:DIV:data
 			Print "*"
 			//			Execute "ChangeDisplay(\"DIV\")"

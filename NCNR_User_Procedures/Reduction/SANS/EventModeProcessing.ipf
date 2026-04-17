@@ -985,7 +985,8 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	endif
 	
 
-#if (exists("EventLoadWave")==4)
+///#if (exists("EventLoadWave")==4)
+#if (exists("xxEventLoadWave")==4)
 	LoadEvents_XOP()
 #else
 	// XOP is not present, warn the user to re-run the installer
@@ -1009,8 +1010,8 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 		return(0)
 	endif
 
-	LoadEvents_New_noXOP()
-//	LoadEvents()
+//	LoadEvents_New_noXOP()			// as of 4/2026, this is faster but appears incorrect load/decode 
+	LoadEvents_OLD()
 
 	
 #endif	
