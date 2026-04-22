@@ -985,8 +985,8 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	endif
 	
 
-///#if (exists("EventLoadWave")==4)
-#if (exists("xxEventLoadWave")==4)
+#if (exists("EventLoadWave")==4)
+//#if (exists("xxEventLoadWave")==4)
 	LoadEvents_XOP()
 #else
 	// XOP is not present, warn the user to re-run the installer

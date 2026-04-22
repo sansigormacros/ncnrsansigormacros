@@ -256,7 +256,7 @@ Function LoadBT5File(string fname, string type)
 			v6                        = v6 / (1.0 - v6 * MainDeadTime / countTime)  // Deadtime correction
 			DetCts[numlinesloaded]    = v2 + v3 + v4 + v5 + v6                      //5 detectors
 			TransCts[numlinesloaded]  = v7 / (1.0 - v7 * TransDeadTime / countTime) //trans detector+deadtime correction
-			ErrDetCts[numlinesloaded] = sqrt(detCts[numlinesloaded])
+			ErrDetCts[numlinesloaded] = 1.0 + sqrt(detCts[numlinesloaded] + 0.75)
 			//values 8-16 are always zero
 		else
 			// this is the original format from ICP
@@ -268,7 +268,7 @@ Function LoadBT5File(string fname, string type)
 			v7                        = v7 / (1.0 - v7 * MainDeadTime / countTime)  // Deadtime correction
 			DetCts[numlinesloaded]    = v2 + v3 + v5 + v6 + v7                      //5 detectors
 			TransCts[numlinesloaded]  = v4 / (1.0 - v4 * TransDeadTime / countTime) //trans detector+deadtime correction
-			ErrDetCts[numlinesloaded] = sqrt(detCts[numlinesloaded])
+			ErrDetCts[numlinesloaded] = 1.0 + sqrt(detCts[numlinesloaded] + 0.75)
 			//values 8-16 are always zero
 		endif
 
