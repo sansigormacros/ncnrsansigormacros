@@ -50,7 +50,7 @@ Menu "SANS"
 		"Event Mode Process Panel", Show_Event_Panel()
 		"Adjust Events", ShowEventCorrectionPanel()
 		"Create Custom Bins", Show_CustomBinPanel()
-		//		"Display Data For Slicing",DisplayForSlicing()
+		"Display Data For Slicing",DisplayForSlicing()
 		"-"
 		//		"Split Large File",SplitBigFile()
 		//		"Get List of ITX or Split Files",GetListofITXorSplitFiles()
@@ -58,7 +58,7 @@ Menu "SANS"
 		//		"Add Current Slice",AccumulateSlices(1)
 		//		"Display Accumulated Slices",AccumulateSlices(2)
 		//		"-"
-		//		"Insert Time Reset",InsertTimeReset()
+		"Insert Time Reset",InsertTimeReset()
 		"Estimate Frame Overlap", EstFrameOverlap()
 	End
 	"-"

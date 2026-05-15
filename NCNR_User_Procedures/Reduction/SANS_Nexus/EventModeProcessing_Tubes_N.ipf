@@ -3804,6 +3804,86 @@ Function LoadDecimateButtonProc(string ctrlName) : ButtonControl
 
 End
 
+
+Proc DisplayForSlicing()
+
+	// plot the EventBarGraph?
+		SetDataFolder root:Packages:NIST:Event:
+		Display /W=(110,705,610,1132)/N=SliceGraph /K=1 binCount vs binEndTime
+		ModifyGraph mode=5
+		ModifyGraph marker=19
+		ModifyGraph lSize=2
+		ModifyGraph rgb=(0,0,0)
+		ModifyGraph msize=2
+		ModifyGraph hbFill=2
+		ModifyGraph gaps=0
+		ModifyGraph usePlusRGB=1
+		ModifyGraph toMode=1
+		ModifyGraph useBarStrokeRGB=1
+		ModifyGraph standoff=0
+
+		SetDataFolder root:
+
+// append the differential
+	AppendToGraph/R root:Packages:NIST:Event:rescaledTime_DIF vs root:Packages:NIST:Event:rescaledTime
+	ModifyGraph rgb(rescaledTime_DIF)=(1,16019,65535)
+
+End
+
+
+
+Proc InsertTimeReset(period)
+	Variable period
+	
+	fInsertTimeReset(period)
+End
+
+
+//
+// for event data where a time reset signal was not sent, but the data is
+// actually periodic. This function will reset the time at the input period.
+// This assumes that you accurately know the period, and that the start time
+// of the data coincides with the start time of the period, otherwise the 
+// time reset will happen in the middle of the cycle.
+//
+// period = period of reset (s)
+//
+// This can also be done efficiently with mod(period) (multithreaded?)
+//
+Function fInsertTimeReset(period)
+	Variable period
+	
+	SetDataFolder root:Packages:NIST:Event:
+	
+	Wave rescaledTime = rescaledTime
+	Wave timePt = timePt
+	Variable rollTime,rollTicks,ii,delta
+	
+	Variable period_ticks
+	
+	period_ticks = period*1e7		//period in ticks
+	
+
+	for(ii=0;ii<numpnts(rescaledTime)-1;ii+=1)
+		if(rescaledTime[ii] > period)
+			MultiThread timePt[ii,] -= period_ticks
+			MultiThread rescaledTime[ii,] -= period
+		endif
+	endfor
+
+// updates the longest time (as does every operation of adjusting the data)
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+	t_longest = waveMax(rescaledTime)
+	SetDataFolder root:
+
+	return(0)
+End
+
+
+
+
+
+
 ////
 //// loads a list of files, decimating each chunk as it is read in
 ////
