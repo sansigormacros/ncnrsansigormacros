@@ -189,7 +189,7 @@ Function Init_Event()
 	
 	Variable/G root:Packages:NIST:Event:gEvent_logint = 1
 
-	Variable/G root:Packages:NIST:Event:gEvent_Mode = MODE_OSCILL				// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:Event:gEvent_Mode = MODE_STREAM				// ==0 for "stream", ==1 for Oscillatory
 	Variable/G root:Packages:NIST:Event:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
 	Variable/G root:Packages:NIST:Event:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
 	
