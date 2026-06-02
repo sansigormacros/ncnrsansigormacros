@@ -152,6 +152,10 @@ Function V_BuildCatVeryShortTable()
 	WAVE/T Purpose     = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	WAVE   Group_ID    = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
+// TODO UUID -- here and in multiple locations - need to decide whether to fill in the
+// Group_ID wave, or the UUID wave. One may not exist. If UUID exists, use it, but nobody
+// wants to see it
+
 	if(V_Flag == 0)
 		V_BuildTableWindow()
 		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda)=40

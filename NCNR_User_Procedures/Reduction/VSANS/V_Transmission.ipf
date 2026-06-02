@@ -120,8 +120,11 @@ Function V_TSamFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 	if(strlen(pa.popStr) > 0)
 		SVAR gSamLabel = root:Packages:NIST:VSANS:Globals:Transmission:gSamLabel
 		gSamLabel = V_getSampleDescription(pa.popStr)
+		
+		// TODO UUID
 		NVAR gSamGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
 		gSamGrpID = V_getSample_GroupID(pa.popStr)
+		
 		NVAR gTrans = root:Packages:NIST:VSANS:Globals:Transmission:gTrans
 		gTrans = V_getSampleTransmission(pa.popStr)
 		NVAR gTransErr = root:Packages:NIST:VSANS:Globals:Transmission:gTransErr
@@ -132,7 +135,7 @@ Function V_TSamFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 
 End
 
-// TODO
+// TODO UUID
 //
 // Given the group ID of the sample, try to locate a (the) matching transmission file
 // by locating a matching ID in the list of transmission (intent) files

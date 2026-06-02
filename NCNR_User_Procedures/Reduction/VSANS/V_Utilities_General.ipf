@@ -1432,6 +1432,11 @@ Function/S V_getFileIntentPurposeList(string intent, string purpose, variable me
 	return (list)
 End
 
+
+// TODO UUID
+// -- change to use either Group_ID or UUID, depending if UUID exists
+// -- input Group_ID is an integer, but UUID is a string... so caling function must know what to send
+// -- or be able to send just the filename of the target file
 // match the INTENT and PURPOSE and GROUP_ID
 //
 // -- needed to identify the SAMPLE + SCATTERING data files.
@@ -1481,6 +1486,9 @@ Function/S V_getFileIntentPurposeIDList(string intent, string purpose, variable 
 	//
 	//	else
 	// get the list from the file catalog
+
+// TODO UUID
+// need to update the comparison with cmpstr(), input UUID wave (from catalog), and target ID
 
 	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
 	WAVE/T purposeW  = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose

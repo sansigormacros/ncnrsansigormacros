@@ -344,7 +344,7 @@ Function V_FillListBox1(WAVE/T listWave, WAVE selWave)
 	listWave[7][2] = V_getReduction_purpose(fname)
 
 	listWave[8][1] = "group_id (sample)"
-	listWave[8][2] = num2istr(V_getSample_groupID(fname))
+	listWave[8][2] = num2istr(V_getSample_groupID(fname))		// TODO UUID
 
 	listWave[9][1] = "Box Coordinates"
 	WAVE boxCoord = V_getBoxCoordinates(fname)
@@ -861,7 +861,7 @@ Function/S V_GetValidPatchPopupList()
 		for(ii = 0; ii < num; ii += 1)
 			item     = StringFromList(ii, newList, ";")
 			fname    = path + item
-			group_id = V_getSample_GroupID(fname)
+			group_id = V_getSample_GroupID(fname)		// TODO UUID (drop this from the panel?)
 			if(group_id == val)
 				list += item + ";"
 			endif
