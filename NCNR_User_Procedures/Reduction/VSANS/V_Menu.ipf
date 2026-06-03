@@ -47,8 +47,8 @@ Menu "VSANS"
 		"Median+Read Noise", pV_MedianAndReadNoiseBack()
 	End
 	SubMenu "Nexus File Corrections"
-		// TODO UUID -- make this inoperational if UUID is being used
-		// and ?? write a way to update UUID??
+		// TODO UUID -- make this inoperational if UUID is being used (DONE)
+		// and ?? write a way to update UUID?? (NOT DONE)
 		"Patch GroupID using CatTable", V_Patch_GroupID_catTable()		
 			
 		"Patch Purpose using CatTable", V_Patch_Purpose_catTable()

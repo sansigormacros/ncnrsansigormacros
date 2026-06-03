@@ -3,6 +3,21 @@
 #pragma rtGlobals=3 // Use modern global access method and strict wave access.
 #pragma IgorVersion=7.00
 
+//
+// JUNE 2026
+//
+// NICE is switching to use UUID rather than group_ID as a unique sample identifier
+// -- it has been added to the Nexus file in June 2026 - not present in earlier files
+// -- so I have added this to the code to use UUID if it is present, group_ID if it is not (older files)
+// -- group_ID may or may not be present in files collected after June 2026, so I key on UUID
+//
+// -- UUID /group_ID mostly used to identify files durng transmission calculation, so it
+// needs to be correctly identified
+// -- UUID is a 36 character string, anything else is considered invalid
+//
+//
+
+
 // TODO
 // x- initialization
 // x- link to main panel
@@ -43,6 +58,15 @@ Function V_InitTransPanelGlobals()
 	string/G gEmptyPanel     = "ENTER PANEL"
 	string/G gSamMatchList   = "_none_"
 	string/G gTransMatchList = "_none_"
+	string/G gUUID = ""
+	Variable/G gValidUUID = 0
+
+// hopefully there is data in RAW
+	gUUID = V_getSample_UUID("RAW")
+	if(strlen(gUUID) == 36)
+		gValidUUID = 1
+	endif
+
 
 	SetDataFolder root:
 	return (0)
@@ -78,8 +102,16 @@ Window V_TransmissionPanel() : Panel
 	SetVariable setvar_1, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
 	SetVariable setvar_2, pos={sc * 15.00, 257.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Label:"
 	SetVariable setvar_2, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gTransLabel
-	SetVariable setvar_3, pos={sc * 14.00, 283.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Group ID:"
-	SetVariable setvar_3, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
+
+// TODO UUID (DONE) -- need to switch before this to determine which ID to use
+	if(root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID)
+		SetVariable setvar_3u, pos={sc * 14.00, 283.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="UUID:"
+		SetVariable setvar_3u, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:UUID
+	else
+		SetVariable setvar_3, pos={sc * 14.00, 283.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Group ID:"
+		SetVariable setvar_3, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID	
+	endif
+
 	SetVariable setvar_4, pos={sc * 18.00, 108.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Label:"
 	SetVariable setvar_4, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gEmptyLabel
 	SetVariable setvar_5, pos={sc * 18.00, 132.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="XY Box:"
@@ -111,20 +143,23 @@ Function V_TSamFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 	// short-circuit the switch, and simply report the values
 	// -- the TransFile popup now drives the panel
 	
-	// BUG in Igor 9 that causes this popup function to dun when a kill signal is sent to close the panel
+	// BUG in Igor 9 that causes this popup function to run when a kill signal is sent to close the panel
 	// whether from "Done", red x, or command line. When this happens, the pa.popStr = "", and the 
 	// get functions will then ask for the file thorough a dialog.
 	
-	// workaround is to chekc for null string and do nothing if one is found
+	// workaround is to check for null string and do nothing if one is found
 	
 	if(strlen(pa.popStr) > 0)
 		SVAR gSamLabel = root:Packages:NIST:VSANS:Globals:Transmission:gSamLabel
 		gSamLabel = V_getSampleDescription(pa.popStr)
 		
-		// TODO UUID
 		NVAR gSamGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
 		gSamGrpID = V_getSample_GroupID(pa.popStr)
-		
+
+		// TODO UUID (DONE)
+		SVAR gUUID = root:Packages:NIST:VSANS:Globals:Transmission:gUUID
+		gUUID = V_getSample_UUID(pa.popStr)
+				
 		NVAR gTrans = root:Packages:NIST:VSANS:Globals:Transmission:gTrans
 		gTrans = V_getSampleTransmission(pa.popStr)
 		NVAR gTransErr = root:Packages:NIST:VSANS:Globals:Transmission:gTransErr
@@ -135,7 +170,7 @@ Function V_TSamFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 
 End
 
-// TODO UUID
+// TODO UUID (DONE)
 //
 // Given the group ID of the sample, try to locate a (the) matching transmission file
 // by locating a matching ID in the list of transmission (intent) files
@@ -152,9 +187,14 @@ Function V_TTransmFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 
 			SVAR gTransLabel = root:Packages:NIST:VSANS:Globals:Transmission:gTransLabel
 			gTransLabel = V_getSampleDescription(popStr)
+
+// TODO UUID (DONE) -- setting the global is enough, functions below decide which to use, groupID or UUID
 			NVAR gTrnGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
 			gTrnGrpID = V_getSample_GroupID(popStr)
 
+			SVAR gUUID = root:Packages:NIST:VSANS:Globals:Transmission:gUUID
+			gUUID = V_getSample_UUID(popStr)
+			
 			//			SVAR gSamMatchList = root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList
 			//			String quote = "\""
 			//			gSamMatchList = quote + V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0) + quote
@@ -183,11 +223,13 @@ Function/S V_getSamListForPopup()
 
 	//	String quote = "\""
 	NVAR gTrnGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
+	SVAR gUUID = root:Packages:NIST:VSANS:Globals:Transmission:gUUID
 
-	string retStr = V_getFileIntentPurposeIDList("SAMPLE", "SCATTERING", gTrnGrpID, 0)
+// let the function decide which is valid - if strlen(UUID) != 36, use the groupID
+	string retStr = V_getFileIntentPurposeIDList("SAMPLE", "SCATTERING", gTrnGrpID, gUUID, 0)		
 
 	// and be sure to add in the empty cell, since it's not a "sample"
-	retStr += V_getFileIntentPurposeIDList("EMPTY CELL", "SCATTERING", gTrnGrpID, 0)
+	retStr += V_getFileIntentPurposeIDList("EMPTY CELL", "SCATTERING", gTrnGrpID, gUUID, 0)
 
 	// now filter through the string to refine the list to only scattering files that match
 	// the transmission file conditions

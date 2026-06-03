@@ -1433,7 +1433,7 @@ Function/S V_getFileIntentPurposeList(string intent, string purpose, variable me
 End
 
 
-// TODO UUID
+// TODO UUID (DONE)
 // -- change to use either Group_ID or UUID, depending if UUID exists
 // -- input Group_ID is an integer, but UUID is a string... so caling function must know what to send
 // -- or be able to send just the filename of the target file
@@ -1447,7 +1447,7 @@ End
 // 1 = Grep (not terribly slow)
 // 2 = read every file (bad choice)
 //
-Function/S V_getFileIntentPurposeIDList(string intent, string purpose, variable targetID, variable method)
+Function/S V_getFileIntentPurposeIDList(string intent, string purpose, variable targetID, string targetUUID, variable method)
 
 	variable ii, num
 	string fname, newList
@@ -1487,19 +1487,33 @@ Function/S V_getFileIntentPurposeIDList(string intent, string purpose, variable 
 	//	else
 	// get the list from the file catalog
 
-// TODO UUID
+// TODO UUID (DONE)
 // need to update the comparison with cmpstr(), input UUID wave (from catalog), and target ID
+	NVAR validUUID = root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID
 
 	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
 	WAVE/T purposeW  = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
 	WAVE/T intentW   = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
 	WAVE   groupIDW  = root:Packages:NIST:VSANS:CatVSHeaderInfo:group_id
+	WAVE/T UUIDW   = root:Packages:NIST:VSANS:CatVSHeaderInfo:UUID
 
 	variable np = numpnts(purposeW) //fileNameW is LONGER - so don't use numpnts(fileWave)
 	for(ii = 0; ii < np; ii += 1)
-		if(cmpstr(purposeW[ii], purpose) == 0 && cmpstr(intentW[ii], intent) == 0 && groupIDW[ii] == targetID) //this is case-INSENSITIVE (necessary, since the case is unknown)
-			list += fileNameW[ii] + ";"
+	
+		if(validUUID)
+			// use UUID
+			if(cmpstr(purposeW[ii], purpose) == 0 && cmpstr(intentW[ii], intent, 0) == 0 && cmpstr(UUIDW[ii], targetUUID, 0) == 0) //this is case-INSENSITIVE (necessary, since the case is unknown)
+				list += fileNameW[ii] + ";"
+			endif
+	
+			else
+			// use groupID
+			if(cmpstr(purposeW[ii], purpose) == 0 && cmpstr(intentW[ii], intent, 0) == 0 && groupIDW[ii] == targetID) //this is case-INSENSITIVE (necessary, since the case is unknown)
+				list += fileNameW[ii] + ";"
+			endif
+		
 		endif
+
 	endfor
 
 	List = SortList(List, ";", 0)
