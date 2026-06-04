@@ -156,7 +156,13 @@ Proc FIT_Load_Proc(ctrlName): ButtonControl
 		partialName = S_value
 	Endif
 	//get a valid file based on this partialName and catPathName
-	tempName = N_FindValidFilename(partialName)
+	// need to check if VAX version exists, if not use Nexus version
+	// -- complies OK since this is within a procedure, not a function
+	if(exists("FindValidFilename") == 6)
+		tempName = FindValidFilename(partialName)
+	else
+		tempName = N_FindValidFilename(partialName)
+	endif
 
 	//prepend path to tempName for read routine 
 	PathInfo catPathName
