@@ -1300,9 +1300,10 @@ End
 
 //need to have a DIV file loaded already
 
-Macro Convert_DIV_File(style)
-	String style="Tubes"
+Macro Convert_DIV_File(style,instrStr)
+	String style="Tubes",instrStr=""
 	Prompt style, "Detector style", popup "Tubes;Ordela;"
+	Prompt instrStr, "Instrument", popup "[NG3SANSNN];[NGBSANSNN];[NG7SANSNN];"
 
 	String/G root:DetectorStyle = style
 
@@ -1316,11 +1317,17 @@ Macro Convert_DIV_File(style)
 	root:Packages:NIST:DIV:linear_data_error = 0.01	
 	CopyWorkContents("DIV","RAW")
 	
-	
+	//instrument String 
+	//WAVE/T tw = root:Packages:NIST:RAW:TextRead
+	root:Packages:NIST:RAW:TextRead[3] = instrStr
+		
 	// fill the structure
 	FillStructureFromRTI()
 	
 	// tweak a few items
+	
+
+	
 	//linear data error
 	Duplicate/O root:toExport:entry:instrument:detector:data root:toExport:entry:instrument:detector:linear_data_error
 	root:toExport:entry:instrument:detector:linear_data_error = 0.01

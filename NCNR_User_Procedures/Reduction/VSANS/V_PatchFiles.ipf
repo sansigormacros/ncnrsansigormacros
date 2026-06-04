@@ -161,7 +161,7 @@ Proc V_Patch_Panel()
 	Button DoneButton, help={"When done Patching files, this will close this control panel."}
 	CheckBox check0, pos={sc * 18, 80 * sc}, size={sc * 40, 15 * sc}, title="Run #", value=1, mode=1, proc=V_MatchCheckProc
 	CheckBox check1, pos={sc * 78, 80 * sc}, size={sc * 40, 15 * sc}, title="Text", value=0, mode=1, proc=V_MatchCheckProc
-	CheckBox check2, pos={sc * 138, 80 * sc}, size={sc * 40, 15 * sc}, title="Group_ID", value=0, mode=1, proc=V_MatchCheckProc
+	CheckBox check2, pos={sc * 138, 80 * sc}, size={sc * 40, 15 * sc}, title="Group_ID", value=0, mode=1, proc=V_MatchCheckProc			//TODO UUID (maybe replace this?)
 
 	SetVariable curStr, pos={sc * 50, 112 * sc}, size={sc * 350, 20 * sc}, title="File Label:"
 	SetVariable curStr, help={"Label of current file in popup list"}
@@ -343,9 +343,15 @@ Function V_FillListBox1(WAVE/T listWave, WAVE selWave)
 	listWave[7][1] = "file_purpose"
 	listWave[7][2] = V_getReduction_purpose(fname)
 
-	listWave[8][1] = "group_id (sample)"
-	listWave[8][2] = num2istr(V_getSample_groupID(fname))
-
+	NVAR validUUID = root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID
+		if(validUUID)
+		listWave[8][1] = "UUid (sample)"
+		listWave[8][2] = V_getSample_UUID(fname)		// TODO UUID (done) -- maybe move this to sample tab, since that's where it's stored??
+	else
+		listWave[8][1] = "group_id (sample)"
+		listWave[8][2] = num2istr(V_getSample_groupID(fname))
+	endif
+	
 	listWave[9][1] = "Box Coordinates"
 	WAVE boxCoord = V_getBoxCoordinates(fname)
 	listWave[9][2] = V_NumWave2List(boxCoord, ";")
@@ -861,7 +867,7 @@ Function/S V_GetValidPatchPopupList()
 		for(ii = 0; ii < num; ii += 1)
 			item     = StringFromList(ii, newList, ";")
 			fname    = path + item
-			group_id = V_getSample_GroupID(fname)
+			group_id = V_getSample_GroupID(fname)		// TODO UUID (drop this from the panel?)
 			if(group_id == val)
 				list += item + ";"
 			endif
@@ -2708,8 +2714,12 @@ Proc V_MarkLeftRightFlip_Not_Done(lo, hi)
 	V_fWriteFlipState(lo, hi, -999999) // value == -999999 means flip not done
 EndMacro
 
+// function does nothing if UUID is valid
 Proc V_Patch_GroupID_catTable()
-	V_fPatch_GroupID_catTable()
+	if(!root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID)
+		DoAlert 0,"Using UUID instead. This function did not change anything"
+		V_fPatch_GroupID_catTable()
+	endif
 EndMacro
 
 Proc V_Patch_Purpose_catTable()

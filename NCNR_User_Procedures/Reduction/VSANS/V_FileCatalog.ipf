@@ -99,6 +99,7 @@ Function V_BuildCatVeryShortTable()
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
+	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:UUID"
 
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
@@ -151,6 +152,11 @@ Function V_BuildCatVeryShortTable()
 	WAVE/T Intent      = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
 	WAVE/T Purpose     = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	WAVE   Group_ID    = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
+	WAVE/T UUID     = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:UUID"
+
+// TODO UUID -- here and in multiple locations - need to decide whether to fill in the
+// Group_ID wave, or the UUID wave. One may not exist. If UUID exists, use it, but nobody
+// wants to see it
 
 	if(V_Flag == 0)
 		V_BuildTableWindow()
@@ -665,6 +671,7 @@ Function V_GetHeaderInfoToWave(string fname, string sname)
 	WAVE/T GIntent  = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
 	WAVE/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	WAVE   G_ID     = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
+	WAVE/T GUUID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:UUID"
 
 	lastPoint = numpnts(GLambda)
 
@@ -800,6 +807,10 @@ Function V_GetHeaderInfoToWave(string fname, string sname)
 	InsertPoints lastPoint, 1, G_ID
 	G_ID[lastPoint] = V_getSample_groupID(fname)
 
+	// UUid (sample)
+	InsertPoints lastPoint, 1, GUUID
+	GUUID[lastPoint] = V_getSample_UUID(fname)
+	
 	return (0)
 End
 
@@ -1003,6 +1014,8 @@ Function V_CatVSANSTable_SortFunction(string ctrlName) // added by [davidm]
 			// no default action
 			break
 	endswitch
+
+//TODO UUID -- verify that the sort stil works correctly, even if UUID not displayed
 
 	//do the sort
 	//	sprintf cmd, "Sort %s, %s", sortKey,list

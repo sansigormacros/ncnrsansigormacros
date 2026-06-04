@@ -2102,6 +2102,17 @@ Function V_getSample_GroupID(string fname)
 	return (V_getRealValueFromHDF5(fname, path))
 End
 
+//NEW 2026
+// TODO -- test this out to be sure it works
+// 36 characters expected (but num is not actually used)
+// UU ID !!! very important for matching up files
+Function/S V_getSample_UUID(string fname)
+
+	string   path = "entry:sample:UUID"
+	variable num  = 36
+	return (V_getStringFromHDF5(fname, path, num))
+End
+
 //Sample Rotation Angle
 Function V_getSampleRotationAngle(string fname)
 

@@ -6165,6 +6165,37 @@ Function V_writeSample_GroupID(string fname, variable val)
 	return (err)
 End
 
+
+// NEW 2026
+// TODO -- verify that this works
+//
+// group ID !!! very important for matching up files
+// string value, 36 characters, be sure length is correct before passing in
+//
+Function V_writeSample_UUID(string fname,  string str)
+
+	//	String path = "entry:sample:uuid"
+
+	Make/O/T/N=1 tmpTW
+	string groupName = "/entry/sample"
+	string varName   = "uuid"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ", err
+	endif
+
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	//	err = V_KillNamedDataFolder(fname)
+	//	if(err)
+	//		Print "DataFolder kill err = ",err
+	//	endif
+
+	return (err)
+End
+
 //Sample Rotation Angle
 Function V_writeSampleRotationAngle(string fname, variable val)
 
