@@ -4168,6 +4168,16 @@ Function writeSample_changer(string fname, string str)
 End
 
 //Sample position in changer
+// after the change to the Nexus file in JUNE2026, the calling function must determine whether to use
+// the text version or the numeric version
+//
+// TODO JUNE 2026 sample_position
+//
+// -- need to add a separate function? writeSamplePosition_numeric()
+//
+// still don't know how to decide between text/DP?? can I use the sample date?
+// -- at least for now, this write funciton is not called anywhere... so I'll wait to come
+// up with a solution only if needed
 Function writeSamplePosition(string fname, string str)
 
 	//	String path = "entry:sample:changer_position"
@@ -4288,6 +4298,36 @@ Function writeSample_GroupID(string fname, variable val)
 	//	endif
 	return (err)
 End
+
+// sample UUID -- sample identifier used after JUNE 2026
+// -- replaces group_id
+// 
+// field is 36 characters, fill correctly before passing
+Function writeSample_UUID(string fname, string str)
+
+	//	String path = "entry:sample:UUID"
+
+	Make/O/T/N=1 tmpTW
+	string groupName = "/entry/sample"
+	string varName   = "UUID"
+	tmpTW[0] = str //
+
+	variable err
+	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ", err
+	endif
+
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	//	err = KillNamedDataFolder(fname)
+	//	if(err)
+	//		Print "DataFolder kill err = ",err
+	//	endif
+
+	return (err)
+End
+
+
 
 Function writeSample_mass(string fname, variable val)
 

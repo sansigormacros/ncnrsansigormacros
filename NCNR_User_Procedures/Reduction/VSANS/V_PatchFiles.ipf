@@ -161,7 +161,7 @@ Proc V_Patch_Panel()
 	Button DoneButton, help={"When done Patching files, this will close this control panel."}
 	CheckBox check0, pos={sc * 18, 80 * sc}, size={sc * 40, 15 * sc}, title="Run #", value=1, mode=1, proc=V_MatchCheckProc
 	CheckBox check1, pos={sc * 78, 80 * sc}, size={sc * 40, 15 * sc}, title="Text", value=0, mode=1, proc=V_MatchCheckProc
-	CheckBox check2, pos={sc * 138, 80 * sc}, size={sc * 40, 15 * sc}, title="Group_ID", value=0, mode=1, proc=V_MatchCheckProc			//TODO UUID (maybe replace this?)
+	CheckBox check2, pos={sc * 138, 80 * sc}, size={sc * 40, 15 * sc}, title="Group_ID", value=0, mode=1, disable=2, proc=V_MatchCheckProc			//TODO UUID (done) -dsiabled the control
 
 	SetVariable curStr, pos={sc * 50, 112 * sc}, size={sc * 350, 20 * sc}, title="File Label:"
 	SetVariable curStr, help={"Label of current file in popup list"}

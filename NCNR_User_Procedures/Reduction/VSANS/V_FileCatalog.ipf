@@ -575,6 +575,10 @@ End
 
 //function to create the CAT/VSTable to display the header information
 //this table is just like any other table
+//
+// TODO UUID -- need to decide whether to show Group_ID or UUID
+// -- how to switch (and remove one of the wave names from the list)
+//
 Function V_BuildTableWindow()
 
 	SetDataFolder root:Packages:NIST:VSANS:CatVSHeaderInfo:

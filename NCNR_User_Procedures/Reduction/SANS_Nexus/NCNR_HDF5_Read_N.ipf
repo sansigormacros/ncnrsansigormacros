@@ -1159,6 +1159,9 @@ End
 
 //////  sample_table (data folder)
 // location  = "CHAMBER" or HUBER
+//
+// TODO -- removed from Nexus definition as of JUNE 2026
+// -- be sure this is not an issue
 Function/S getSampleTableLocation(string fname)
 
 	string   path = "entry:instrument:sample_table:location"
@@ -1681,6 +1684,9 @@ End
 
 // this is huber/chamber?? or description of sample block
 //
+//
+// TODO -- removed from Nexus definition as of JUNE 2026
+// -- be sure this is not an issue
 Function/S getSampleChanger(string fname)
 
 	string   path = "entry:sample:changer"
@@ -1688,12 +1694,29 @@ Function/S getSampleChanger(string fname)
 	return (getStringFromHDF5(fname, path, num))
 End
 
-//Sample position in changer (returned as TEXT)f
+//Sample position in changer (returned as TEXT)
+//
+// TODO -- removed from Nexus definition as of JUNE 2026
+// -- be sure this is not an issue
+// as of JUNE 2026, it now points to a double value slotID
+//
+// for now, continue to return as string
 Function/S getSamplePosition(string fname)
 
 	string   path = "entry:sample:changer_position"
 	variable num  = 60
-	return (getStringFromHDF5(fname, path, num))
+	string retStr=""
+	
+	// try to get the value as a number -- 
+	Variable testNum = getRealValueFromHDF5(fname, path)
+	if(testNum != -999999)
+		return(num2str(testNum))
+	endif
+	
+	// if error -999999 returned, must be a string (old changer_position value)
+	retStr = getStringFromHDF5(fname, path, num)
+	
+	return (retStr)
 End
 
 // sample label
@@ -1712,10 +1735,23 @@ Function getSampleElevation(string fname)
 End
 
 // group ID !!! very important for matching up files
+// -- not written to files after JUNE 2026, 
+// if it does not exist in the file, retVal is -999999
 Function getSample_GroupID(string fname)
 
 	string path = "entry:sample:group_id"
 	return (getRealValueFromHDF5(fname, path))
+End
+
+// sample UUID -- sample identifier used after JUNE 2026
+// -- replaces group_id
+// 
+// field is 36 characters, but does not mean anything here
+Function/S getSample_UUID(string fname)
+
+	string   path = "entry:sample:UUID"
+	variable num  = 36
+	return (getStringFromHDF5(fname, path, num))
 End
 
 // sample mass
@@ -1742,6 +1778,9 @@ End
 
 //?? this is huber/chamber??
 // TODO -- then where is the description of 10CB, etc...
+//
+// TODO -- removed from Nexus definition as of JUNE 2026
+// -- be sure this is not an issue
 Function/S getSampleHolderDescription(string fname)
 
 	string   path = "entry:sample:sample_holder_description"

@@ -541,7 +541,9 @@ Function getRealValueFromHDF5(string fname, string path)
 		// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:" + folderStr + ":" + path))
 			WAVE/Z w = $("root:Packages:NIST:" + folderStr + ":" + path)
-			return (w[0])
+			if(waveType(w,1) == 1)		// it really is a numeric wave
+				return (w[0])
+			endif
 		endif
 
 		return (errorValue)
@@ -564,8 +566,10 @@ Function getRealValueFromHDF5(string fname, string path)
 	// this should exist now - if not, I need to see the error
 	WAVE/Z w = $(ksBaseDFPath + folderStr + ":" + path)
 
-	if(WaveExists(w))
-		return (w[0])
+	if(waveType(w,1) == 1)		// it really is a numeric wave
+		if(WaveExists(w))
+			return (w[0])
+		endif
 	endif
 
 	return (errorValue)
@@ -756,7 +760,9 @@ Function/S getStringFromHDF5(string fname, string path, variable num)
 		// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:" + folderStr + ":" + path))
 			WAVE/Z/T tw = $("root:Packages:NIST:" + folderStr + ":" + path)
-			return (tw[0])
+			if(waveType(tw,1) == 2)		// it really is a text wave
+				return (tw[0])
+			endif
 		endif
 
 		return (errorSTring)
@@ -779,15 +785,18 @@ Function/S getStringFromHDF5(string fname, string path, variable num)
 	// this should exist now - if not, I need to see the error
 	WAVE/Z/T tw = $(ksBaseDFPath + folderStr + ":" + path)
 
-	if(WaveExists(tw))
+	if(waveType(tw,1) == 2)		// it really is a text wave
 
-		//	if(strlen(tw[0]) != num)
-		//		Print "string is not the specified length"
-		//	endif
-
-		return (tw[0])
+		if(WaveExists(tw))
+	
+			//	if(strlen(tw[0]) != num)
+			//		Print "string is not the specified length"
+			//	endif
+	
+			return (tw[0])
+		endif
 	endif
-
+	
 	return (errorString)
 End
 
