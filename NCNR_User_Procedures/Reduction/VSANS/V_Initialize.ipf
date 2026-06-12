@@ -253,6 +253,11 @@ Function V_InitGlobals()
 
 	variable/G root:Packages:NIST:VSANS:Globals:gIsLogScale  = 0
 	string/G   root:Packages:NIST:VSANS:Globals:gCurDispType = "RAW"
+	
+	// UUID or GroupID  JUNE 2026 UUID added GroupID removed
+	// reset this value once data is read in using the file catalog, hopefully the first time data is touched.
+	// 0 = use groupID, 1 = use UUID
+	Variable/G root:Packages:NIST:VSANS:Globals:gValidUUID = 0
 
 	//check platform, so Angstrom can be drawn correctly
 

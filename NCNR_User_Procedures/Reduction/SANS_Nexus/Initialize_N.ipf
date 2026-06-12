@@ -126,6 +126,7 @@ Function InitGlobals()
 
 	variable/G root:myGlobals:gIsLogScale      = 0
 	string/G   root:myGlobals:gDataDisplayType = "RAW"
+	Variable/G root:myGlobals:gValidUUID = 0
 
 	//check platform, so Angstrom can be drawn correctly
 

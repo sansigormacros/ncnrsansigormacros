@@ -299,6 +299,22 @@ Function V_BuildCatVeryShortTable()
 	//
 	//	V_CleanOutRawVSANS()
 
+
+// set the global switch for UUID or GroupID (used later for transmission)
+	NVAR gValidUUID = root:Packages:NIST:VSANS:Globals:gValidUUID
+	if(strlen(UUID[0]) == 36)
+		gValidUUID = 1
+	endif
+
+// remove the column not needed (tried to set width=0, but not allowed )
+	if(gValidUUID)
+//		ModifyTable width(Group_ID)=0 //JUNE 2026, hide GroupID
+		RemoveFromTable Group_ID      //JUNE 2026, remove GroupID
+	else
+//		ModifyTable width(UUID)=0 //JUNE 2026, hide UUID
+		RemoveFromTable UUID      //JUNE 2026, remove GroupID
+	endif
+
 	return (0)
 End
 

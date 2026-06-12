@@ -61,6 +61,7 @@ Function BuildCatVeryShortTable()
 	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Intent"
 	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Purpose"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Group_ID"
+	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:UUID"
 
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:SDD"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Lambda"
@@ -97,6 +98,7 @@ Function BuildCatVeryShortTable()
 	WAVE/T Intent   = $"root:myGlobals:CatVSHeaderInfo:Intent"
 	WAVE/T Purpose  = $"root:myGlobals:CatVSHeaderInfo:Purpose"
 	WAVE   Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"
+	WAVE/T   UUID = $"root:myGlobals:CatVSHeaderInfo:UUID"
 
 	WAVE SDD          = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	WAVE Lambda       = $"root:myGlobals:CatVSHeaderInfo:Lambda"
@@ -273,6 +275,22 @@ Function BuildCatVeryShortTable()
 	//
 	//	Print "Total time (s) = ",(ticks - t1)/60.15
 	//	Print "Time per raw data file (s) = ",(ticks - t1)/60.15/(numItems-numpnts(notRawList))
+	
+// set the global switch for UUID or GroupID (used later for transmission)
+	NVAR gValidUUID = root:myGlobals:gValidUUID
+	if(strlen(UUID[0]) == 36)
+		gValidUUID = 1
+	endif
+
+// remove the column not needed (tried to set width=0, but not allowed )
+	if(gValidUUID)
+//		ModifyTable width(Group_ID)=0 //JUNE 2026, hide GroupID
+		RemoveFromTable Group_ID      //JUNE 2026, remove GroupID
+	else
+//		ModifyTable width(UUID)=0 //JUNE 2026, hide UUID
+		RemoveFromTable UUID      //JUNE 2026, remove GroupID
+	endif
+	
 	return (0)
 End
 
@@ -307,6 +325,7 @@ Function SortWaves()
 	WAVE/T Intent   = $"root:myGlobals:CatVSHeaderInfo:Intent"
 	WAVE/T Purpose  = $"root:myGlobals:CatVSHeaderInfo:Purpose"
 	WAVE   Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"
+	WAVE/T   UUID = $"root:myGlobals:CatVSHeaderInfo:UUID"
 
 	WAVE GSDD          = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	WAVE GLambda       = $"root:myGlobals:CatVSHeaderInfo:Lambda"
@@ -333,17 +352,18 @@ Function SortWaves()
 	WAVE/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
 	WAVE/T GHDF  = $"root:myGlobals:CatVSHeaderInfo:HDF"
 
+// JUNE 2026 added UUID to sort list if Group_ID was present
 #if (exists("ILL_D22") == 6)
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GReactPow
 #elif (exists("NCNR_Nexus") == 6)
 	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-	Sort GSuffix, GSuffix, GFilenames, Intent, Purpose, Group_ID, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GPos, gNumGuides
+	Sort GSuffix, GSuffix, GFilenames, Intent, Purpose, Group_ID, UUID, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GPos, gNumGuides
 #elif (exists("QUOKKA") == 6)
 	//ANSTO
 	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
 #else
 	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, Intent, Purpose, Group_ID, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, Intent, Purpose, Group_ID, UUID, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
 #endif
 
 	return (0)
@@ -360,6 +380,7 @@ Function BuildTableWindow()
 	WAVE/T Intent   = $"root:myGlobals:CatVSHeaderInfo:Intent"
 	WAVE/T Purpose  = $"root:myGlobals:CatVSHeaderInfo:Purpose"
 	WAVE   Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"
+	WAVE/T   UUID = $"root:myGlobals:CatVSHeaderInfo:UUID"
 
 	WAVE SDD          = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	WAVE Lambda       = $"root:myGlobals:CatVSHeaderInfo:Lambda"
@@ -383,13 +404,15 @@ Function BuildTableWindow()
 	WAVE/Z SICS         = $"root:myGlobals:CatVSHeaderInfo:SICS"         // For ANSTO June 2010
 	WAVE/Z HDF          = $"root:myGlobals:CatVSHeaderInfo:HDF"          // For ANSTO June 2010
 
+// JUNE 2026 added UUID to sort list if Group_ID was present
+
 #if (exists("ILL_D22") == 6)
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
 #elif (exists("NCNR_Nexus") == 6)
 	// original order, magnetic at the end
 	//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 	// with numGuides
-	Edit Filenames, Labels, DateAndTime, Intent, Purpose, Group_ID, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
+	Edit Filenames, Labels, DateAndTime, Intent, Purpose, Group_ID, UUID, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
 	// alternate ordering, put the magnetic information first
 	//	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
 #elif (exists("QUOKKA") == 6)
@@ -397,7 +420,7 @@ Function BuildTableWindow()
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, SICS, HDF as "Data File Catalog"
 #else
 	// HFIR or anything else
-	Edit Filenames, Labels, DateAndTime, Intent, Purpose, Group_ID, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
+	Edit Filenames, Labels, DateAndTime, Intent, Purpose, Group_ID, UUID, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 #endif
 
 	string name = "CatVSTable"
@@ -424,6 +447,7 @@ Function GetHeaderInfoToWave(string fname, string sname)
 	WAVE/T Intent   = $"root:myGlobals:CatVSHeaderInfo:Intent"
 	WAVE/T Purpose  = $"root:myGlobals:CatVSHeaderInfo:Purpose"
 	WAVE   Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"
+	WAVE/T   UUID = $"root:myGlobals:CatVSHeaderInfo:UUID"
 
 	//ANSTO
 	WAVE/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
@@ -577,6 +601,9 @@ Function GetHeaderInfoToWave(string fname, string sname)
 	Intent[lastPoint]   = getReduction_intent(fname)
 	Purpose[lastPoint]  = getReduction_purpose(fname)
 	Group_ID[lastPoint] = getSample_GroupID(fname)
+
+	InsertPoints lastPoint, 1, UUID
+	UUID[lastPoint] = getSample_UUID(fname)
 
 	return (0)
 End
@@ -1194,6 +1221,9 @@ Proc S_CatSANSTable_SortProc(ctrlName) : ButtonControl // added by [davidm]
 
 EndMacro
 
+
+// takes out the "non-raw" files from the Filenames column so that all are the same length and the sort can be done
+// puts the non-raw files back into the column once the sort is done
 Function S_CatSANSTable_SortFunction(string ctrlName) // added by [davidm]
 
 	// still need to declare these to access notRaw files and to get count of length

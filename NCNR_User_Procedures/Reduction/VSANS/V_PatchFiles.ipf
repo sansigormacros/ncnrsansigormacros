@@ -343,9 +343,10 @@ Function V_FillListBox1(WAVE/T listWave, WAVE selWave)
 	listWave[7][1] = "file_purpose"
 	listWave[7][2] = V_getReduction_purpose(fname)
 
-	NVAR validUUID = root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID
-		if(validUUID)
-		listWave[8][1] = "UUid (sample)"
+//TODO UUID - not a valid check?
+	NVAR validUUID = root:Packages:NIST:VSANS:Globals:gValidUUID 
+	if(validUUID)
+		listWave[8][1] = "UUID (sample)"
 		listWave[8][2] = V_getSample_UUID(fname)		// TODO UUID (done) -- maybe move this to sample tab, since that's where it's stored??
 	else
 		listWave[8][1] = "group_id (sample)"
@@ -2716,7 +2717,7 @@ EndMacro
 
 // function does nothing if UUID is valid
 Proc V_Patch_GroupID_catTable()
-	if(!root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID)
+	if(!root:Packages:NIST:VSANS:Globals:gValidUUID)
 		DoAlert 0,"Using UUID instead. This function did not change anything"
 		V_fPatch_GroupID_catTable()
 	endif
