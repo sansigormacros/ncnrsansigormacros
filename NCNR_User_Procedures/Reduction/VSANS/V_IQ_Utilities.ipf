@@ -46,7 +46,7 @@
 // switching on. In the future, it may be necessary to change the key (everywhere) to a string
 // switch, but for now, stick with the numbers.
 //
-// Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-B;SLIT-F2-M2-B;"
+// Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M1xTB-B;F2-M1xTB-B;SLIT-F2-M2-B;"
 //
 //
 Function V_BinTypeStr2Num(string binStr)
@@ -69,10 +69,10 @@ Function V_BinTypeStr2Num(string binStr)
 		case "F2-M1-B":
 			binType = 5
 			break
-		case "F1-M2xTB-B":
+		case "F1-M1xTB-B":
 			binType = 6
 			break
-		case "F2-M2xTB-B":
+		case "F2-M1xTB-B":
 			binType = 7
 			break
 

@@ -57,8 +57,18 @@ StrConstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB
 // !! see V_BinTypeStr2Num() for the numbering, not the order of the list
 //
 //////////////////
+//
+// for the binning modes:
+// F4-M4-B means 4 separate I(q) for F panels, 4 separate I(q) for M panels, and B = FT;FB;FL;FR;MT;MB;ML;MR;B; 
+// F2-M2-B means FL and FR are averaged together, FT and FB are averaged together (=2 I(q)), same for M = FTB;FLR;MTB;MLR;B;
+// F1-M1-B means FL, FT, FB, and FR are all averaged together into 1 I(q), same for M = FLRTB;MLRTB;B;
+//
+// F1-M1xTB-B means FLRTB as one, MLR as one (ignore MTB), keep B (used when ML-MR panels are closed)
+//
+// all TB panels are ignored for SLIT data since q-range is incomplete
+//
 //Strconstant ksBinTypeStr = "One;Two;Four;Slit Mode;"
-StrConstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-B;SLIT-F2-M2-B;"
+StrConstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M1xTB-B;F2-M1xTB-B;SLIT-F2-M2-B;"
 StrConstant ksBinType1   = "FT;FB;FL;FR;MT;MB;ML;MR;B;" //these are the "active" extensions
 StrConstant ksBinType2   = "FTB;FLR;MTB;MLR;B;"
 StrConstant ksBinType3   = "FLRTB;MLRTB;B;"

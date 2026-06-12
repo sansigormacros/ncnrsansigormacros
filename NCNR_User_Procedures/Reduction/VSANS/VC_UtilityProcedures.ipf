@@ -347,7 +347,7 @@ End
 // source ap = ? (circular)
 //
 // ignore back detector
-// x set plot type to F2-M2xTB-B
+// x set plot type to F2-M1xTB-B
 //
 //
 Function VC_Preset_FrontMiddle_Ng0()
@@ -399,7 +399,7 @@ Function VC_Preset_FrontMiddle_Ng0()
 
 
 // binning mode
-	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=1,popValue="F2-M1xTB-B"
 
 
 	// front carriage
@@ -474,7 +474,7 @@ Function VC_Preset_FrontMiddle_Ng2()
 	PopupMenu VCALCCtrl_1f,disable=1
 
 // binning mode
-	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=1,popValue="F2-M1xTB-B"
 
 
 	// front carriage
@@ -549,7 +549,7 @@ Function VC_Preset_FrontMiddle_Ng7()
 	PopupMenu VCALCCtrl_1f,disable=1
 
 // binning mode
-	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=1,popValue="F2-M1xTB-B"
 
 
 	// front carriage
@@ -626,7 +626,7 @@ Function VC_Preset_FrontMiddle_Ng9()
 	PopupMenu VCALCCtrl_1f,disable=1
 
 // binning mode
-	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=1,popValue="F2-M1xTB-B"
 
 
 	// front carriage
@@ -717,7 +717,7 @@ Function VC_Preset_WhiteBeam()
 	SetVariable VCALCCtrl_3d,value=_NUM:1900		//SDD
 
 // binning mode
-	PopupMenu popup_b,mode=6,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=6,popValue="F2-M1xTB-B"
 
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
@@ -799,7 +799,7 @@ Function VC_Preset_SuperWhiteBeam()
 	SetVariable VCALCCtrl_3d,value=_NUM:1900		//SDD
 
 // binning mode
-	PopupMenu popup_b,mode=6,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=6,popValue="F2-M1xTB-B"
 
 // set preference to not use back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
@@ -877,7 +877,7 @@ Function VC_Preset_GraphiteMono()
 	SetVariable VCALCCtrl_3d,value=_NUM:500		//SDD
 
 // binning mode
-	PopupMenu popup_b,mode=6,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=6,popValue="F2-M1xTB-B"
 
 // set preference to ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
@@ -963,7 +963,7 @@ Function VC_Preset_ConvergingPinholes()
 
 
 // binning mode
-	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+	PopupMenu popup_b,mode=1,popValue="F2-M1xTB-B"
 
 
 	return(0)
