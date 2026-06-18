@@ -1038,7 +1038,7 @@ Function VC_PresetConfigPopup(STRUCT WMPopupAction &pa) : PopupMenuControl
 			variable popNum = pa.popNum
 			string   popStr = pa.popStr
 
-			string BinStr = "F2-M2xTB-B"
+			string BinStr = "F2-M1xTB-B"
 
 			strswitch(popStr)
 				case "F+M Ng0 Low Q":

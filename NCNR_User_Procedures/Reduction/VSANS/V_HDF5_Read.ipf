@@ -2066,11 +2066,28 @@ End
 //////// SAMPLE
 
 //Sample position in changer (returned as TEXT)
+//
+// TODO -- removed from Nexus definition as of JUNE 2026
+// -- be sure this is not an issue
+// as of JUNE 2026, it now points to a double value slotID
+//
+// for now, continue to return as string
 Function/S V_getSamplePosition(string fname)
 
 	string   path = "entry:sample:changer_position"
 	variable num  = 60
-	return (V_getStringFromHDF5(fname, path, num))
+	string retStr=""
+	
+	// try to get the value as a number -- 
+	Variable testNum = V_getRealValueFromHDF5(fname, path)
+	if(testNum != -999999)
+		return(num2str(testNum))
+	endif
+	
+	// if error -999999 returned, must be a string (old changer_position value)
+	retStr = V_getStringFromHDF5(fname, path, num)
+	
+	return (retStr)
 End
 
 // sample label

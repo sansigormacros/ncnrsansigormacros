@@ -1083,9 +1083,11 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	//
 	//  DENEX-TOFIX-WHEN-INSTALLED   is nq large enough (or too large) for the # of points generated
 	//
+	// need nq = 5000 for CCD??
+	//
 
 	if(cmpstr(type, "B") == 0)
-		nq = 800
+		nq = 5000
 	else
 		nq = 600
 	endif
@@ -1144,6 +1146,13 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	if(gIgnoreDetB && cmpstr(type, "B") == 0)
 		maskMissing = 1
 		Print "Mask skipped for B due to possible mismatch (Panel B ignored in preferences)"
+	endif
+	
+	// SRK 2026-- why did I not exit here (or really, exit at the top of the function) if B was
+	// set to be ignored? It's causing issues now with averaging and the arrays not being long enough...
+	// not sure why it wasn't an issue before?
+	if(gIgnoreDetB && cmpstr(type, "B") == 0)
+		return(0)
 	endif
 
 	variable mask_val

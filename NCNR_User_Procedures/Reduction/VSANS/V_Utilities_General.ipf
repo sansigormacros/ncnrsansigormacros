@@ -1489,7 +1489,9 @@ Function/S V_getFileIntentPurposeIDList(string intent, string purpose, variable 
 
 // TODO UUID (DONE)
 // need to update the comparison with cmpstr(), input UUID wave (from catalog), and target ID
-	NVAR validUUID = root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID
+
+//TODO UUID - not a valid check
+	NVAR validUUID = root:Packages:NIST:VSANS:Globals:gValidUUID
 
 	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
 	WAVE/T purposeW  = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose

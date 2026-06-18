@@ -59,13 +59,14 @@ Function V_InitTransPanelGlobals()
 	string/G gSamMatchList   = "_none_"
 	string/G gTransMatchList = "_none_"
 	string/G gUUID = ""
-	Variable/G gValidUUID = 0
+//	Variable/G gValidUUID = 0
 
-// hopefully there is data in RAW
-	gUUID = V_getSample_UUID("RAW")
-	if(strlen(gUUID) == 36)
-		gValidUUID = 1
-	endif
+// this is now initialized when the catTable is first opened
+// hopefully there is data in RAW	
+//	gUUID = V_getSample_UUID("RAW")
+//	if(strlen(gUUID) == 36)
+//		gValidUUID = 1
+//	endif
 
 
 	SetDataFolder root:
@@ -104,7 +105,7 @@ Window V_TransmissionPanel() : Panel
 	SetVariable setvar_2, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gTransLabel
 
 // TODO UUID (DONE) -- need to switch before this to determine which ID to use
-	if(root:Packages:NIST:VSANS:Globals:Transmission:gValidUUID)
+	if(root:Packages:NIST:VSANS:Globals:gValidUUID)
 		SetVariable setvar_3u, pos={sc * 14.00, 283.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="UUID:"
 		SetVariable setvar_3u, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:UUID
 	else

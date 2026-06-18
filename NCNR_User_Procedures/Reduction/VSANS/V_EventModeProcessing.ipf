@@ -1820,7 +1820,7 @@ Function V_LoadEvents()
 	// dispStr will be displayed on the panel
 	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
 
-	sprintf tmpStr, "%s: %d total bytes\r", fileStr, totBytes
+	sprintf tmpStr, "%s:\r%d total bytes\r", fileStr, totBytes
 	dispStr = tmpStr
 	sprintf tmpStr, "numXYevents = %d\r", numXYevents
 	dispStr += tmpStr

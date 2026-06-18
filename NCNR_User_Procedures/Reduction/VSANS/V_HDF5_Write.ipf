@@ -6020,6 +6020,16 @@ End
 //////// SAMPLE
 
 //Sample position in changer
+// after the change to the Nexus file in JUNE2026, the calling function must determine whether to use
+// the text version or the numeric version
+//
+// TODO JUNE 2026 sample_position
+//
+// -- need to add a separate function? V_writeSamplePosition_numeric()
+//
+// still don't know how to decide between text/DP?? can I use the sample date?
+// -- at least for now, this write funciton is not called anywhere... so I'll wait to come
+// up with a solution only if needed
 Function V_writeSamplePosition(string fname, string str)
 
 	//	String path = "entry:sample:changer_position"

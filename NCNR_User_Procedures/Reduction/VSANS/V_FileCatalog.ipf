@@ -296,6 +296,22 @@ Function V_BuildCatVeryShortTable()
 	//
 	//	V_CleanOutRawVSANS()
 
+
+// set the global switch for UUID or GroupID (used later for transmission)
+	NVAR gValidUUID = root:Packages:NIST:VSANS:Globals:gValidUUID
+	if(strlen(UUID[0]) == 36)
+		gValidUUID = 1
+	endif
+
+// remove the column not needed (tried to set width=0, but not allowed )
+	if(gValidUUID)
+//		ModifyTable width(Group_ID)=0 //JUNE 2026, hide GroupID
+		RemoveFromTable Group_ID      //JUNE 2026, remove GroupID
+	else
+//		ModifyTable width(UUID)=0 //JUNE 2026, hide UUID
+		RemoveFromTable UUID      //JUNE 2026, remove GroupID
+	endif
+
 	return (0)
 End
 
@@ -572,6 +588,10 @@ End
 
 //function to create the CAT/VSTable to display the header information
 //this table is just like any other table
+//
+// TODO UUID -- need to decide whether to show Group_ID or UUID
+// -- how to switch (and remove one of the wave names from the list)
+//
 Function V_BuildTableWindow()
 
 	SetDataFolder root:Packages:NIST:VSANS:CatVSHeaderInfo:
