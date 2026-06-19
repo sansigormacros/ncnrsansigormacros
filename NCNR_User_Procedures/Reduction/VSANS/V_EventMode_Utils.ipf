@@ -748,11 +748,15 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 	V_putBeamMonNormData("RAW", mon_STO * timeFract)
 	
 	// ct time
-//	V_putCount_time("RAW", ctTime_STO * timeFract)
-	V_putCount_time("RAW", timeWidth_F[varNum])			//use the bin time width directly
+	V_putCount_time("RAW", ctTime_STO * timeFract)
+//	V_putCount_time("RAW", timeWidth_F[varNum])			//use the bin time width directly (NO--wrong for OSC data)
 	
 	// label
 	V_putSampleDescription("RAW", label_STO + " slice " + num2str(varNum))
+
+// for testing
+	Duplicate/O timeWidth_F sliceCtTime
+	sliceCtTime = ctTime_STO * timeWidth_F[p] / binEnd_F[num-1]
 
 	return (0)
 End

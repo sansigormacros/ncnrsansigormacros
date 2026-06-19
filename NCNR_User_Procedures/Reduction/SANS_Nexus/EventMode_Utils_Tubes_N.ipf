@@ -415,10 +415,15 @@ Function ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr, 
 	// mon ct
 	putBeamMonNorm_Data("RAW", mon_STO * timeFract)
 	// ct time
-//	putCount_time("RAW", ctTime_STO * timeFract)
-	putCount_time("RAW", timeWidth[varNum])  //use the bin time width directly
+	putCount_time("RAW", ctTime_STO * timeFract)
+//	putCount_time("RAW", timeWidth[varNum])  //use the bin time width directly (NO--wrong for OSC data)
 	// label
 	putSampleDescription("RAW", label_STO + " slice " + num2str(varNum))
+
+// for testing
+	Duplicate/O timeWidth sliceCtTimes
+	sliceCtTimes = ctTime_STO * timeWidth[p] / binEnd[num-1]
+	
 
 	return (0)
 End
