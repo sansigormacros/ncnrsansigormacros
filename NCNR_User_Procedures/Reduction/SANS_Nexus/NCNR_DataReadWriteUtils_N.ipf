@@ -1080,7 +1080,7 @@ End
 //
 // -- more items can be added in the future as needed
 //
-Proc VerifyImportantUnits(fname)
+Macro VerifyImportantUnits(fname)
 	string fname
 
 	fVerifyImportantUnits(fname)

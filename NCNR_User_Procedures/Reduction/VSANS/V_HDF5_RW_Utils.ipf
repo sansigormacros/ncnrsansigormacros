@@ -1227,3 +1227,71 @@ Function H_NXSANS_SaveGroupAsHDF5(string dfPath, string filename)
 	return result
 End
 
+
+
+
+// Snippet of code from AG at Wavemetrics to be able to unlink an object in a file that
+// was written as a soft link - need to unlink first
+//
+// --Igor 8 has a different failure code
+// -- need to be able to make this generic and add to base write routines
+// (=use generic wave name with a path and varName)
+// -- do I need to close the group first as the help says before unlinking
+// -- can I have NICE get rid of the soft links?
+// 
+//
+// Opens an HDF5 file and overwrites the string dataset at
+// /entry/reduction/file_purpose with "this is a test".
+// Pass the full path to the file, or "" to get a file-open dialog.
+Function OverwriteFilePurpose(String filePath)
+
+    Variable fileID=0,groupID=0,err=0
+
+    // Open the file for read/write. Do NOT use /R, which would be read-only.
+    HDF5OpenFile/Z fileID as filePath
+    if(V_flag != 0)
+        Print "Failed to open HDF5 file."
+        return -1
+    endif
+
+    // Open the group that contains the target dataset:
+    HDF5OpenGroup fileID, "/entry/reduction", groupID
+    err=GetRTError(1)
+    if (V_flag != 0)
+        Print "Failed to open group /entry/reduction."
+        return -1
+    endif
+
+    // Build the replacement string in a text wave whose name matches
+    // the dataset name (file_purpose).
+    Make/O/T /N=(1) file_purpose
+    file_purpose[0] = "this is a test"
+
+    // Overwrite the existing dataset (/O replaces it in place).
+    HDF5SaveData /O  file_purpose, groupID
+    err=GetRTError(1)
+    if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
+            HDF5UnlinkObject fileID, "/entry/reduction/file_purpose"
+          err=GetRTError(1)
+           if(err==0)
+                      HDF5SaveData /O  file_purpose, groupID
+                endif
+    endif
+    
+    if(V_flag != 0)
+        Print "Failed to write dataset file_purpose."
+        return -1
+    endif
+
+    // Clean up regardless of success or failure.
+    if(groupID != 0)
+        HDF5CloseGroup/Z groupID
+    endif
+    if(fileID != 0)
+        HDF5CloseFile/Z fileID
+    endif
+
+    KillWaves/Z file_purpose
+    return err
+End
+
