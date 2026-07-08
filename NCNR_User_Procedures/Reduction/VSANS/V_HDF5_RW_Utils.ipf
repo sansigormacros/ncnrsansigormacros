@@ -1193,6 +1193,19 @@ Proc Save_VSANS_file(dfPath, filename)
 	H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
 EndMacro
 
+
+// batch routine to re-save entire data file (Nexus entry only, not DAS_logs)
+// due to suspected HDF5 library incompatibility in 2026 startup files
+//
+Macro Convert_VSANS_file(dfPath, filename)
+	string dfPath   = "root:VSANS_file"
+	string filename = "Test_VSANS_file.h5"
+
+	H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
+EndMacro
+
+
+
 //
 // this is my procedure to save the folders to HDF5, once I've filled the folder tree
 //
