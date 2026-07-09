@@ -957,6 +957,22 @@ End
 //Write Wave 'wav' to hdf5 file 'fname'
 //Based on code from ANSTO (N. Hauser. nha 8/1/09)
 //
+// updated JUL 2026 - using
+// Snippet of code from AG at Wavemetrics to be able to unlink an object in a file that
+// was written as a soft link - need to unlink first
+//
+// --Igor 8 has a different failure code (V_flag=10033, err=65569)
+// -- need to be able to make this generic and add to base write routines
+// (=use generic wave name with a path and varName)
+// -- do I need to close the group first as the help says before unlinking?
+// -- can I have NICE get rid of the soft links?
+// 
+// NOTE - this function and V_WriteTextWavetoHDF() are nearly identical
+// except for the numerical or text wave as the last argument.
+//
+// see AG's function OverWriteFilePurpose() later in this file
+//
+//
 // (DONE):
 // x- figure out if this will write in the native format of the
 //     wave as passed in, or if it will only write as DP.
@@ -973,7 +989,7 @@ End
 //
 Function V_WriteWaveToHDF(string fname, string groupName, string varName, WAVE wav)
 
-	// try a local folder first, then try to save to disk
+	// try a local (WORK) folder first, then try to save to disk
 	//
 	string folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
@@ -985,88 +1001,199 @@ Function V_WriteWaveToHDF(string fname, string groupName, string varName, WAVE w
 	WAVE/Z w = $localPath
 	if(waveExists(w) == 1)
 		w = wav
-		//		Print "write to local folder done"
+		Print "write to local folder done"
 		return (0) //we're done, get out
 	endif
 
-	// if the local wave did not exist, then we proceed to write to disk
+	// if the local (WORK) wave did not exist, then we proceed to write to disk
 
 	variable fileID, groupID
 	variable err = 0
 	string temp
 	string cDF = getDataFolder(1)
-	string NXentry_name
+//	string NXentry_name
 
-	try
-		HDF5OpenFile/P=catPathName/Z fileID as fname //open file read-write
-		if(!fileID)
-			err = 1
-			abort "HDF5 file does not exist"
-		endif
-
-		//get the NXentry node name
-		HDF5ListGroup/TYPE=1 fileID, "/"
-		//remove trailing ; from S_HDF5ListGroup
-
-		Print "S_HDF5ListGroup = ", S_HDF5ListGroup
-
-		NXentry_name = S_HDF5ListGroup
-		NXentry_name = ReplaceString(";", NXentry_name, "")
-		if(strsearch(NXentry_name, ":", 0) != -1) //more than one entry under the root node
-			err = 1
-			abort "More than one entry under the root node. Ambiguous"
-		endif
-		//concatenate NXentry node name and groupName
-		// SRK - NOV2015 - dropped this and require the full group name passed in
-		//		groupName = "/" + NXentry_name + groupName
-		Print "groupName = ", groupName
-		HDF5OpenGroup/Z fileID, groupName, groupID
-
-		if(!groupID)
-			// don't create the group if the name isn't right -- throw up an error
-			//HDF5CreateGroup /Z fileID, groupName, groupID
-			err = 1
-			HDF5CloseFile/Z fileID
-			DoAlert 0, "HDF5 group does not exist " + groupName + varname
-			return (err)
-		endif
-
-		// get attributes and save them
-		//HDF5ListAttributes /Z fileID, groupName    this is returning null. expect it to return semicolon delimited list of attributes
-		//Wave attributes = S_HDF5ListAttributes
-
-		HDF5SaveData/O/Z/IGOR=0 wav, groupID, varName
-		if(V_flag != 0)
-			err = 1
-			abort "Cannot save wave to HDF5 dataset " + varName
-		endif
-
-		//attributes - something could be added here as optional parameters and flagged
-		//		String attributes = "units"
-		//		Make/O/T/N=1 tmp
-		//		tmp[0] = "dimensionless"
-		//		HDF5SaveData /O /Z /IGOR=0 /A=attributes tmp, groupID, varName
-		//		if (V_flag != 0)
-		//			err = 1
-		//			abort "Cannot save attributes to HDF5 dataset"
-		//		endif
-	catch
-
-	endtry
-
-	// it is not necessary to close the group here. HDF5CloseFile will close the group as well
-	if(groupID)
-		HDF5CloseGroup/Z groupID
+	// Open the file for read/write. Do NOT use /R, which would be read-only.
+	HDF5OpenFile/P=catPathName/Z fileID as fname
+	if(V_flag != 0)
+		Print "Failed to open HDF5 file."
+		return -1
 	endif
-
-	if(fileID)
+ 
+	// Open the group that contains the target dataset:
+	// catch any error
+	HDF5OpenGroup fileID, groupName, groupID
+	err=GetRTError(1)
+	if (V_flag != 0)
+		Print "Failed to open group: " + groupName
+		
+		// clean up, close file, group was never opened
 		HDF5CloseFile/Z fileID
+		return -1
 	endif
+    
+	// get attributes and save them
+	//HDF5ListAttributes /Z fileID, groupName    this is returning null. expect it to return semicolon delimited list of attributes
+	//Wave attributes = S_HDF5ListAttributes
+
+	// Overwrite the existing dataset (/O replaces it in place).
+	HDF5SaveData/O/IGOR=0 wav, groupID, varName
+	err=GetRTError(1)
+
+	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
+		HDF5UnlinkObject fileID, groupName+"/"+varName
+		err=GetRTError(1)
+		if(err==0)
+			HDF5SaveData/O/IGOR=0 wav, groupID, varName
+		endif
+	endif
+    
+	if(V_flag != 0)
+		Print "Failed to write dataset: " + varName
+//		return -1		// clean up below before exiting if SaveData fails again
+	endif	
+    
+	//attributes - something could be added here as optional parameters and flagged
+	//		String attributes = "units"
+	//		Make/O/T/N=1 tmp
+	//		tmp[0] = "dimensionless"
+	//		HDF5SaveData /O /Z /IGOR=0 /A=attributes tmp, groupID, varName
+	//		if (V_flag != 0)
+	//			err = 1
+	//			abort "Cannot save attributes to HDF5 dataset"
+	//		endif
+
+    // Clean up regardless of success or failure.
+    if(groupID != 0)
+        HDF5CloseGroup/Z groupID
+    endif
+    if(fileID != 0)
+        HDF5CloseFile/Z fileID
+    endif
 
 	setDataFolder $cDF
 	return err
 End
 
+
+
+/////////////
+// Write Wave 'wav' to hdf5 file 'fname'
+// Based on code from ANSTO (N. Hauser. nha 8/1/09)
+//
+// updated JUL 2026 - using
+// Snippet of code from AG at Wavemetrics to be able to unlink an object in a file that
+// was written as a soft link - need to unlink first
+//
+// --Igor 8 has a different failure code (V_flag=10033, err=65569)
+// -- need to be able to make this generic and add to base write routines
+// (=use generic wave name with a path and varName)
+// -- do I need to close the group first as the help says before unlinking?
+// -- can I have NICE get rid of the soft links?
+// 
+// see AG's function OverWriteFilePurpose() later in this file
+//
+// (DONE)
+//
+// -x change the /P=home to the user-defined data path (catPathName)
+//
+Function V_WriteTextWaveToHDF(string fname, string groupName, string varName, WAVE/T wav)
+
+	// try a local (WORK) folder first, then try to save to disk
+	//
+	string folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+
+	string localPath = "root:Packages:NIST:VSANS:" + folderStr //+":entry"
+	localPath += groupName + "/" + varName
+	// make everything colons for local data folders
+	localPath = ReplaceString("/", localPath, ":")
+
+	WAVE/Z/T w = $localPath
+	if(waveExists(w) == 1)
+		w = wav
+		Print "write to local folder done"
+		return (0) //we're done, get out
+	endif
+
+	// if the local (WORK) wave did not exist, then we proceed to write to disk
+
+	variable fileID, groupID
+	variable err = 0
+	string temp
+	string cDF = getDataFolder(1)
+//	string NXentry_name
+
+	// Open the file for read/write. Do NOT use /R, which would be read-only.
+	HDF5OpenFile/P=catPathName/Z fileID as fname
+	if(V_flag != 0)
+		Print "Failed to open HDF5 file."
+		return -1
+	endif
+ 
+	// Open the group that contains the target dataset:
+	// catch any error
+	HDF5OpenGroup fileID, groupName, groupID
+	err=GetRTError(1)
+	if (V_flag != 0)
+		Print "Failed to open group: " + groupName
+		
+		// clean up, close file, group was never opened
+		HDF5CloseFile/Z fileID
+		return -1
+	endif
+    
+	// get attributes and save them
+	//HDF5ListAttributes /Z fileID, groupName    this is returning null. expect it to return semicolon delimited list of attributes
+	//Wave attributes = S_HDF5ListAttributes
+
+	// Overwrite the existing dataset (/O replaces it in place).
+	HDF5SaveData/O/IGOR=0 wav, groupID, varName
+	err=GetRTError(1)
+
+	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
+		HDF5UnlinkObject fileID, groupName+"/"+varName
+		err=GetRTError(1)
+		if(err==0)
+			HDF5SaveData/O/IGOR=0 wav, groupID, varName
+		endif
+	endif
+    
+	if(V_flag != 0)
+		Print "Failed to write dataset: " + varName
+//		return -1		// clean up below before exiting if SaveData fails again
+	endif	
+    
+	//attributes - something could be added here as optional parameters and flagged
+	//		String attributes = "units"
+	//		Make/O/T/N=1 tmp
+	//		tmp[0] = "dimensionless"
+	//		HDF5SaveData /O /Z /IGOR=0 /A=attributes tmp, groupID, varName
+	//		if (V_flag != 0)
+	//			err = 1
+	//			abort "Cannot save attributes to HDF5 dataset"
+	//		endif
+
+    // Clean up regardless of success or failure.
+    if(groupID != 0)
+        HDF5CloseGroup/Z groupID
+    endif
+    if(fileID != 0)
+        HDF5CloseFile/Z fileID
+    endif
+
+	setDataFolder $cDF
+	return err
+End
+
+
+///////////////////////////////////////////////
+//
+// original versions (pre-2026), replaced with updated versions (above) that are more streamlined 
+// and can properly handle soft links in data files
+//
+//////////////
+
+//
 //Write Wave 'wav' to hdf5 file 'fname'
 //Based on code from ANSTO (N. Hauser. nha 8/1/09)
 //
@@ -1074,7 +1201,7 @@ End
 //
 // -x change the /P=home to the user-defined data path (catPathName)
 //
-Function V_WriteTextWaveToHDF(string fname, string groupName, string varName, WAVE/T wav)
+Function V_WriteTextWaveToHDF_old(string fname, string groupName, string varName, WAVE/T wav)
 
 	// try a local folder first, then try to save to disk
 	//
@@ -1170,6 +1297,125 @@ Function V_WriteTextWaveToHDF(string fname, string groupName, string varName, WA
 	setDataFolder $cDF
 	return err
 End
+
+//
+//Write Wave 'wav' to hdf5 file 'fname'
+//Based on code from ANSTO (N. Hauser. nha 8/1/09)
+//
+// (DONE):
+// x- figure out if this will write in the native format of the
+//     wave as passed in, or if it will only write as DP.
+// x-(NO) do I need to write separate functions for real, integer, etc.?
+// x- the lines to create a missing group have been commented out to avoid filling
+//    in missing fields that should have been generated by the data writer. Need to make
+//    a separate function that will write and generate if needed, and use this in specific cases
+//    only if I really have to force it.
+//
+// x-Attributes are not currently saved. Fix this, maybe make it optional? See the help file for
+//  DemoAttributes(w) example under the HDF5SaveData operation
+//
+// -x change the /P=home to the user-defined data path (catPathName)
+//
+Function V_WriteWaveToHDF_old(string fname, string groupName, string varName, WAVE wav)
+
+	// try a local folder first, then try to save to disk
+	//
+	string folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+
+	string localPath = "root:Packages:NIST:VSANS:" + folderStr //+":entry"
+	localPath += groupName + "/" + varName
+	// make everything colons for local data folders
+	localPath = ReplaceString("/", localPath, ":")
+
+	WAVE/Z w = $localPath
+	if(waveExists(w) == 1)
+		w = wav
+		//		Print "write to local folder done"
+		return (0) //we're done, get out
+	endif
+
+	// if the local wave did not exist, then we proceed to write to disk
+
+	variable fileID, groupID
+	variable err = 0
+	string temp
+	string cDF = getDataFolder(1)
+	string NXentry_name
+
+	try
+		HDF5OpenFile/P=catPathName/Z fileID as fname //open file read-write
+		if(!fileID)
+			err = 1
+			abort "HDF5 file does not exist"
+		endif
+
+		//get the NXentry node name
+		HDF5ListGroup/TYPE=1 fileID, "/"
+		//remove trailing ; from S_HDF5ListGroup
+
+		Print "S_HDF5ListGroup = ", S_HDF5ListGroup
+
+		NXentry_name = S_HDF5ListGroup
+		NXentry_name = ReplaceString(";", NXentry_name, "")
+		if(strsearch(NXentry_name, ":", 0) != -1) //more than one entry under the root node
+			err = 1
+			abort "More than one entry under the root node. Ambiguous"
+		endif
+		//concatenate NXentry node name and groupName
+		// SRK - NOV2015 - dropped this and require the full group name passed in
+		//		groupName = "/" + NXentry_name + groupName
+		Print "groupName = ", groupName
+		HDF5OpenGroup/Z fileID, groupName, groupID
+
+		if(!groupID)
+			// don't create the group if the name isn't right -- throw up an error
+			//HDF5CreateGroup /Z fileID, groupName, groupID
+			err = 1
+			HDF5CloseFile/Z fileID
+			DoAlert 0, "HDF5 group does not exist " + groupName + varname
+			return (err)
+		endif
+
+		// get attributes and save them
+		//HDF5ListAttributes /Z fileID, groupName    this is returning null. expect it to return semicolon delimited list of attributes
+		//Wave attributes = S_HDF5ListAttributes
+
+		HDF5SaveData/O/Z/IGOR=0 wav, groupID, varName
+		if(V_flag != 0)
+			err = 1
+			abort "Cannot save wave to HDF5 dataset " + varName
+		endif
+
+		//attributes - something could be added here as optional parameters and flagged
+		//		String attributes = "units"
+		//		Make/O/T/N=1 tmp
+		//		tmp[0] = "dimensionless"
+		//		HDF5SaveData /O /Z /IGOR=0 /A=attributes tmp, groupID, varName
+		//		if (V_flag != 0)
+		//			err = 1
+		//			abort "Cannot save attributes to HDF5 dataset"
+		//		endif
+	catch
+
+	endtry
+
+	// it is not necessary to close the group here. HDF5CloseFile will close the group as well
+	if(groupID)
+		HDF5CloseGroup/Z groupID
+	endif
+
+	if(fileID)
+		HDF5CloseFile/Z fileID
+	endif
+
+	setDataFolder $cDF
+	return err
+End
+
+
+
+
+///////////////////////////////////////////
 
 //////////////////////////////
 //////////////////////////////
