@@ -893,9 +893,15 @@ Function WriteWaveToHDF(string fname, string groupName, string varName, WAVE wav
 	err=GetRTError(1)
 
 	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
+		// close the group
+		HDF5CloseGroup/Z groupID
+		//unlink
 		HDF5UnlinkObject fileID, groupName+"/"+varName
 		err=GetRTError(1)
 		if(err==0)
+			//unlink ok, re-open the group
+			HDF5OpenGroup fileID, groupName, groupID
+			//save the data
 			HDF5SaveData/O/IGOR=0 wav, groupID, varName
 		endif
 	endif
@@ -1001,9 +1007,15 @@ Function WriteTextWaveToHDF(string fname, string groupName, string varName, WAVE
 	err=GetRTError(1)
 
 	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
+		// close the group
+		HDF5CloseGroup/Z groupID
+		//unlink
 		HDF5UnlinkObject fileID, groupName+"/"+varName
 		err=GetRTError(1)
 		if(err==0)
+			//unlink ok, re-open the group
+			HDF5OpenGroup fileID, groupName, groupID
+			//save the data
 			HDF5SaveData/O/IGOR=0 wav, groupID, varName
 		endif
 	endif

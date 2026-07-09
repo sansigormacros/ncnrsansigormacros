@@ -1041,13 +1041,19 @@ Function V_WriteWaveToHDF(string fname, string groupName, string varName, WAVE w
 	err=GetRTError(1)
 
 	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
+		// close the group
+		HDF5CloseGroup/Z groupID
+		//unlink
 		HDF5UnlinkObject fileID, groupName+"/"+varName
 		err=GetRTError(1)
 		if(err==0)
+			//unlink ok, re-open the group
+			HDF5OpenGroup fileID, groupName, groupID
+			//save the data
 			HDF5SaveData/O/IGOR=0 wav, groupID, varName
 		endif
 	endif
-    
+	   
 	if(V_flag != 0)
 		Print "Failed to write dataset: " + varName
 //		return -1		// clean up below before exiting if SaveData fails again
@@ -1151,9 +1157,15 @@ Function V_WriteTextWaveToHDF(string fname, string groupName, string varName, WA
 	err=GetRTError(1)
 
 	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
+		// close the group
+		HDF5CloseGroup/Z groupID
+		//unlink
 		HDF5UnlinkObject fileID, groupName+"/"+varName
 		err=GetRTError(1)
 		if(err==0)
+			//unlink ok, re-open the group
+			HDF5OpenGroup fileID, groupName, groupID
+			//save the data
 			HDF5SaveData/O/IGOR=0 wav, groupID, varName
 		endif
 	endif
