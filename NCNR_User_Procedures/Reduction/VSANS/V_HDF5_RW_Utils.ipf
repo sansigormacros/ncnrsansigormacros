@@ -1453,15 +1453,70 @@ EndMacro
 
 
 // batch routine to re-save entire data file (Nexus entry only, not DAS_logs)
-// due to suspected HDF5 library incompatibility in 2026 startup files
+// to sever ties to all links to DAS_logs in 2026 startup files
 //
-Macro Convert_VSANS_file(dfPath, filename)
-	string dfPath   = "root:VSANS_file"
-	string filename = "Test_VSANS_file.h5"
+// - this is a method of last resort -
+// - there are better solutions that unlink data as needed
+// - best solution would be to (possibly) read in the whole file and 
+// correct the linked value at the source (in DAS_logs)
+//
+Macro BatchConvert_VSANS_toOLDHDF(firstFile,lastFile)
+	Variable firstFile=1,lastFile=10
+	Prompt firstFile, "Enter first run number"
+	Prompt lastFile, "Enter last run number"
 
-	H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
-EndMacro
 
+	fBatchConvertToOldHDF5(firstFile,lastFile)
+
+End
+
+
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fBatchConvertToOldHDF5(lo,hi)
+	Variable lo,hi
+	
+	Variable ii
+	String file
+	
+	String fname="",pathStr="",fullPath="",newFileName=""
+	String dfPath = "root:Packages:NIST:VSANS:RawVSANS:"
+
+	PathInfo catPathName			//this is where the files are
+	pathStr=S_path
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		file = V_FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			// read in the file, putting the data in RawVSANS
+			SetDataFolder ksBaseDFPath
+			V_LoadHDF5_NoAtt(file, "")
+		//	SetDataFolder root:
+		
+		// get the file name, no path (with extension_
+			newFileName= "c_"+V_GetFileNameFromPathNoSemi(file)
+
+		// name without extension
+			fname= V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(file))
+
+			
+			// save it
+			// this destroys all of the links to DAS_logs, and does not save any of the
+			// DAS_logs to the converted file
+			H_NXSANS_SaveGroupAsHDF5(dfPath+fname+":", newfilename)
+
+			Print "Converted file: " + newfileName
+			SetDataFolder root:
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	SetDataFolder root:
+	return(0)
+End
 
 
 //
