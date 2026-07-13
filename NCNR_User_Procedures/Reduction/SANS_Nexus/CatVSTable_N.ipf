@@ -592,8 +592,15 @@ Function GetHeaderInfoToWave(string fname, string sname)
 	GNumGuides[lastPoint] = numGuides(getSourceAp_distance(fname) / 100) //  convert [cm] to [m]
 
 	//Sample Position
+	Variable err=0
+	
 	InsertPoints lastPoint, 1, GPos
-	GPos[lastPoint] = str2num(getSamplePosition(fname))
+	GPos[lastPoint] = str2num(getSamplePosition(fname)) ; err=GetRTError(1)
+	// TODO JUL 2026 -missing field at startup - try to catch the error (commands on the same line)
+	// should not be needed once the field is added
+	if(err != 0)
+		GPos[lastPoint] = NaN		
+	endif
 #endif
 
 	//intent, purpose, and group_id

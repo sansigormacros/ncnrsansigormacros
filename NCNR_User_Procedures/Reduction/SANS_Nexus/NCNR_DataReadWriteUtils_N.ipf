@@ -874,8 +874,8 @@ Function WriteWaveToHDF(string fname, string groupName, string varName, WAVE wav
  
 	// Open the group that contains the target dataset:
 	// catch any error
-	HDF5OpenGroup fileID, groupName, groupID
-	err=GetRTError(1)
+	HDF5OpenGroup fileID, groupName, groupID  ; err=GetRTError(1)
+	
 	if (V_flag != 0)
 		Print "Failed to open group: " + groupName
 		
@@ -889,8 +889,8 @@ Function WriteWaveToHDF(string fname, string groupName, string varName, WAVE wav
 	//Wave attributes = S_HDF5ListAttributes
 
 	// Overwrite the existing dataset (/O replaces it in place).
-	HDF5SaveData/O/IGOR=0 wav, groupID, varName
-	err=GetRTError(1)
+	HDF5SaveData/O/IGOR=0 wav, groupID, varName  ; err=GetRTError(1)
+	
 
 	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
 		// close the group
@@ -988,8 +988,8 @@ Function WriteTextWaveToHDF(string fname, string groupName, string varName, WAVE
  
 	// Open the group that contains the target dataset:
 	// catch any error
-	HDF5OpenGroup fileID, groupName, groupID
-	err=GetRTError(1)
+	HDF5OpenGroup fileID, groupName, groupID  ; err=GetRTError(1)
+	
 	if (V_flag != 0)
 		Print "Failed to open group: " + groupName
 		
@@ -1003,8 +1003,8 @@ Function WriteTextWaveToHDF(string fname, string groupName, string varName, WAVE
 	//Wave attributes = S_HDF5ListAttributes
 
 	// Overwrite the existing dataset (/O replaces it in place).
-	HDF5SaveData/O/IGOR=0 wav, groupID, varName
-	err=GetRTError(1)
+	HDF5SaveData/O/IGOR=0 wav, groupID, varName  ; err=GetRTError(1)
+	
 
 	if(err==9131 || err==65569)		//covers Igor 8, 9, 10 error codes
 		// close the group

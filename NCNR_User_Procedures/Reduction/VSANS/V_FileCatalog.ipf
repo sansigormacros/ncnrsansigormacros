@@ -809,8 +809,16 @@ Function V_GetHeaderInfoToWave(string fname, string sname)
 
 	//
 	//Sample Position (== number position in 10CB)
+	// TODO JUL 2026 - missing field in file at startup -- try to catch
+	// the error (both commands on the same line)
+	Variable err = 0
+	
 	InsertPoints lastPoint, 1, GPos
-	GPos[lastPoint] = str2num(V_getSamplePosition(fname))
+	GPos[lastPoint] = str2num(V_getSamplePosition(fname)) ; err=GetRTError(1)
+	
+	if(err != 0)
+		GPos[lastPoint] = NaN
+	endif
 
 	// Intent (text)
 	InsertPoints lastPoint, 1, GIntent

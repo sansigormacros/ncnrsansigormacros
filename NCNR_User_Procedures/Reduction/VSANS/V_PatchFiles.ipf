@@ -3600,3 +3600,141 @@ Function V_fPatch_Wavelength(variable lo, variable hi, variable lam, variable de
 
 	return (0)
 End
+
+
+
+
+/////////////////////////////
+Proc V_Patch_Files_2026(lo, hi)
+	variable lo, hi
+
+	V_fPatch_Files_2026(lo, hi)
+EndMacro
+
+
+
+
+////////////////////////
+//
+// Changes needed to make the "new" data collected after startup to be useable.
+// --many of the changes are for the new Denex HR detector, but some are new errors
+//   that have been introduced
+//
+////////////////////////
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+// DENEX-TOFIX-WHEN-INSTALLED
+Function V_fPatch_Files_2026(variable lo, variable hi)
+
+
+	variable ii, jj
+	string fname, detStr, descriptionStr
+
+	variable pixSize_x, pixSize_y
+	variable pixNum_x, pixNum_y
+	variable fwhm_x, fwhm_y, dead_time
+
+// DENEX-TOFIX-WHEN-INSTALLED
+//	pixSize_x = 0.5 // [mm]
+//	pixSize_y = 0.5 // [mm]
+//	pixNum_x  = kNum_x_Denex
+//	pixNum_y  = kNum_y_Denex
+
+//	fwhm_x    = 0.05  // [cm]
+//	fwhm_y    = 0.05  // [cm]
+//	dead_time = 1e-20 // [s]
+//
+//	detStr         = "B"
+//	descriptionStr = "Denex"
+
+// DENEX-TOFIX-WHEN-INSTALLED
+//	Make/O/D/N=3 cal_x, cal_y
+//	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
+//	cal_x[1] = 1              // values to ensure linear behavior in calculation
+//	cal_x[2] = 10000
+//	cal_y[0] = pixSize_y / 10 // pixel size in [cm]
+//	cal_y[1] = 1
+//	cal_y[2] = 10000
+//
+//	//////////////
+//		Make/O/I/N=(kNum_x_Denex,kNum_y_Denex) tmpData=1
+//	//////////////
+
+	//loop over all files
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+			// patch cal_x and cal_y
+//			V_writeDet_cal_x(fname, detStr, cal_x)
+//			V_writeDet_cal_y(fname, detStr, cal_y)
+
+			// patch n_pix_x and y
+//			V_writeDet_pixel_num_x(fname, detStr, pixNum_x)
+//			V_writeDet_pixel_num_y(fname, detStr, pixNum_y)
+
+			// patch pixel size x and y [mm]
+//			V_writeDet_x_pixel_size(fname, detStr, pixSize_x)
+//			V_writeDet_y_pixel_size(fname, detStr, pixSize_y)
+
+			// patch dead time
+			// TODO: enter a proper value here once it's actually measured
+//			V_writeDetector_deadtime_B(fname, detStr, dead_time)
+
+			// patch fwhm_x and y
+			// TODO: verify the values once they are measured, and also the UNITS!!! [cm]???
+//			V_writeDet_pixel_fwhm_x(fname, detStr, fwhm_x)
+//			V_writeDet_pixel_fwhm_y(fname, detStr, fwhm_y)
+
+			// patch beam center (nominal x,y) [pixel] values for "B"
+			V_writeDet_beam_center_x(fname, "B", 51)
+			V_writeDet_beam_center_y(fname, "B", 51)
+
+			// write the detector description as "Denex" so it can be identified
+			V_writeDetDescription(fname, "B", "Denex")
+			
+			
+			// lateral and vertical offsets for all F, M panels written in mm, need cm
+			Variable val=0
+			
+			val = V_getDet_LateralOffset(fname, "FL")
+			V_writeDet_LateralOffset(fname, "FL", val/10)
+
+			val = V_getDet_LateralOffset(fname, "FR")
+			V_writeDet_LateralOffset(fname, "FR", val/10)
+
+			val = V_getDet_LateralOffset(fname, "ML")
+			V_writeDet_LateralOffset(fname, "ML", val/10)
+
+			val = V_getDet_LateralOffset(fname, "MR")
+			V_writeDet_LateralOffset(fname, "MR", val/10)
+			
+			val = V_getDet_VerticalOffset(fname, "FT")
+			V_writeDet_VerticalOffset(fname, "FT", val/10)
+			
+			val = V_getDet_VerticalOffset(fname, "FB")
+			V_writeDet_VerticalOffset(fname, "FB", val/10)
+			
+			val = V_getDet_VerticalOffset(fname, "MT")
+			V_writeDet_VerticalOffset(fname, "MT", val/10)
+			
+			val = V_getDet_VerticalOffset(fname, "MB")
+			V_writeDet_VerticalOffset(fname, "MB", val/10)
+			
+			
+			
+			
+
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+	KillWaves/Z cal_x, cal_y, tmpData
+	return (0)
+End
+
+
