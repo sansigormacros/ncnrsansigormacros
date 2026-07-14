@@ -3605,7 +3605,7 @@ End
 
 
 /////////////////////////////
-Proc V_Patch_Files_2026(lo, hi)
+Macro V_Patch_Files_2026(lo, hi)
 	variable lo, hi
 
 	V_fPatch_Files_2026(lo, hi)
@@ -3629,7 +3629,6 @@ EndMacro
 // DENEX-TOFIX-WHEN-INSTALLED
 Function V_fPatch_Files_2026(variable lo, variable hi)
 
-
 	variable ii, jj
 	string fname, detStr, descriptionStr
 
@@ -3638,56 +3637,58 @@ Function V_fPatch_Files_2026(variable lo, variable hi)
 	variable fwhm_x, fwhm_y, dead_time
 
 // DENEX-TOFIX-WHEN-INSTALLED
-//	pixSize_x = 0.5 // [mm]
-//	pixSize_y = 0.5 // [mm]
-//	pixNum_x  = kNum_x_Denex
-//	pixNum_y  = kNum_y_Denex
+	pixSize_x = 0.5 // [mm]
+	pixSize_y = 0.5 // [mm]
+	pixNum_x  = kNum_x_Denex
+	pixNum_y  = kNum_y_Denex
 
-//	fwhm_x    = 0.05  // [cm]
-//	fwhm_y    = 0.05  // [cm]
-//	dead_time = 1e-20 // [s]
+	fwhm_x    = 0.05  // [cm]
+	fwhm_y    = 0.05  // [cm]
+	dead_time = 1e-20 // [s]
 //
 //	detStr         = "B"
 //	descriptionStr = "Denex"
 
 // DENEX-TOFIX-WHEN-INSTALLED
-//	Make/O/D/N=3 cal_x, cal_y
-//	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
-//	cal_x[1] = 1              // values to ensure linear behavior in calculation
-//	cal_x[2] = 10000
-//	cal_y[0] = pixSize_y / 10 // pixel size in [cm]
-//	cal_y[1] = 1
-//	cal_y[2] = 10000
+	Make/O/D/N=3 cal_x, cal_y
+	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
+	cal_x[1] = 1              // values to ensure linear behavior in calculation
+	cal_x[2] = 10000
+	cal_y[0] = pixSize_y / 10 // pixel size in [cm]
+	cal_y[1] = 1
+	cal_y[2] = 10000
 //
-//	//////////////
-//		Make/O/I/N=(kNum_x_Denex,kNum_y_Denex) tmpData=1
-//	//////////////
 
 	//loop over all files
 	for(jj = lo; jj <= hi; jj += 1)
 		fname = V_FindFileFromRunNumber(jj)
 		if(strlen(fname) != 0)
 
+// any top-level patching?
+			V_WriteReductionIntent(fname,"Sample")
+
+// detector patching - start with "B"
+
 			// patch cal_x and cal_y
-//			V_writeDet_cal_x(fname, detStr, cal_x)
-//			V_writeDet_cal_y(fname, detStr, cal_y)
+			V_writeDet_cal_x(fname, "B", cal_x)
+			V_writeDet_cal_y(fname, "B", cal_y)
 
 			// patch n_pix_x and y
-//			V_writeDet_pixel_num_x(fname, detStr, pixNum_x)
-//			V_writeDet_pixel_num_y(fname, detStr, pixNum_y)
+			V_writeDet_pixel_num_x(fname, "B", pixNum_x)
+			V_writeDet_pixel_num_y(fname, "B", pixNum_y)
 
 			// patch pixel size x and y [mm]
-//			V_writeDet_x_pixel_size(fname, detStr, pixSize_x)
-//			V_writeDet_y_pixel_size(fname, detStr, pixSize_y)
+			V_writeDet_x_pixel_size(fname, "B", pixSize_x)
+			V_writeDet_y_pixel_size(fname, "B", pixSize_y)
 
 			// patch dead time
 			// TODO: enter a proper value here once it's actually measured
-//			V_writeDetector_deadtime_B(fname, detStr, dead_time)
+			V_writeDetector_deadtime_B(fname, "B", dead_time)
 
 			// patch fwhm_x and y
 			// TODO: verify the values once they are measured, and also the UNITS!!! [cm]???
-//			V_writeDet_pixel_fwhm_x(fname, detStr, fwhm_x)
-//			V_writeDet_pixel_fwhm_y(fname, detStr, fwhm_y)
+			V_writeDet_pixel_fwhm_x(fname, "B", fwhm_x)
+			V_writeDet_pixel_fwhm_y(fname, "B", fwhm_y)
 
 			// patch beam center (nominal x,y) [pixel] values for "B"
 			V_writeDet_beam_center_x(fname, "B", 51)
@@ -3696,7 +3697,9 @@ Function V_fPatch_Files_2026(variable lo, variable hi)
 			// write the detector description as "Denex" so it can be identified
 			V_writeDetDescription(fname, "B", "Denex")
 			
-			
+
+
+/////////////	F and M carriages		
 			// lateral and vertical offsets for all F, M panels written in mm, need cm
 			Variable val=0
 			
@@ -3724,8 +3727,7 @@ Function V_fPatch_Files_2026(variable lo, variable hi)
 			val = V_getDet_VerticalOffset(fname, "MB")
 			V_writeDet_VerticalOffset(fname, "MB", val/10)
 			
-			
-			
+////////		
 			
 
 		else

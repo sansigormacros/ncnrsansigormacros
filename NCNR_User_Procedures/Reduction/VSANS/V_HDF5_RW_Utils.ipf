@@ -1621,3 +1621,89 @@ Function OverwriteFilePurpose(String filePath)
     return err
 End
 
+//
+Macro VerifyImportantUnits(fname,detStr)
+	string fname,detStr
+
+	V_fVerifyImportantUnits(fname,detStr)
+EndMacro
+
+//
+// need to update all of these calls to take different carriages into account
+// (many of the calls are missing detStr)
+//
+// add in proper calls to be sure resolution information is written correctly
+//
+// where is the new attenuator written (how do I deal with it?)
+//
+// what else is missing/incorrect in the files?
+// -- add to the "Patch New Files 2026"
+//
+//
+// the units listed here are the units I'm expecting for the calculations
+//
+Function V_fVerifyImportantUnits(string fname, string detStr)
+
+	variable val, val2
+	string str
+
+	Print "*** units listed are the EXPECTED units ****"
+	Print "*** verify that the value makes sense with the listed units ***"
+
+	// detector distance [cm]
+	val = V_getDet_NominalDistance(fname,detStr)
+	printf "Detector distance = %g [cm]\r", val
+
+	// number of (x,y) pixels
+	val  = V_getDet_pixel_num_x(fname,detStr)
+	val2 = V_getDet_pixel_num_y(fname,detStr)
+	printf "Number of pixels (x,y) = (%d,%d)\r", val, val2
+
+	// beam center (x,y) in [cm]
+	val  = V_getDet_beam_center_x(fname,detStr)
+	val2 = V_getDet_beam_center_y(fname,detStr)
+	printf "Beam center in [cm] (x,y) = (%g,%g)\r", val, val2
+
+	// lateral offset in [cm]
+	val = V_getDet_LateralOffset(fname,detStr)
+	printf "Lateral offset = %g [cm]\r", val
+
+	// pixel fwhm (x,y) in [cm]
+	val  = V_getDet_pixel_fwhm_x(fname,detStr)
+	val2 = V_getDet_pixel_fwhm_y(fname,detStr)
+	printf "Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
+
+	// tube width [mm]
+	val = V_getDet_tubeWidth(fname,detStr)
+	printf "Tube width = %g [mm]\r", val
+
+	// pixel size (x,y) in [mm]
+	val  = V_getDet_x_pixel_size(fname,detStr)
+	val2 = V_getDet_y_pixel_size(fname,detStr)
+	printf "Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
+
+//	// beam stop size, diameter in [mm]
+	val = V_getBeamStopC2_size(fname)
+	printf "Beam stop diameter C2 = %g [mm]\r", val
+
+	val = V_getBeamStopC3_size(fname)
+	printf "Beam stop diameter C3 = %g [mm]\r", val
+
+	// sample aperture diameter [mm]
+	str = V_getSampleAp_size(fname)
+	printf "Sample aperture diameter = %s [mm]\r", str
+
+	// sample aperture distance (to sample, only a few cm) = [cm]
+	val = V_getSampleAp_distance(fname)
+	printf "Sample aperture distance to sample = %g [cm]\r", val
+
+	// source aperture diameter [mm] (derived a text value!)
+	str = V_getSourceAp_size(fname)
+	printf "Source aperture diameter = %s [mm]\r", str
+
+	// source aperture distance [cm]
+	val = V_getSourceAp_distance(fname)
+	printf "Source aperture distance = %g [cm]\r", val
+
+	return (0)
+End
