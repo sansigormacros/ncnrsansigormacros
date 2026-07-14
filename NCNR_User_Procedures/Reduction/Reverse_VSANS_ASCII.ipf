@@ -2,6 +2,10 @@
 #pragma rtGlobals=3				// Use modern global access method and strict wave access
 
 
+// I don't have any idea what this function is for or when I wrote it 2022?
+// What did I need it for?
+//
+
 Macro ReverseVSANSData()
 
 	fReverseData()

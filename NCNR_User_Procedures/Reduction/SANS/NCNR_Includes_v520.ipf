@@ -11,6 +11,7 @@ Function NCNR()
 End
 
 Menu "VAX MODE"
+	"Include Batch VAX-HDF Converter",LoadBatchHDFConverter()
 End
 
 //*************

@@ -1,14 +1,92 @@
+#pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
+
+//////////////////
 //
-// functions for testing and then actually applying the nonlinear corrections to the
-// tube detectors. These routines are for a test bank of 8 tubes (vertical) that were
-// run at a subdivision of 1024. VSANS will be different in practice
+// Functionality to process a single panel and fit the (5) peaks as measured through the slits
+// and generate the three calibration coefficients for each tube, and then the CSV file
+// for use at the instrument
 //
-// but the fundamental process is the same, and can be translated into proper functions as needed
+//////////////////////
+//
+// verified functions in March 2025, using data from Sep 2019
+//
+// -- works with the 5-slit masks on VSANS
+//
+// -- need to add the correct slit spacings
+//
+// -- will need to be modified slightly to work with 10m SANS, since # of tubes is different
+// and there are no different panels, only one
+//
+// -- some of the "steps" are nothing more than generating waves and blank tables.
+// these steps could be removed to stramline the process.
+// 	-- update instructions if this is done
+//
+//	-- add information here about how to display the results (VSANS menu options)
+//		-- reload the data once the corrected CSV files are written to the data file (refresh the catalog!)
+//		-- plot the shifted panels as pixel shifts
+//		-- save the data file as NXcanSAS_2D and replot in terms of QxQy to see the effect on Q
+//
+////////////////////////////
+//
+// 
+// x- need a way to generate the known, physical dimensions of the slots
+// Make/O/D/N=5 peak_spacing_mm_ctr
 //
 //
+// x- a 128 point wave "tube_pixel" (=p) is made in V_ArrayToTubes(), and is needed for the WM
+//   procedures to identify the peak positions.
+//
+// x- fit with either gauss or lor function to get non-integer pixel values for the peak locations
+//
+// x- do I fit each individually to "tweak" the located values, or fit all 5 at once with a 
+//    custom fit function and guess some good starting values for peak height, location, etc.
+// 
+//
+// x- find a way to display all of the results - in a way that can quickly identify any fits
+//    that may be incorrect
+//
+// -- Need quick instructions of what to do if some of the fits are wrong
+//   -- what steps to intervene, skip over, etc. to get final result
+//
+// -- need way to export CSV table or instructions for how to copy into Excel table to then export to
+//   a  file that can be used at VSANS
+//
+//
+
+////////////////////////////////////////////////
+// new function added MAR 2025:
+//
+// Function V_ShiftTubesforDisplay()
+//
+// function to plot a panel after shifting the data as calculated in real space dimensions to an approximate
+// pixel representation. The martrix size will need to be expanded from the nominal panel dimensions
+//
+// provides two representation - one in "normal" pixel units, and one where the numer of y-pixels has been
+// expanded x10 so that shifts can be as small as 1/10 of a pixel. Most of the zero point shifts 
+// are less than a pixel.
+//
+// this is curently hard-wired to work only on the FR panel.. could be updated to ask for a particular panel
+// (only L/R)
+//
+
+/////////////--NEW FUNCTIONS--////////
+// V_SetupGaussFit_EachTBTube()
+// V_GaussFit_EachTBTube()
+//
+// Procedures to automate the fitting of data on T/B panels that have been "completely"
+// blocked by closing L/R panels. This leaves a narrow slit of leakage through the gap, 
+// which can be used to refine the zero offset of the T/B panels.
+//
+// MARCH 2025
+//
+//
+//
+
+
+
 
 
 
@@ -18,6 +96,13 @@
 //
 // Dec 2018 JGB data
 //
+// offsets were determined in Dec 2018 using:
+// FR tube # 7 = 61.70 pix
+// MR tube # 10 = 61.94 pix
+
+Constant k_FR_tube_ZeroPoint = 61.70
+Constant k_MR_tube_ZeroPoint = 61.94
+
 Proc V_TubeZeroPointTables()
 	SetDataFolder root:Packages:NIST:VSANS:Globals
 	
@@ -40,27 +125,38 @@ Proc V_TubeZeroPointTables()
 	SetDataFolder root:
 End
 
-//
-// 
-// x- need a way to generate the known, physical dimensions of the slots
-// Make/O/D/N=5 peak_spacing_mm_ctr
-// peak_spacing_mm_ctr = {-350,-190,0,190,350} (to be filled in with the correct measurements, 
-//   possibly different for each panel)
-//
-// x- a 128 point wave "tube_pixel" (=p) is made in V_ArrayToTubes(), and is needed for the WM
-//   procedures to identify the peak positions.
-//
-// x- fit with either gauss or lor function to get non-integer pixel values for the peak locations
-//
-// x- do I fit each individually to "tweak" the located values, or fit all 5 at once with a 
-//    custom fit function and guess some good starting values for peak height, location, etc.
-// 
-//
-// x- find a way to display all of the results - in a way that can quickly identify any fits
-//    that may be incorrect
-//
-//
 
+Proc V_TubeZeroPointTables_perfect()
+	SetDataFolder root:Packages:NIST:VSANS:Globals
+	
+	Make/O/D/N=22 tube_MR,yCtr_MR
+	tube_MR[0]= {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21}
+	yCtr_MR = k_MR_tube_ZeroPoint
+
+	Make/O/D/N=20 tube_ML,yCtr_ML
+	tube_ML[0]= {27,28,29,29.99,30.95,31.89,32.77,33,34,35,36,37,38,39,40,41,42,43,44,45}
+	yCtr_ML = k_MR_tube_ZeroPoint
+	
+	Make/O/D/N=21 tube_FR, yCtr_FR
+	tube_FR[0]= {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}
+	yCtr_FR = k_FR_tube_ZeroPoint
+
+	Make/O/D/N=21 tube_FL, yCtr_FL
+	tube_FL[0]= {27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,41.98,42.99,43.98,44.98,45.98,46.98}
+	yCtr_FL = k_FR_tube_ZeroPoint
+
+	SetDataFolder root:
+End
+
+
+
+
+
+//////////////////
+// steps to process a single panel and fit the peaks as measured through the slits
+// and generate the three calibration coefficients for each tube, and then the CSV file
+// for use at the instrument
+//////////////////
 
 
 // the main routines are:
@@ -131,8 +227,10 @@ End
 //
 Proc V_SetupSlotDimensions()
 	Make/O/D/N=5 peak_spacing_mm_ctr_TB,peak_spacing_mm_ctr_LR
-	peak_spacing_mm_ctr_TB = {-159.54,-80.17,0,80.17,159.54}
-	peak_spacing_mm_ctr_LR = {-379.4,-189.7,0,189.7,380.2}
+//	peak_spacing_mm_ctr_TB = {-159.54,-80.17,0,80.17,159.54}		//not sure where these values are from
+//	peak_spacing_mm_ctr_LR = {-379.4,-189.7,0,189.7,380.2}
+	peak_spacing_mm_ctr_TB = {-160.02,-80.01,0,80.01,160.02}		// these values are from the drawings
+	peak_spacing_mm_ctr_LR = {-380.0,-190.0,0,190.0,380.0}	
 	DoWindow/F Real_mm_Table
 	if(V_Flag == 0)
 		Edit/N=Real_mm_Table peak_spacing_mm_ctr_TB,peak_spacing_mm_ctr_LR
@@ -145,20 +243,20 @@ End
 // (1) -- get the individual tubes into an array
 //
 //
-Proc V_Tubes_to_Array()
-	Make/O/D/N=(8,1127) pack
-	edit pack
-	display;appendimage pack
-	pack[0][] = tube1[q]
-	pack[1][] = tube2[q]
-	pack[2][] = tube3[q]
-	pack[3][] = tube4[q]
-	pack[4][] = tube5[q]
-	pack[5][] = tube6[q]
-	pack[6][] = tube7[q]
-	pack[7][] = tube8[q]
-	ModifyImage pack ctab= {*,*,ColdWarm,0}
-End
+//Proc V_Tubes_to_Array()
+//	Make/O/D/N=(8,1127) pack
+//	edit pack
+//	display;appendimage pack
+//	pack[0][] = tube1[q]
+//	pack[1][] = tube2[q]
+//	pack[2][] = tube3[q]
+//	pack[3][] = tube4[q]
+//	pack[4][] = tube5[q]
+//	pack[5][] = tube6[q]
+//	pack[6][] = tube7[q]
+//	pack[7][] = tube8[q]
+//	ModifyImage pack ctab= {*,*,ColdWarm,0}
+//End
 
 // or the other way around
 // - get the array into individual tubes ready for fitting.
@@ -166,7 +264,7 @@ End
 Proc V_ArrayToTubes(detStr)
 	String detStr
 //	Prompt wStr,"Select detector panel",popup,WaveList("data_*",";","")
-	Prompt detStr,"Select detector panel",popup,ksDetectorListAll
+	Prompt detStr,"Select detector panel",popup,ksDetectorListNoB
 	
 	String/G root:detUsed = detStr
 	
@@ -216,10 +314,10 @@ End
 // root:WA_PeakCentersY,root:WA_PeakCentersX
 //
 // -- so to see the results:
-//¥Edit/K=0  root:WA_PeakCentersY,root:WA_PeakCentersX
+//â€¢Edit/K=0  root:WA_PeakCentersY,root:WA_PeakCentersX
 // 
 // -- then sort the results - they seem to be in no real order...
-//¥Sort WA_PeakCentersX WA_PeakCentersY,WA_PeakCentersX
+//â€¢Sort WA_PeakCentersX WA_PeakCentersY,WA_PeakCentersX
 //
 Proc V_MakeTableForPeaks(numTube,numPeak)
 	Variable numTube=48,numPeak=5
@@ -372,26 +470,26 @@ End
 // result is in W_coef, W_sigma
 //
 // -- an example of the "quickFit" command is below, so it can be programmed rather than the menu every time
-//¥Display peak_spacing_mm_ctr vs WA_PeakCentersX3
-//¥CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=WA_PeakCentersX3/D
+//â€¢Display peak_spacing_mm_ctr vs WA_PeakCentersX3
+//â€¢CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=WA_PeakCentersX3/D
 //  fit_peak_spacing_mm_ctr= poly(W_coef,x)
 //  W_coef={-571.42,1.1135,-4.2444e-05}
 //  V_chisq= 8.5841;V_npnts= 20;V_numNaNs= 0;V_numINFs= 0;
 //  V_startRow= 0;V_endRow= 19;
 //  W_sigma={0.595,0.00246,2.15e-06}
-//  Coefficient values ± one standard deviation
-//  	K0	=-571.42 ± 0.595
-//  	K1	=1.1135 ± 0.00246
-//  	K2	=-4.2444e-05 ± 2.15e-06
+//  Coefficient values Â± one standard deviation
+//  	K0	=-571.42 Â± 0.595
+//  	K1	=1.1135 Â± 0.00246
+//  	K2	=-4.2444e-05 Â± 2.15e-06
 //
 //
 //
 // for (8) tubes, keep all of the fit coefficients
 //
-//¥make/O/D/N=(3,8) fit_coef
-//¥edit fit_coef
-//¥make/O/D/N=(3,8) fit_sigma
-//¥edit fit_sigma
+//â€¢make/O/D/N=(3,8) fit_coef
+//â€¢edit fit_coef
+//â€¢make/O/D/N=(3,8) fit_sigma
+//â€¢edit fit_sigma
 //
 // -- copy and paste in the W_coef and W_sigma values (or by a command)
 //
@@ -430,19 +528,40 @@ Proc V_PlotFit_AllPeakPosition()
 
 End
 
+
+// choose the correct pixel size based on the panel used
+//
+// hold the pixel size fixed during fitting
+//
 Proc V_PlotFit_PeakPosition(ind)
 	Variable ind
 	
 	Duplicate/O WA_PeakCentersX, tmpX
 	
+	Make/O/D/N=3 poly_coef
+	poly_coef[0] = -300
+//	poly_coef[1] = 8.14
+//	poly_coef[1] = 4.16
+	poly_coef[2] = 2e-4
+
+	String detUsed = root:detUsed
+	
+	if(strsearch(detUsed,"L",0) >= 0 || strsearch(detUsed,"R",0) >= 0)
+		poly_coef[1] = 8.14			//use L/R panel value
+	else
+		poly_coef[1] = 4.16			//use T/B panel value
+	endif
+
+	
 //	tmpX = peakTableX[p][ind]
 	tmpX = position_refined[p][ind]
 //	Display peak_spacing_mm_ctr vs tmpX
 	
-//	CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=tmpX/D
-	CurveFit/M=0/W=2 poly 3, peak_spacing_mm_ctr/X=tmpX/D
+//	CurveFit/M=0/W=2 poly 3, peak_spacing_mm_ctr/X=tmpX/D
+	CurveFit/M=0/W=2/H="010" poly 3, kwCWave=poly_coef,peak_spacing_mm_ctr/X=tmpX/D
 	
-	TubeCoefTable[ind][] = W_coef[q]
+//	TubeCoefTable[ind][] = W_coef[q]
+	TubeCoefTable[ind][] = poly_coef[q]
 	TubeSigmaTable[ind][] = W_sigma[q]
 	
 End
@@ -450,8 +569,8 @@ End
 
 
 
-//¥Duplicate tube1 tube1_mm
-//¥tube1_mm = V_TubePix_to_mm(fit_coef[0][0],fit_coef[1][0],fit_coef[2][0],p)
+//â€¢Duplicate tube1 tube1_mm
+//â€¢tube1_mm = V_TubePix_to_mm(fit_coef[0][0],fit_coef[1][0],fit_coef[2][0],p)
 
 
 ////////
@@ -679,16 +798,6 @@ Proc V_Interpolate_mm_tubes()
 	ModifyImage pack_image ctab= {*,*,ColdWarm,0}
 	
 End
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1165,3 +1274,562 @@ Proc V_SaveDetectorsITX()
 	Save/T/M="\r\n" data_B,data_FB,data_FL,data_FR,data_FT,data_MB,data_ML,data_MR,data_MT as "data_B++.itx"
 
 End
+
+
+
+
+////////////////////////////////////////////
+//
+// MAR 2025
+//
+// function to plot a panel after shifting the data as calculated in real space dimensions to an approximate
+// pixel representation. The martrix size is expanded from the nominal panel dimensions
+//
+// provides two representations - one in "normal" pixel units, and one where the number of y-pixels has been
+// expanded x10 so that shifts can be as small as 1/10 of a pixel. Most of the zero point shifts 
+// are less than a pixel.
+//
+// --Still need to manually display the images of shifted_data or (better) shifted_data_10 to compare to the
+// uncorrected data
+//
+
+Function V_ShiftTubesforDisplay(folderStr,panelStr)
+	String folderStr,panelStr
+
+	if(strsearch(panelStr,"L",0) >= 0 || strsearch(panelStr,"R",0) >= 0)
+		V_ShiftTubesforDisplay_LR(folderStr,panelStr)
+	else
+		V_ShiftTubesforDisplay_TB(folderStr,panelStr)
+	endif
+	
+	return(0)
+End
+
+
+// just work on either L or R panel
+// less switching this way, but does duplicate some calculations
+//
+Function V_ShiftTubesforDisplay_LR(folderStr,panelStr)
+	String folderStr,panelStr
+
+	Variable min_y, max_y, min_add, max_add
+	Variable start_pix, numPix
+	Variable perfect_min, perfect_max, PixelSize
+	Wave tube_y = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistY")
+//	Wave tube_x = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistX")
+	Wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data")
+//	Wave data = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data
+
+	// perfect values are min = -521 mm and max = 512.78 mm, pixel size is 8.14 mm
+	perfect_min = -521
+	perfect_max = 512.78
+	PixelSize = 8.14
+
+
+	WaveStats/Q tube_y
+	min_y = V_min
+	max_y = V_max
+	
+	numPix = ( perfect_min - min_y)/pixelSize
+//	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_y - perfect_max )/pixelSize
+//	Print numPix
+	max_add = trunc(numPix) + 1
+	
+	Make/O/D/N=(48,128+min_add+max_add) shifted_data
+	Make/O/D/N=128 tube_data
+	shifted_data = NaN	//so data outside of detector won't be displayed
+	tube_data = 0
+	
+	//loop over each tube and fill the shifted_data
+	Variable ii,p1
+	for(ii=0;ii<48;ii+=1)
+		tube_data = data[ii][p]		// the intensity values
+		
+		p1 = (tube_y[ii][0] - min_y)/pixelSize		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data[ii][p1,p1+128-1] = tube_data[q-p1]
+	endfor
+
+////////////	
+	// do the same, but expand the y values 10x for a finer gradation of the shift
+	Make/O/D/N=(48,128*10) data_10
+	for(ii=0;ii<128;ii+=1)
+		data_10[][ii*10,(ii+1)*10-1] = data[p][ii]
+	endfor
+
+	Variable pixelSize_10
+	pixelSize_10 = pixelSize/10		// == 8.14 mm / 10 == 0.814 mm
+
+	numPix = ( perfect_min - min_y)/pixelSize_10
+	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_y - perfect_max )/pixelSize_10
+	Print numPix
+	max_add = trunc(numPix) + 1
+
+	Make/O/D/N=(48,10*128+min_add+max_add) shifted_data_10
+	Make/O/D/N=(128*10) tube_data_10
+	shifted_data_10 = NaN	//so data outside of detector won't be displayed
+	tube_data_10 = 0
+
+	//loop over each tube and fill the shifted_data
+	for(ii=0;ii<48;ii+=1)
+		tube_data_10 = data_10[ii][p]		// the intensity values
+		
+		p1 = (tube_y[ii][0] - min_y)/pixelSize_10		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data_10[ii][p1,p1+128*10-1] = tube_data_10[q-p1]
+	endfor
+
+	return(0)
+End
+
+// just work on either T or B panel
+// less switching this way, but does duplicate some calculations
+//
+Function V_ShiftTubesforDisplay_TB(folderStr,panelStr)
+	String folderStr,panelStr
+
+	Variable min_x, max_x, min_add, max_add
+	Variable start_pix, numPix
+	Variable perfect_min, perfect_max, PixelSize
+//	Wave tube_y = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistY")
+	Wave tube_x = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistX")
+	Wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data")
+//	Wave data = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data
+
+
+	// perfect values are min = -266 mm and max = 262.32 mm, pixel size is 8.14 mm
+	perfect_min = -266
+	perfect_max = 262.32
+	PixelSize = 4.16
+	
+	WaveStats/Q tube_x
+	min_x = V_min
+	max_x = V_max
+	
+	numPix = ( perfect_min - min_x)/pixelSize
+//	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_x - perfect_max )/pixelSize
+//	Print numPix
+	max_add = trunc(numPix) + 1
+	
+	Make/O/D/N=(128+min_add+max_add,48) shifted_data
+	Make/O/D/N=128 tube_data
+	shifted_data = NaN	//so data outside of detector won't be displayed
+	tube_data = 0
+	
+	//loop over each tube and fill the shifted_data
+	Variable ii,p1
+	for(ii=0;ii<48;ii+=1)
+		tube_data = data[p][ii]		// the intensity values
+		
+		p1 = (tube_x[0][ii] - min_x)/pixelSize		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data[p1,p1+128-1][ii] = tube_data[p-p1]
+	endfor
+
+////////////	
+	// do the same, but expand the y values 10x for a finer gradation of the shift
+	Make/O/D/N=(128*10,48) data_10
+	for(ii=0;ii<128;ii+=1)
+		data_10[ii*10,(ii+1)*10-1][] = data[ii][q]
+	endfor
+
+	Variable pixelSize_10
+	pixelSize_10 = pixelSize/10		// == 8.14 mm / 10 == 0.814 mm
+
+	numPix = ( perfect_min - min_x)/pixelSize_10
+	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_x - perfect_max )/pixelSize_10
+	Print numPix
+	max_add = trunc(numPix) + 1
+
+	Make/O/D/N=(10*128+min_add+max_add,48) shifted_data_10
+	Make/O/D/N=(128*10) tube_data_10
+	shifted_data_10 = NaN	//so data outside of detector won't be displayed
+	tube_data_10 = 0
+
+	//loop over each tube and fill the shifted_data
+	for(ii=0;ii<48;ii+=1)
+		tube_data_10 = data_10[p][ii]		// the intensity values
+		
+		p1 = (tube_x[0][ii] - min_x)/pixelSize_10		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data_10[p1,p1+128*10-1][ii] = tube_data_10[p-p1]
+	endfor
+	
+	return(0)
+End
+
+
+
+/////////////////
+// procedures to display the original panel alongside the shifted panel
+// can only display one panel at a time
+// the shifting calculations overwrite the shifted panel each time, so that the same-named data is
+// displayed. save the shifted data separately if needed
+//
+//
+Proc V_ShiftDetectorPanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
+	NewPanel /W=(662*sc,418*sc,1200*sc,960*sc)/N=ShiftDetector /K=1
+//	ShowTools/A
+
+	DrawText 90,70,"\\Zr125Original Pixel Grid"
+	DrawText 304,75,"\\Zr125Tubes Shifted (Y-direction)\r  to Align Zero Position"
+	
+	PopupMenu popup_0,pos={sc*169,18*sc},size={sc*109,20*sc},proc=V_ShiftDetPanelPopMenuProc,title="Detector Panel"
+	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
+//	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;ML;MR;\""
+	PopupMenu popup_2,pos={sc*20,18*sc},size={sc*109,20*sc},title="Data Source",proc=V_ShiftFldrPopMenuProc
+	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;EMP;BGD;\""
+		
+//	Button button_0,pos={sc*541,79*sc},size={sc*130,20*sc},proc=V_ShiftCorrectButtonProc,title="Apply Corrections"
+//	Button button_2,pos={sc*821,20*sc},size={sc*80,20*sc},proc=V_ShiftHelpButtonProc,title="Help"
+
+// do the calculation of shifted data pixels
+	V_ShiftTubesforDisplay("RAW","FR")
+
+	
+	// draw the correct images
+	V_ShiftDrawDetPanel("RAW","FR")
+
+EndMacro
+
+
+//
+// function to choose which detector panel to display, and then to actually display it
+//
+Function V_ShiftDetPanelPopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+
+	// which work folder
+	String folderStr
+	ControlInfo/W=ShiftDetector popup_2
+	folderStr = S_Value
+	
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+						
+			// remove the old image (it may not be the right shape)
+			// -- but make sure it exists first...
+			String childList = ChildWindowList("ShiftDetector")
+			Variable flag
+			
+			flag = WhichListItem("DetData", ChildList)		//returns -1 if not in list, 0+ otherwise
+			if(flag != -1)
+				KillWindow ShiftDetector#DetData
+			endif
+			
+			flag = WhichListItem("ShiftedData", ChildList)
+			if(flag != -1)
+				KillWindow ShiftDetector#ShiftedData
+			endif
+
+			// do the calculation of shifted data pixels
+			V_ShiftTubesforDisplay(folderStr,popStr)
+	
+			// draw the correct images
+			V_shiftDrawDetPanel(folderStr,popStr)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+////
+// currently doesn't do anything... simply sets the work data folder
+//
+Function V_ShiftFldrPopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+		
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_ShiftHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			DoAlert 0,"Help file not written yet..."
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+// draw the selected panel and the model calculation, adjusting for the 
+// orientation of the panel and the number of pixels, and pixel sizes
+//
+// str input is the panelStr ("FL" for example)
+Function V_ShiftDrawDetPanel(folderStr,panelStr)
+	String folderStr,panelStr
+	
+	// from the selection, find the path to the data
+	Variable xDim,yDim
+	Variable left,top,right,bottom
+	Variable height, width
+	Variable left2,top2,right2,bottom2
+	Variable nPix_X,nPix_Y,pixSize_X,pixSize_Y
+
+	// set the source of the uncorrected data.
+	wave dataW = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data")
+	
+	// and the shifted wave to display	
+	wave corrW = $("root:shifted_data_10")
+
+
+	if(strsearch(panelStr,"L",0) >= 0 || strsearch(panelStr,"R",0) >= 0)
+		DrawAction/L=UserBack delete
+		SetDrawLayer UserBack
+	
+		DrawText 90,70,"\\Zr125Original Pixel Grid"
+		DrawText 304,75,"\\Zr125Tubes Shifted (Y-direction)\r  to Align Zero Position"
+	
+		//draw the detector panel
+		Display/W=(20,80,251,496)/HOST=# 
+		RenameWindow #,DetData
+		AppendImage/W=ShiftDetector#DetData dataW
+		ModifyImage/W=ShiftDetector#DetData '' ctab= {*,*,ColdWarm,0}
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+		SetActiveSubwindow ##	
+			
+		//draw the corrected detector panel
+		// see the main display of RAW data for example of multiple 'data' images
+		Display/W=(271,80,502,496)/HOST=#
+		RenameWindow #,ShiftedData
+		AppendImage/W=ShiftDetector#ShiftedData corrW
+		ModifyImage/W=ShiftDetector#ShiftedData '' ctab= {*,*,ColdWarm,0}		// the image is called '' even though the local ref is data2
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+	
+		SetActiveSubwindow ##	
+
+	else
+		DrawAction/L=UserBack delete
+		SetDrawLayer UserBack
+		
+		DrawText 45,73,"\\Zr125Original Pixel Grid"
+		DrawText 45,310,"\\Zr125Tubes Shifted (X-direction) to Align Zero Position"
+	
+		//draw the detector panel
+		Display/W=(20,78,505,270)/HOST=# 
+		RenameWindow #,DetData
+		AppendImage/W=ShiftDetector#DetData dataW
+		ModifyImage/W=ShiftDetector#DetData '' ctab= {*,*,ColdWarm,0}
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+		SetActiveSubwindow ##	
+			
+		//draw the corrected detector panel
+		// see the main display of RAW data for example of multiple 'data' images
+		Display/W=(20,320,505,512)/HOST=#
+		RenameWindow #,ShiftedData
+		AppendImage/W=ShiftDetector#ShiftedData corrW
+		ModifyImage/W=ShiftDetector#ShiftedData '' ctab= {*,*,ColdWarm,0}		// the image is called '' even though the local ref is data2
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+	
+		SetActiveSubwindow ##	
+	
+	endif
+
+
+
+	SetDataFolder root:
+		
+	DoUpdate
+	
+	return(0)
+End
+
+
+///////////////////////////////////
+// V_SetupGaussFit_EachTBTube()
+// V_GaussFit_EachTBTube()
+//
+// Procedures to automate the fitting of data on T/B panels that have been "completely"
+// blocked by closing L/R panels. This leaves a narrow slit of leakage through the gap, 
+// which can be used to refine the zero offset of the T/B panels.
+//
+// -- more than one data set can be fitted and added together to get a better average of the pixel position
+//		to do this:
+//		-- run the setup, then load in the first data set. Do the fits for this data.
+//		-- load in the next data set, do the fits the data and errors will be added 
+//		-- continue with more data sets (keep track of how many you use)
+//
+//		-- when done, calculate the averages:
+//				pix_avg /= num_sets
+//				pix_avg_err = sqrt(pix_err2)/pix_avg
+//
+// 	-- then pix_avg and pix_avg_err are the final result. Convert to mm if needed
+//
+// MARCH 2025
+//
+
+
+// With data loaded into RAW
+// need an output location (tube_num and pixel_num)
+//
+// and a temporary tube to use for the fit
+//
+//Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MT:data root:data
+//
+// always re-run this when switching panels or starting new fit so that this will 
+// re-zero the waves where the averages are accumulated
+//
+Function V_SetupGaussFit_EachTBTube()
+	Make/O/D/N=128 tempTube
+	Make/O/D/N=48 tube_num,pixel_ctr,pixel_ctr_err
+	Make/O/D/N=48 pix_avg,pix_avg_err,pix_err2
+	
+	tube_num = p
+	pixel_ctr = 0
+	pixel_ctr_err = 0
+	
+	pix_avg = 0
+	pix_avg_err = 0
+	pix_err2 = 0
+	
+	Edit tube_num,pixel_ctr,pixel_ctr_err,pix_avg,pix_avg_err,pix_err2
+	
+	return(0)
+End
+
+//
+// hard wired for the MB panel in RAW
+//
+// -- make this not hard-wired for a particular panel (input String)
+// -- when selecting panel, be sure that the tempTube is assigned correctly
+//
+Function V_GaussFit_EachTBTube()
+
+	Wave tempTube=root:tempTube
+	Wave pixel_ctr=root:pixel_ctr
+	Wave pixel_ctr_err=root:pixel_ctr_err
+	Wave pix_avg=root:pix_avg
+	Wave pix_avg_err=root:pix_avg_err
+	Wave pix_err2=root:pix_err2
+	
+	
+	Wave dataPanel=root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MB:data
+	Wave/Z W_coef=W_coef
+	Wave/Z W_sigma=W_sigma
+
+
+	display tempTube
+	ModifyGraph mode=4,marker=19,rgb(tempTube)=(0,0,0)
+
+	Variable ii
+	
+	for(ii=0;ii<48;ii+=1)
+		tempTube = dataPanel[p][ii]		// for T/B panels
+//		tempTube = dataPanel[ii][p]		// for L/R panels
+		
+//		CurveFit/Q/M=2/W=0/TBOX=(0x310) gauss, tempTube[37,60]/D
+		CurveFit/Q/M=2/W=2/TBOX=(0x310) gauss, tempTube[37,60]/D		//if titting leakage, may need to adjust
+//		CurveFit/Q/M=2/W=2/TBOX=(0x310) gauss, tempTube[50,75]/D		//if fitting central of 5-slit mask
+		
+		pixel_ctr[ii] = W_coef[2]		//3rd value is the peak postion
+		pixel_ctr_err[ii] = W_sigma[2]
+		
+		pix_avg[ii] += W_coef[2]			//need to keep track of N myself, and do the math once all data has been added in
+		pix_err2[ii] += W_sigma[2]*W_sigma[2]
+		
+		//
+		// be sure to finish calculation-- avg /= N and err /= avg
+		//
+	endfor
+	
+	return(0)
+End
+
+/////////////////////////////////
+
+// utility function to take non-linear coefficients and input postion (mm)
+// and returns the fractional pixel position along the tube
+Function V_ConvertNonLinPosition_to_pix(coefW,tube,pos)
+	Wave coefW
+	Variable tube,pos
+	
+	//solve the quadratic
+	//
+	// pos = c0 + c1*p + c2*p^2
+	//
+	// c2*p^2 + c1*p + (c0 - pos) = 0
+	//
+	Variable c0,c1,c2,ans1,ans2
+//	c0 = coefW[0][tube]			// this is how the waves are written to the data file [3,48]
+//	c1 = coefW[1][tube]
+//	c2 = coefW[2][tube]
+	
+	c0 = coefW[tube][0]			// this is more natural in a table, 48 rows, 3 columns
+	c1 = coefW[tube][1]
+	c2 = coefW[tube][2]
+	
+	ans1 = -c1 + sqrt(c1^2 - 4*c2*(c0-pos))
+	ans1 /= 2*c2
+	
+	ans2 = -c1 - sqrt(c1^2 - 4*c2*(c0-pos))
+	ans2 /= 2*c2	
+	
+//	Print "ans1, ans2 = ",ans1,ans2
+	
+	if(ans1 > 0 && ans1 < 128)
+		return(ans1)
+	else
+		return(ans2)		//may be bad, but return it anyways
+	endif
+	
+	return(0)
+end
+
+

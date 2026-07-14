@@ -125,7 +125,7 @@ Proc CheckForLatestVersion()
 	return
 End
 
-Function OpenTracTicketPage()
+Function OpenTracTicketPage(string ctrlName) : ButtonControl
 //	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
 //	if(V_flag==1)
 //		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
@@ -144,7 +144,7 @@ Function OpenHelpMoviePage()
 	if(V_flag==1)
 //		BrowseURL "ftp://webster.ncnr.nist.gov/pub/sans/kline/movies/"
 		// Andrew has set up a (depricated) http page. in the future, link to NISTube (once I get permission/ERB approval)
-		BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/movies/reduction_analysis_movies.html"
+		BrowseURL "https://www.nist.gov/ncnr/sans-usans-reduction-video-tutorials"
 	endif
 End
 

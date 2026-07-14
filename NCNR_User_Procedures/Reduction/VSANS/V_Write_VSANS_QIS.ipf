@@ -1,4 +1,4 @@
-#pragma TextEncoding = "MacRoman"
+#pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
@@ -353,7 +353,7 @@ Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
 	SetDataFolder $(pathStr+folderStr)
 
 
-	//TODO
+
 	//-- make sure the waves exist
 	
 //	if(WaveExists(qw) == 0)
@@ -390,7 +390,7 @@ Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
 
 
 
-	// TODO:
+
 	// -- currently I'm using the Save comand and the /B flag
 	//    to save the data as Igor Text format, since otherwise the command string would be
 	//    too long. Need to come up with an Igor-demo friendly save here
@@ -577,7 +577,7 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	Variable pixX,pixY
 	Variable numTextLines,ii,jj,kk
 	Variable pixSizeX,pixSizeY
-	Variable duration
+	Variable duration, nn
 
 	numTextLines = 30
 	Make/O/T/N=(numTextLines) labelWave
@@ -599,7 +599,9 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 //	for(kk=0;kk<ItemsInList(detList);kk+=1)
 // be sure to write out "B" first, so it ends up in the "back" in the graph
 // so work through the list backwards
-	for(kk=ItemsInList(detList)-1;kk>=0;kk-=1)
+
+	nn = ItemsInList(detList)-1
+	for(kk = nn;kk >= 0;kk -= 1)
 
 		detStr = StringFromList(kk, detList, ";")
 		detSavePath = fullPath + "_" + detStr + ".DAT"
@@ -695,9 +697,15 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		WAVE data = V_getDetectorDataW(type,detStr)
 		WAVE data_err = V_getDetectorDataErrW(type,detStr)
 
-// JUN 2019 get the mask data		
-		WAVE MaskData = V_getDetectorDataW("MSK",detStr)
+// JUN 2019 get the mask data
+// there can be cases where the mask is not used and does not exist -- so generate it and set it == 0
+// to keep all of the data
+		WAVE/Z MaskData = V_getDetectorDataW("MSK",detStr)
 
+		if(WaveExists(MaskData) == 0)
+			Duplicate/O data,MaskData
+			MaskData = 0
+		endif
 		
 		// TOOD - replace hard wired paths with Read functions
 		// hard-wired
@@ -793,10 +801,10 @@ v_toc()
 		//so that double precision data is not written out
 		Redimension/S qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
 		Redimension/S SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s
-	
+
 		Redimension/N=(pixX*pixY) qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s,MaskData_s
-		
-		//not demo-compatible, but approx 8x faster!!	
+
+//not demo-compatible, but approx 8x faster!!	
 #if(strsearch(stringbykey("IGORKIND",IgorInfo(0),":",";"), "demo", 0 ) == -1)
 		
 //		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s as detSavePath	// without resolution

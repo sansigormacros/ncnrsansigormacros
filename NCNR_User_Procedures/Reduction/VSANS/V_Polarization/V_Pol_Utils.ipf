@@ -1,6 +1,6 @@
-﻿#pragma TextEncoding = "UTF-8"
-#pragma rtGlobals=3		// Use modern global access method and strict wave access.
-
+#pragma rtFunctionErrors=1
+#pragma TextEncoding="UTF-8"
+#pragma rtGlobals=3 // Use modern global access method and strict wave access.
 
 // utility functions to work with VSANS polarized beam files
 //
@@ -8,21 +8,18 @@
 //
 // Currently I do not make full use of the metadata that is supposed to
 // be in the data files, since what data is stored and where it is stored
-// is clearly different than what I was told. 
+// is clearly different than what I was told.
 //
-// See the list of text tags farther down this file -- these are the 
+// See the list of text tags farther down this file -- these are the
 // text tags for the different flipper/purupose/intent combinations
 // -- these tags are added to the file label by the GUI (NICE) so that I
 // can rely on them, rather than the current fautly state of the metadata
 //
 
-
-
-
 // TODO
 // -- once there has been some testing of the accuracy of the labeling of
 // specific files for different panels, I can moce from popup mode to just fill it in
-// without any need for intervention. 
+// without any need for intervention.
 //
 //  Popups now are made column-specific, and this seems to work correctly.
 //
@@ -33,7 +30,7 @@
 //		V_ScanCellParams()
 //
 // -- for the cell parameter panel
-//    I have a scan function that finds the cell information and populates the table 
+//    I have a scan function that finds the cell information and populates the table
 //    automatically
 //
 //----------------
@@ -42,7 +39,7 @@
 //
 // -- for the decay panel
 //		identify Purpose = (HE3)
-//					Intent = (Sample or Empty Cell or Blocked Beam or Open Beam) 
+//					Intent = (Sample or Empty Cell or Blocked Beam or Open Beam)
 //					polarizer state = (HeIn, HeOut) (currently search the file label)
 //
 // -- See: V_DecayTableHook()
@@ -83,15 +80,13 @@
 // these are the choices of what to read:
 // "Front Flipper Direction" == V_getFrontFlipper_Direction(fname) == ("UP" | "DOWN")
 //
-// "Front Flipper Flip State" == V_getFrontFlipper_flip(fname) = ("True" | "False")	
+// "Front Flipper Flip State" == V_getFrontFlipper_flip(fname) = ("True" | "False")
 //
-// "Front Flipper Type" == V_getFrontFlipper_type(fname) == ("RF")	
+// "Front Flipper Type" == V_getFrontFlipper_type(fname) == ("RF")
 //
 //	"Back Polarizer Direction" == V_getBackPolarizer_direction(fname)	== ("UP" | "DOWN" | "UNPOLARIZED")
 //
-//	"Back polarizer in?" == V_getBackPolarizer_inBeam(fname) == (0 | 1)	
-
-
+//	"Back polarizer in?" == V_getBackPolarizer_inBeam(fname) == (0 | 1)
 
 // TODO:
 // x- (done)for the cell panel: currenlty I scan for the cells, and open a table with
@@ -106,15 +101,9 @@
 //
 //
 
-
-
-
-
-
-
 // -- for the decay panel
 //		identify Purpose = (HE3)
-//					Intent = (Sample or Empty Cell or Blocked Beam or Open Beam) 
+//					Intent = (Sample or Empty Cell or Blocked Beam or Open Beam)
 //					polarizer state = (HeIn, HeOut) (currently search the file label)
 //
 // NOTE that the table hook V_DecayTableHook() calls the list 4X and adds them
@@ -140,39 +129,33 @@
 //		AND V_FlipperTableHook()  -- this list is used in both places
 //
 //
-Function/S V_ListForDecayPanel(state,intent)
-	Variable state
-	String intent
+Function/S V_ListForDecayPanel(variable state, string intent)
 
-	String purpose
-	Variable method
-	String str,newList,stateStr
-	
+	string   purpose
+	variable method
+	string str, newList, stateStr
+
 	// method = 0 (fastest, uses catatlog + searches sample label)
 	// method = 2 = read the state field
 	// method = 1 = grep for the text
-	method = 0
+	method  = 0
 	purpose = "HE3"
-	
+
 	// search for this tag in the sample label
-	if(state==1)
-		stateStr="HeIN"
+	if(state == 1)
+		stateStr = "HeIN"
 	else
-		stateStr="HeOUT"
+		stateStr = "HeOUT"
 	endif
 
-	str =  V_PolFileList_LabPurInt(stateStr,purpose,intent)
-	
-//	str = V_getPurposeIntentLabelList(purpose,intent,stateStr,method)
+	str = V_PolFileList_LabPurInt(stateStr, purpose, intent)
+
+	//	str = V_getPurposeIntentLabelList(purpose,intent,stateStr,method)
 
 	newList = V_ConvertFileListToNumList(str)
-	
-	return(newList)
-end
 
-
-
-
+	return (newList)
+End
 
 // TODO:
 //
@@ -193,29 +176,26 @@ end
 // flipStr is found from the column label: ("T_UU" | "T_DD" | "T_DU" | "T_UD")
 // intent is either "Sample" or "Blocked Beam", also from the column label
 //
-Function/S V_ListForFlipperPanel(flipStr,intent)
-	String flipStr,intent
+Function/S V_ListForFlipperPanel(string flipStr, string intent)
 
-	String purpose
-	Variable method
-	String str,newList,stateStr
-	
+	string   purpose
+	variable method
+	string str, newList, stateStr
+
 	// method = 0 (fastest, uses catatlog + searches sample label)
 	// method = 2 = read the state field
 	// method = 1 = grep for the text
-	method = 0
+	method  = 0
 	purpose = "TRANSMISSION"
-	
-	str =  V_PolFileList_LabPurInt(flipStr,purpose,intent)
-			
-//	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
+
+	str = V_PolFileList_LabPurInt(flipStr, purpose, intent)
+
+	//	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
 
 	newList = V_ConvertFileListToNumList(str)
-	
-	return(newList)
-end
 
-
+	return (newList)
+End
 
 // TODO:
 //
@@ -236,108 +216,99 @@ end
 // flipStr is found from the column label: ("S_UU" | "S_DD" | "S_DU" | "S_UD")
 // intent is either "Sample" or "Blocked Beam", also from the column label
 //
-Function/S V_ListForCorrectionPanel(flipStr,intent)
-	String flipStr,intent
+Function/S V_ListForCorrectionPanel(string flipStr, string intent)
 
-	String purpose
-	Variable method
-	String str,newList,stateStr
-	
+	string   purpose
+	variable method
+	string str, newList, stateStr
+
 	// method = 0 (fastest, uses catatlog + searches sample label)
 	// method = 2 = read the state field
 	// method = 1 = grep for the text
-	method = 0
+	method  = 0
 	purpose = "SCATTERING"
-	
-	str =  V_PolFileList_LabPurInt(flipStr,purpose,intent)
-//	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
+
+	str = V_PolFileList_LabPurInt(flipStr, purpose, intent)
+	//	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
 
 	newList = V_ConvertFileListToNumList(str)
-	
-	return(newList)
-end
 
-
-
-
-
-
+	return (newList)
+End
 
 // function to scan through all of the data files and
 // search for possible cell names and parameters
 Function V_ScanCellParams()
 
-	Variable ii,num,numcells
-	Variable lam,opacity
-	String newList = "",lastCell="",tmpCell,fname
+	variable ii, num, numcells
+	variable lam, opacity
+	string tmpCell, fname
+	string newList  = ""
+	string lastCell = ""
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
-	
-	Make/O/T/N=(0,6) foundCells
-	Wave/T foundCells=foundCells
+
+	Make/O/T/N=(0, 6) foundCells
+	WAVE/T foundCells = foundCells
 	foundCells = ""
-	
+
 	newList = V_GetRawDataFileList()
 
 	num = ItemsInList(newList)
-	
+
 	numcells = 0
-	for(ii=0;ii<num;ii+=1)
+	for(ii = 0; ii < num; ii += 1)
 		// get the BackPolarizer name
-		fname = StringFromList(ii,newList)
+		fname   = StringFromList(ii, newList)
 		tmpCell = V_getBackPolarizer_name(fname)
 		// if it doesn't exist the return string will start with: "The specified..."
-		if(cmpstr(tmpCell[0,3],"The ")!=0)
-			if(cmpstr(tmpCell,lastCell)!=0)		//different than other cell names
+		if(cmpstr(tmpCell[0, 3], "The ") != 0)
+			if(cmpstr(tmpCell, lastCell) != 0) //different than other cell names
 				// legit string, get the other params
 				// add a point to the wave
-				InsertPoints 0,1, foundCells
+				InsertPoints 0, 1, foundCells
 
 				// CONVERT the opacity + error to the correct wavelength by multiplying
-				
-				lam = V_getWavelength(fname)
-				opacity = V_getBackPolarizer_opac1A(fname)
+
+				lam                     = V_getWavelength(fname)
+				opacity                 = V_getBackPolarizer_opac1A(fname)
 				foundCells[numcells][0] = tmpCell
-				foundCells[numcells][1] = num2str(lam)	
-				foundCells[numcells][2] = num2str(V_getBackPolarizer_tE(fname))	
-				foundCells[numcells][3] = num2str(V_getBackPolarizer_tE_err(fname))	
-				foundCells[numcells][4] = num2str(opacity*lam)	
-				foundCells[numcells][5] = num2str(V_getBackPolarizer_opac1A_err(fname)*lam)	
-				
+				foundCells[numcells][1] = num2str(lam)
+				foundCells[numcells][2] = num2str(V_getBackPolarizer_tE(fname))
+				foundCells[numcells][3] = num2str(V_getBackPolarizer_tE_err(fname))
+				foundCells[numcells][4] = num2str(opacity * lam)
+				foundCells[numcells][5] = num2str(V_getBackPolarizer_opac1A_err(fname) * lam)
+
 				// update the saved name
 				numcells += 1
-				lastCell = tmpCell
+				lastCell  = tmpCell
 			endif
 		endif
 	endfor
 
-//	Edit foundCells
+	//	Edit foundCells
 
-//
+	//
 	SetDataFolder root:
-	
-	return(0)
+
+	return (0)
 End
 
+Function/S V_ConvertFileListToNumList(string list)
 
+	variable num, ii
+	string item
+	string newList = ""
 
+	num = ItemsInList(list)
 
-Function/S V_ConvertFileListToNumList(list)
-	String list
-	
-	Variable num,ii
-	String newList="",item
-	
-	num=ItemsInList(list)
-	
-	for(ii=0;ii<num;ii+=1)
-		item = StringFromList(ii, list)
+	for(ii = 0; ii < num; ii += 1)
+		item     = StringFromList(ii, list)
 		newList += V_GetRunNumStrFromFile(item) + ";"
 	endfor
-	
-	return(newList)
-End
 
+	return (newList)
+End
 
 //(Blocked beam should always be OUT unless otherwise noted)
 
@@ -381,7 +352,6 @@ End
 //S_NP (frontPolarizer OUT, backPolarizer OUT)
 //BB_NP (frontPolarizer OUT, backPolarizer OUT, BlockBeam IN)
 
-
 // for these list-generating functions:
 // flipStr is the tag string in the file label
 // purpose
@@ -399,54 +369,50 @@ End
 // NO-2 = read every file (bad choice)
 //
 
+Function/S V_PolFileList_LabPur(string labelStr, string purpose)
 
+	string list
 
-Function/S V_PolFileList_LabPur(labelStr,purpose)
-	String labelStr,purpose
+	list = V_getFilePurposeList(purpose, 0)
 
-	String list
-	
-	list = V_getFilePurposeList(purpose,0)
+	list = V_getLabelList(list, labelStr) //label matches in purp. list
 
-	list = V_getLabelList(list,labelStr)		//label matches in purp. list
-	
-//	list = V_Pol_List(frontPol,backPol,purpose)
-	
-	return(list)
-end
+	//	list = V_Pol_List(frontPol,backPol,purpose)
 
-Function/S V_PolFileList_LabPurInt(labelStr,purpose,intent)
-	String labelStr,purpose,intent
+	return (list)
+End
 
-	String list
-	
-	list = V_getFileIntentPurposeList(intent,purpose,0)
-	list = V_getLabelList(list,labelStr)		//label matches in PI list
-	
-//	list = V_Pol_List(frontPol,backPol,purpose)
-	
-	return(list)
-end
+Function/S V_PolFileList_LabPurInt(string labelStr, string purpose, string intent)
+
+	string list
+
+	list = V_getFileIntentPurposeList(intent, purpose, 0)
+	list = V_getLabelList(list, labelStr) //label matches in PI list
+
+	//	list = V_Pol_List(frontPol,backPol,purpose)
+
+	return (list)
+End
 
 //
 // a short list of the files with the correct purpose is passed in
 // - then the label is searched for the correct labelStr
 //
-Function/S V_getLabelList(list,labelStr)
-	String list,labelStr
-	
-	Variable ii,num,np
-	String item="",fname,newList="",tmpLbl
-	
+Function/S V_getLabelList(string list, string labelStr)
+
+	variable ii, num, np
+	string fname, tmpLbl
+	string item    = ""
+	string newList = ""
 
 	np = itemsinList(list)
-	for(ii=0;ii<np;ii+=1)
-		item=StringFromList(ii, list)
+	for(ii = 0; ii < np; ii += 1)
+		item   = StringFromList(ii, list)
 		tmpLbl = V_getSampleDescription(item)
-		if(strsearch(tmpLbl,labelStr,0) > 0)
+		if(strsearch(tmpLbl, labelStr, 0) > 0)
 			newList += item + ";"
 		endif
 	endfor
 
-	return(sortList(newList,";",0))
+	return (sortList(newList, ";", 0))
 End

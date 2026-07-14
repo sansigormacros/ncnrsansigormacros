@@ -1,4 +1,5 @@
-#pragma rtGlobals=1		// Use modern global access method.
+#pragma TextEncoding = "UTF-8"
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
@@ -16,7 +17,7 @@
 
 //
 //  JULY 2021 -- when using Nexus data, work directly with "data", not linear_data. The data display
-//               does not require taking the log of the data array, so there is no 
+//               does not require taking the log of the data array, so there is no
 //              need to have a second linear_data array dragged around. ignore it.
 
 
@@ -36,7 +37,7 @@
 // - DIV detector sensitivity corrections
 //
 // - the WorkFile Math panel for simple image math
-// - 
+// -
 // - adding work.drk data without normalizing to monitor counts
 //
 //***************************
@@ -53,39 +54,39 @@
 Proc DIV_a_Workfile(type)
 	String type
 	Prompt type,"WORK data type",popup,"COR;SAM;EMP;BGD"
-	
+
 	//macro will take whatever is in SELECTED folder and DIVide it by the current
-	//contents of the DIV folder - the function will check for existence 
+	//contents of the DIV folder - the function will check for existence
 	//before proceeding
-	
+
 	Variable err
 	err = Divide_work(type)		//returns err = 1 if data doesn't exist in specified folders
-	
+
 //	// or do I use this call (based on VSANS, in DetectorCorrections_N.ipf)
 //	DIVCorrection(data,data_err,workType)
-//	
-	
+//
+
 	if(err)
 		Abort "error in Divide_work"
 	endif
-	
+
 	//contents are always dumped to CAL
 	type = "CAL"
-	
+
 	String newTitle = "WORK_"+type
 	DoWindow/F SANS_Data
 	DoWindow/T SANS_Data, newTitle
 	KillStrings/Z newTitle
-	
+
 	//need to update the display with "data" from the correct dataFolder
 	//reset the current displaytype to "type"
 	String/G root:myGlobals:gDataDisplayType=Type
-	
+
 	fRawWindowHook()
-	
+
 End
 
-//function will divide the contents of "type" folder with the contents of 
+//function will divide the contents of "type" folder with the contents of
 //the DIV folder
 // all data is converted to linear scale for the calculation
 //
@@ -93,7 +94,7 @@ End
 //
 Function Divide_work(type)
 	String type
-	
+
 	//check for existence of data in type and DIV
 	// if the desired workfile doesn't exist, let the user know, and abort
 	String destPath=""
@@ -114,18 +115,18 @@ Function Divide_work(type)
 		Return(1)		//error condition
 	Endif
 	//files exist, proceed
-	
+
 	//copy from current dir (type)=destPath to CAL, overwriting CAL contents
 	CopyHDFToWorkFolder(type,"CAL")
-	
-	
+
+
 	destPath = "root:Packages:NIST:" + type
 
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(destPath + ":fileList")
 
 	//now switch to reference waves in CAL folder
-	destPath = "root:Packages:NIST:CAL"	
+	destPath = "root:Packages:NIST:CAL"
 
 	Variable/G $(destPath + ":gIsLogScale")=0			//make new flag in CAL folder, data is linear scale
 	//need to copy filelist string too
@@ -140,8 +141,8 @@ Function Divide_work(type)
 	Wave data_err = getDetectorDataErrW("CAL")
 	// so for simplicity, assume no error in the DIV, so this simplifies to:
 	data_err /= div_data
-	
-	
+
+
 	Return(0)
 End
 
@@ -152,80 +153,80 @@ End
 Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err)
 	String type
 	Variable w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err
-	
+
 	//convert the "type" data to absolute scale using the given standard information
 	//copying the "type" waves to ABS
-	
+
 	//check for existence of data, rescale to linear if needed
 	String destPath
 	//check for "type"
 	Wave/Z data_check=getDetectorDataW(type)
-	
+
 	if(WaveExists(data_check) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	Endif
-	
+
 	//copy "oldtype" information to ABS
 	//overwriting out the old contents of the ABS folder (or killing first)
 	CopyHDFToWorkFolder(type,"ABS")
 
-	String oldType= "root:Packages:NIST:"+type  		//this is where the data to be absoluted is 
+	String oldType= "root:Packages:NIST:"+type  		//this is where the data to be absoluted is
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(oldType + ":fileList")
 	//need to copy filelist string too
 	String/G $"root:Packages:NIST:ABS:fileList" = oldFileList
-	
+
 	//now switch to ABS folder
 	//make appropriate wave references
 	Wave data=getDetectorDataW("ABS")
 	Wave data_err=getDetectorDataErrW("RAW")
-	
+
 	Variable/G $"root:Packages:NIST:ABS:gIsLogscale"=0			//make new flag in ABS folder, data is linear scale
-	
+
 	//do the actual absolute scaling here, modifying the data in ABS
 	Variable defmon = 1e8,w_moncount,s1,s2,s3,s4
-	
+
 	w_moncount = getBeamMonNormData("ABS")		//monitor count in "ABS"
 	if(w_moncount == 0)
 		//zero monitor counts will give divide by zero ---
 		DoAlert 0,"Total monitor count in data file is zero. No rescaling of data"
 		Return(1)		//report error
 	Endif
-	
+
 	//calculate scale factor
 	Variable scale,trans_err
 	s1 = defmon/getBeamMonNormData("ABS")		//[0] is monitor count (s1 should be 1)
 	s2 = s_thick/w_thick
 	s3 = s_trans/w_trans
 	s4 = s_cross/s_izero
-	
+
 	// kappa comes in as s_izero, so be sure to use 1/kappa_err
-	
+
 	data *= s1*s2*s3*s4
-	
+
 	scale = s1*s2*s3*s4
 	trans_err = getSampleTransError("ABS")
-	
+
 //	print scale
 //	print data[0][0]
-	
+
 	data_err = sqrt(scale^2*data_err^2 + scale^2*data^2*(kappa_err^2/s_izero^2 +trans_err^2/w_trans^2))
 
 //	print data_err[0][0]
-	
-	
+
+
 	//********* 15APR02
 	// DO NOt correct for atenuators here - the COR step already does this, putting all of the data one equal
 	// footing (zero atten) before doing the subtraction.
 	//
 	//Print "ABS data multiplied by  ",s1*s2*s3*s4/attenFactor
-	
+
 	//update the ABS header information
 //	textread[1] = date() + " " + time()		//date + time stamp
 //	textread[1] = date() + " " + time()		//date + time stamp
 	// putDataStartTime(fname) doesn't exist
-	
+
 	Return (0) //no error
 End
 
@@ -240,10 +241,10 @@ End
 //
 Function CopyWorkContents(oldtype,newtype)
 	String oldtype,newtype
-	
-	
+
+
 	CopyHDFToWorkFolder(oldtype,newtype)
-	
+
 	return(0)
 
 End
@@ -295,9 +296,9 @@ End
 //
 Function Adjust_RAW_Attenuation(type)
 	String type
-	
+
 	WAVE data=getDetectorDataW("RAW")
-	WAVE data_err=getDetectorDataErrW("RAW")	
+	WAVE data_err=getDetectorDataErrW("RAW")
 
 	Variable dest_atten,raw_atten,tol,val
 	Variable lambda,raw_atten_err,raw_AttenFactor,dest_attenFactor,dest_atten_err
@@ -305,7 +306,7 @@ Function Adjust_RAW_Attenuation(type)
 
 	dest_atten = getAtten_number(type)
 	raw_atten = getAtten_number("RAW")
-	
+
 	tol = 0.1		// within 0.1 atten units is OK
 	if(abs(dest_atten - raw_atten) < tol )
 		return(0)
@@ -314,16 +315,16 @@ Function Adjust_RAW_Attenuation(type)
 //	lambda = getWavelength("RAW")
 	raw_AttenFactor = getAttenuator_transmission("RAW")
 	dest_AttenFactor = getAttenuator_transmission(type)
-		
+
 	val = getDetector_counts("RAW")
 	val *= dest_AttenFactor/raw_AttenFactor
 	putDetector_counts("RAW", val)
-	
+
 	data *= dest_AttenFactor/raw_AttenFactor
 	data_err *= dest_AttenFactor/raw_AttenFactor
-	
 
-	
+
+
 	return(0)
 End
 
@@ -332,15 +333,15 @@ End
 Proc KillWorkFolder(type)
 	String type
 	Prompt type,"Kill WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;ADJ;"
-	
+
 	KillDataFolder/Z $("root:Packages:NIST:"+type)
-	
+
 	if(V_flag == 0)
 		DoAlert 0, "Success - the work folder was killed"
 	else
 		DoAlert 0, "The work folder was not killed, something is in use"
 	endif
-	
+
 end
 
 
@@ -363,32 +364,32 @@ Function KillWavesFullTree(dfr, fromStr, level, sNBName,recurse)
 	Variable level			// Pass 0 to start
  	String sNBName
  	Variable recurse
- 
+
 	String name
 	String dfName
  	String sString
- 	
+
  	String toDF = ""
- 
+
 	if (level == 0)		// this is the data folder, generate if needed in the destination
 		name = GetDataFolder(1, dfr)
 		sPrintf sString, "%s (data folder)\r", name
 //		toDF = ReplaceString(fromStr,name,toStr,1)		// case-sensitive replace
 //		sprintf sString, "NewDataFolder/O %s\r",toDF
 //		NewDataFolder/O $(RemoveEnding(toDF,":"))			// remove trailing semicolon if it's there
-		
+
 		WriteBrowserInfo_test(sString, 1, sNBName)
 	endif
- 
+
  	dfName = GetDataFolder(1, dfr)
 // 	toDF = ReplaceString(fromStr,dfName,toStr,1)		// case-sensitive replace
 	Variable i
- 
+
 	String indentStr = "\t"
 	for(i=0; i<level; i+=1)
 		indentStr += "\t"
 	endfor
- 
+
 	Variable numWaves = CountObjectsDFR(dfr, 1)
 	for(i=0; i<numWaves; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 1, i)
@@ -397,46 +398,46 @@ Function KillWavesFullTree(dfr, fromStr, level, sNBName,recurse)
 		//
 		sPrintf sString, "Killing  %s\r",dfName+name
 		KillWaves/Z $(dfName+name)
-		
+
 		WriteBrowserInfo_test(sString, 2, sNBName)
-	endfor	
- 
+	endfor
+
  // now kill the data folder if possible
  	KillDataFolder/Z $dfName
- 	
- 	
-	Variable numNumericVariables = CountObjectsDFR(dfr, 2)	
+
+
+	Variable numNumericVariables = CountObjectsDFR(dfr, 2)
 	for(i=0; i<numNumericVariables; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 2, i)
 		sPrintf sString, "%s%s (numeric variable)\r", indentStr, name
 		WriteBrowserInfo_test(sString, 3, sNBName)
-	endfor	
- 
-	Variable numStringVariables = CountObjectsDFR(dfr, 3)	
+	endfor
+
+	Variable numStringVariables = CountObjectsDFR(dfr, 3)
 	for(i=0; i<numStringVariables; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 3, i)
 		sPrintf sString, "%s%s (string variable)\r", indentStr, name
 		WriteBrowserInfo_test(sString, 4, sNBName)
-	endfor	
+	endfor
 
-	if(recurse) 
-		Variable numDataFolders = CountObjectsDFR(dfr, 4)	
+	if(recurse)
+		Variable numDataFolders = CountObjectsDFR(dfr, 4)
 		for(i=0; i<numDataFolders; i+=1)
 			name = GetIndexedObjNameDFR(dfr, 4, i)
 			sPrintf sString, "%s%s (data folder)\r", indentStr, name
 			 dfName = GetDataFolder(1, dfr)
-			 
+
 //			toDF = ReplaceString(fromStr,dfName,toStr,1)		// case-sensitive replace
 //			sprintf sString, "NewDataFolder/O %s\r",toDF+name
 //			NewDataFolder/O $(toDF+name)
-			
-			
+
+
 			WriteBrowserInfo_test(sString, 1, sNBName)
 			DFREF childDFR = dfr:$(name)
 			KillWavesFullTree(childDFR, fromStr, level+1, sNBName, recurse)
-		endfor	
+		endfor
 	endif
-	 
+
 
 End
 
@@ -445,7 +446,7 @@ Function WriteBrowserInfo_test(sString, vType, sNBName)
 	String sString
 	Variable vType
 	String sNBName
- 
+
 	if(strlen(sNBName) == 0)
 //		print sString
 		return 0
@@ -462,9 +463,9 @@ Function WriteBrowserInfo_test(sString, vType, sNBName)
 		Notebook $sNBName text=sString
 //		Notebook $sNBName fstyle=-1
 	else
-		Notebook $sNBName text=sString	
+		Notebook $sNBName text=sString
 	endif
- 
+
 End
 
 
@@ -484,21 +485,21 @@ End
 //     coming in is already DP
 Function MakeDataError(folderStr)
 	String folderStr
-	
+
 	SetDataFolder $folderStr
 	Wave data=data
 	Duplicate/O data linear_data			// at this point, the data is still the raw data, and is linear_data
-	
+
 	// proper error for counting statistics, good for low count values too
 	// rather than just sqrt(n)
 	// see N. Gehrels, Astrophys. J., 303 (1986) 336-346, equation (7)
 	// for S = 1 in eq (7), this corresponds to one sigma error bars
 	Duplicate/O linear_data linear_data_error
 	linear_data_error = 1 + sqrt(linear_data + 0.75)
-	
-	Duplicate/O linear_data_error data_error			
+
+	Duplicate/O linear_data_error data_error
 	//
-	
+
 	SetDataFolder root:
 	return(0)
 End
@@ -524,17 +525,17 @@ End
 //
 Function CopyHDFToWorkFolder(fromStr,toStr)
 	String fromStr,toStr
-	
+
 	String fromDF, toDF
-	
-	
+
+
 	// make the DF paths - source and destination
 	fromDF = "root:Packages:NIST:"+fromStr
 	toDF = "root:Packages:NIST:"+toStr
-	
+
 //	// make a copy of the file name for my own use, since it's not in the file
 //	String/G $(toDF+":file_name") = root:
-	
+
 	// check to see if the data folder exists, if so, try to kill
 	// if it deosn't exist then do nothing (as for duplication for polarized beam)
 	if(DataFolderExists(toDF))
@@ -545,10 +546,10 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
 
 	endif
-	
+
 	if(V_flag == 0)		// kill DF was OK
 		DuplicateDataFolder $("root:Packages:NIST:"+fromStr),$("root:Packages:NIST:"+toStr)
-		
+
 		// I can delete these if they came along with RAW
 		//   DAS_logs
 		//   top-level copies of data (duplicate links, these should not be present in a proper Nexus file)
@@ -558,13 +559,13 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 
 		return(0)
 	else
-	
+
 		KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
 
 		if(DataFolderExists("root:Packages:NIST:"+toStr) == 0)		//if the data folder (RAW, SAM, etc.) was just killed?
 			NewDataFolder/O $("root:Packages:NIST:"+toStr)
-		endif	
-			
+		endif
+
 		// need to do this the hard way, duplicate/O recursively
 		// see V_CopyToWorkFolder()
 
@@ -572,7 +573,7 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		SVAR fileList_dest = $("root:Packages:NIST:"+toStr+":FileList")
 		SVAR fileList_tmp = $("root:Packages:NIST:"+fromStr+":FileList")
 		fileList_dest = fileList_tmp
-	
+
 		// everything on the top level
 		DuplicateHDFDataFolder($(fromDF+":entry"),fromStr,toStr,0,"",0)	//no recursion here
 		// control
@@ -585,9 +586,9 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		DuplicateHDFDataFolder($(fromDF+":entry:sample"),fromStr,toStr,0,"",1)	//yes recursion here
 		// user
 		DuplicateHDFDataFolder($(fromDF+":entry:user"),fromStr,toStr,0,"",1)	//yes recursion here
-		
-	endif	
-	
+
+	endif
+
 	return(0)
 end
 
@@ -609,32 +610,32 @@ Function DuplicateHDFDataFolder(dfr, fromStr, toStr, level, sNBName,recurse)
 	Variable level			// Pass 0 to start
  	String sNBName
  	Variable recurse
- 
+
 	String name
 	String dfName
  	String sString
- 	
+
  	String toDF = ""
- 
+
 	if (level == 0)		// this is the data folder, generate if needed in the destination
 		name = GetDataFolder(1, dfr)
 //		sPrintf sString, "%s (data folder)\r", name
 		toDF = ReplaceString(fromStr,name,toStr,1)		// case-sensitive replace
 		sprintf sString, "NewDataFolder/O %s\r",toDF
 		NewDataFolder/O $(RemoveEnding(toDF,":"))			// remove trailing semicolon if it's there
-		
+
 		WriteBrowserInfo_test(sString, 1, sNBName)
 	endif
- 
+
  	dfName = GetDataFolder(1, dfr)
  	toDF = ReplaceString(fromStr,dfName,toStr,1)		// case-sensitive replace
 	Variable i
- 
+
 	String indentStr = "\t"
 	for(i=0; i<level; i+=1)
 		indentStr += "\t"
 	endfor
- 
+
 	Variable numWaves = CountObjectsDFR(dfr, 1)
 	for(i=0; i<numWaves; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 1, i)
@@ -643,44 +644,44 @@ Function DuplicateHDFDataFolder(dfr, fromStr, toStr, level, sNBName,recurse)
 		//
 		sPrintf sString, "Duplicate/O  %s,  %s\r",dfName+name,toDF+name
 		Duplicate/O $(dfName+name),$(toDF+name)
-		
+
 		WriteBrowserInfo_test(sString, 2, sNBName)
-	endfor	
- 
-	Variable numNumericVariables = CountObjectsDFR(dfr, 2)	
+	endfor
+
+	Variable numNumericVariables = CountObjectsDFR(dfr, 2)
 	for(i=0; i<numNumericVariables; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 2, i)
 		sPrintf sString, "%s%s (numeric variable)\r", indentStr, name
 		WriteBrowserInfo_test(sString, 3, sNBName)
-	endfor	
- 
-	Variable numStringVariables = CountObjectsDFR(dfr, 3)	
+	endfor
+
+	Variable numStringVariables = CountObjectsDFR(dfr, 3)
 	for(i=0; i<numStringVariables; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 3, i)
 		sPrintf sString, "%s%s (string variable)\r", indentStr, name
 		WriteBrowserInfo_test(sString, 4, sNBName)
-	endfor	
+	endfor
 
-	if(recurse) 
-		Variable numDataFolders = CountObjectsDFR(dfr, 4)	
+	if(recurse)
+		Variable numDataFolders = CountObjectsDFR(dfr, 4)
 		for(i=0; i<numDataFolders; i+=1)
 			name = GetIndexedObjNameDFR(dfr, 4, i)
 //			sPrintf sString, "%s%s (data folder)\r", indentStr, name
 			 dfName = GetDataFolder(1, dfr)
-			 
+
 			toDF = ReplaceString(fromStr,dfName,toStr,1)		// case-sensitive replace
-			
+
 			name = CleanupName(name,0)			// added April 2019 SRK to handle names of temperature controllers with spaces
 			sprintf sString, "NewDataFolder/O %s\r",toDF+name
 			NewDataFolder/O $(toDF+name)
-			
-			
+
+
 			WriteBrowserInfo_test(sString, 1, sNBName)
 			DFREF childDFR = dfr:$(name)
 			DuplicateHDFDataFolder(childDFR, fromStr, toStr, level+1, sNBName, recurse)
-		endfor	
+		endfor
 	endif
-	 
+
 
 End
 
@@ -717,7 +718,7 @@ Proc Init_WorkMath()
 //		Execute "NewDataFolder/O "+StringFromList(ii, str ,";")
 //		ii+=1
 //	while(ii<num)
-	
+
 	SetDataFolder root:
 End
 
@@ -740,7 +741,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 
 	String str1,str2,oper,dest = "Result"
 	String pathStr,workMathStr="WorkMath_"
-	
+
 	//get the panel selections (these are the names of the files on disk)
 	PathInfo catPathName
 	pathStr=S_Path
@@ -750,7 +751,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	str2=S_Value
 	ControlInfo popup2
 	oper=S_Value
-	
+
 	//check that something has been selected for operation and destination
 	if(cmpstr(oper,"Operation")==0)
 		Abort "Select a math operand from the popup"
@@ -761,18 +762,18 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	NVAR const2=root:Packages:NIST:WorkMath:const2
 	Printf "(%g)%s %s (%g)%s = %s\r", const1,str1,oper,const2,str2,dest
 	//check for proper folders (all 3 must be different)
-	
+
 	//load the data in here...
 	//set #1
 	Load_NamedASC_File(pathStr+str1,workMathStr+"File_1")
-	
+
 	SVAR type = root:myGlobals:gDataDisplayType
 	Variable pixelsX = getDet_pixel_num_x(type)
 	Variable pixelsY = getDet_pixel_num_y(type)
-		
+
 	WAVE/Z data1=getDetectorDataW("WorkMath_File_1")
 	WAVE/Z err1=getDetectorDataErrW("WorkMath_File_1")
-	
+
 	// set # 2
 	If(cmpstr(str2,"UNIT MATRIX")==0)
 		Make/O/N=(pixelsX,pixelsY) root:Packages:NIST:WorkMath:data		//don't put in File_2 folder
@@ -788,7 +789,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	Endif
 
 	///////
-	
+
 	//now that we know that data exists, convert each of the operands to linear scale
 //	ConvertFolderToLinearScale(workMathStr+"File_1")
 //	If(cmpstr(str2,"UNIT MATRIX")!=0)
@@ -797,17 +798,17 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 
 	//copy contents of str1 folder to dest and create the wave ref (it will exist)
 	CopyWorkContents(workMathStr+"File_1",workMathStr+dest)
-	
+
 	WAVE/Z destData=getDetectorDataW(workmathStr+dest)
 	WAVE/Z destErr=getDetectorDataErrW(workmathStr+dest)
-	
+
 	//dispatch
-	strswitch(oper)	
+	strswitch(oper)
 		case "*":		//multiplication
 			destData = const1*data1 * const2*data2
 			destErr = const1^2*const2^2*(err1^2*data2^2 + err2^2*data1^2)
 			destErr = sqrt(destErr)
-			break	
+			break
 		case "_":		//subtraction
 			destData = const1*data1 - const2*data2
 			destErr = const1^2*err1^2 + const2^2*err2^2
@@ -822,13 +823,13 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 			destData = const1*data1 + const2*data2
 			destErr = const1^2*err1^2 + const2^2*err2^2
 			destErr = sqrt(destErr)
-			break			
+			break
 	endswitch
-	
+
 //	destData_log = log(destData)		//for display
 	//show the result
 	WorkMath_Display_PopMenuProc("",0,"Result")
-	
+
 	PopupMenu popup4 win=WorkFileMath,mode=3		//3rd item selected == Result
 End
 
@@ -836,7 +837,7 @@ End
 //
 Function WorkMath_Done_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	DoAlert 1,"Closing the panel will kill all of the data you have loaded into memory. Do you want to continue?"
 	If(V_Flag==2)
 		return(0)		//don't do anything
@@ -860,18 +861,18 @@ End
 //
 Function WorkMath_Load_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	String destStr=""
 	SVAR folderList=root:Packages:NIST:WorkMath:gFolderList
 	Prompt destStr,"Select the destination folder",popup,folderList
 	DoPrompt "Folder for ASC Load",destStr
-	
+
 	if(V_flag==1)
 		return(1)		//user abort, do nothing
 	Endif
-	
+
 	String destFolder = "WorkMath_"+destStr
-	
+
 	Load_ASC_File("Pick the ASC file",destFolder)
 End
 
@@ -886,12 +887,12 @@ Function WorkMath_Display_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
-	
+
 	String folder="WorkMath_",pathStr,str1
 
 	PathInfo catPathName
 	pathStr=S_Path
-	
+
 	//if display result, just do it and return
 	if(cmpstr(popStr,"Result")==0)
 		Execute "ChangeDisplay(\""+folder+popstr+"\")"
@@ -913,7 +914,7 @@ Function WorkMath_Display_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 		//change the display
 		Execute "ChangeDisplay(\""+folder+popstr+"\")"
 	endif
-	return(0)	
+	return(0)
 End
 
 //simple panel to do workfile arithmetic
@@ -972,11 +973,11 @@ Function ShowWorkMathHelp(ctrlName) : ButtonControl
 End
 
 //utility function to clear the contents of a data folder
-//won't clear data that is in use - 
+//won't clear data that is in use -
 //
 Function ClearDataFolder(type)
 	String type
-	
+
 	SetDataFolder $("root:Packages:NIST:"+type)
 	KillWaves/a/z
 	KillStrings/a/z
@@ -994,23 +995,23 @@ Function Load_NamedASC_File(fileStr,destFolder)
 	String fileStr,destFolder
 
 	Variable refnum
-	
+
 	// set up the nexus structure
 	SetupNexusStructure("root:Packages:NIST:"+destFolder,ksDetType)
-	
-	
+
+
 	//read in the data
 	ReadASCData(fileStr,destFolder)
 
 	//the calling macro must change the display type
 	String/G root:myGlobals:gDataDisplayType=destFolder
-	
+
 	FillFakeHeader_ASC(destFolder) 		//uses info on the panel, if available
 
 	//data is displayed here, and needs header info
-	
+
 	fRawWindowHook()
-	
+
 	return(0)
 End
 
@@ -1043,19 +1044,19 @@ Function Load_ASC_File(msgStr,destFolder)
 		SetDataFolder root:
 		Abort "No file selected, action aborted"
 	Endif
-	
+
 	//read in the data
 	ReadASCData(filename,destFolder)
 
 	//the calling macro must change the display type
 	String/G root:myGlobals:gDataDisplayType=destFolder
-	
+
 	FillFakeHeader_ASC(destFolder) 		//uses info on the panel, if available
 
 	//data is displayed here, and needs header info
-	
+
 	fRawWindowHook()
-	
+
 	return(0)
 End
 
@@ -1072,7 +1073,7 @@ Function/S ASC_FileList()
 
 	String list="",newList="",item=""
 	Variable num,ii
-	
+
 	//check for the path
 	PathInfo catPathName
 	if(V_Flag==0)
@@ -1084,7 +1085,7 @@ Function/S ASC_FileList()
 
 
 //	list = IndexedFile(catpathName,-1,"????")
-//	
+//
 //	list = RemoveFromList(ListMatch(list,"*.SA1*",";"), list, ";", 0)
 //	list = RemoveFromList(ListMatch(list,"*.SA2*",";"), list, ";", 0)
 //	list = RemoveFromList(ListMatch(list,"*.SA3*",";"), list, ";", 0)

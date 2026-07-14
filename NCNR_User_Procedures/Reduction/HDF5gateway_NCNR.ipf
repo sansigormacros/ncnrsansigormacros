@@ -8,11 +8,21 @@
 // !!! search for "SRK" to see what I have modified to work with NCNR files
 // -- these changes may only be for testing, and may need to be removed in the final version!!!
 //
+// -- for Iogr 9, either these work, or they need to be discarded
+// as of 2025, Pete had not touched these functions on the GitHub site for 13 years (<2012!)
+// so these are certianly not updated
 //
+// ** for Igor 9+, see the help file for the section "HDF5 Attributes". 
+// Having this built-in now may do what we need to read in the attributes. 
+//  haven't fully investigated this yet, but it may be the way to proceed, deprecating Gateway
 //
 
 
-// requires the Wavemetrics "HDF5.xop" to be installed for IgorPro
+
+
+
+// requires the Wavemetrics "HDF5.xop" to be installed for IgorPro (built-in, as of Igor 9)
+//
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // $Id: HDF5gateway.ipf 768 2012-11-26 04:48:16Z svnsmang $

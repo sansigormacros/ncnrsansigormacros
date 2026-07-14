@@ -189,7 +189,7 @@ Function Init_Event()
 	
 	Variable/G root:Packages:NIST:Event:gEvent_logint = 1
 
-	Variable/G root:Packages:NIST:Event:gEvent_Mode = MODE_OSCILL				// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:Event:gEvent_Mode = MODE_STREAM			// ==0 for "stream", ==1 for Oscillatory
 	Variable/G root:Packages:NIST:Event:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
 	Variable/G root:Packages:NIST:Event:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
 	
@@ -298,9 +298,9 @@ Proc EventModePanel()
 	Button button22,pos={620,450},size={120,20},proc=Osc_LoadAdjList_BinOnFly,title="Load+Accumulate"
 
 	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
-	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
+	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=0
 	CheckBox chkbox1_1,pos={25,59},size={53,14},title="Stream",fSize=10
-	CheckBox chkbox1_1,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_1,proc=EventModeRadioProc,value=1,mode=1
 	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
 	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
 	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
@@ -986,6 +986,7 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	
 
 #if (exists("EventLoadWave")==4)
+//#if (exists("xxEventLoadWave")==4)
 	LoadEvents_XOP()
 #else
 	// XOP is not present, warn the user to re-run the installer
@@ -1009,8 +1010,8 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 		return(0)
 	endif
 
-	LoadEvents_New_noXOP()
-//	LoadEvents()
+//	LoadEvents_New_noXOP()			// as of 4/2026, this is faster but appears incorrect load/decode 
+	LoadEvents_OLD()
 
 	
 #endif	
@@ -2273,6 +2274,9 @@ Proc EventCorrectionPanel()
 		Label left "\\Z14Time (seconds)"
 		Label bottom "\\Z14Event number"	
 		SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
+
+		// workaround to fix unresponsive panel buttons, only an issue in Igor 9, not Igor 8 or 10	
+		ShowTools/A
 		
 		ControlBar 100
 		Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"
@@ -2307,7 +2311,7 @@ Proc EventCorrectionPanel()
 	
 	SetDataFolder root:
 	
-EndMacro
+End
 
 
 Function EC_AutoCorrectSteps(ba)

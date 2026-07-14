@@ -1503,6 +1503,17 @@ Proc Initialize_Preferences()
 	val = NumVarOrDefault("root:Packages:NIST:gLaptopMode", 0 )
 	Variable/G root:Packages:NIST:gLaptopMode = 0		//default to normal mode
 	
+	// March 2025
+	// global to use the zero point tables for the tubes. if this global == 1,
+	// the tables are used (and calibration must be perfect or it will doubly correct position)
+	// If the global == 0, then the zero point tables are not used (no correction applied)
+	// and the zero point must be incorporated in the calibration tables.
+	// -- default is 1, since CSV tables have not yet been incorporated
+	val = NumVarOrDefault("root:Packages:NIST:gUseZeroPointTables", 1 )
+	Variable/G root:Packages:NIST:gUseZeroPointTables = 1
+		
+	
+	
 	
 
 // flag to allow adding raw data files with different attenuation (normally not done)	
@@ -1707,6 +1718,17 @@ Function LaptopModePref(ctrlName,checked) : CheckBoxControl
 End
 
 
+// Ask if zero point tables are to be used
+// 1 = use the tables (calibration is assumed to be perfect)
+// 0 = don't use tables (zero point is incorporated into the calibration table)
+Proc UseZeroPointTables(useZeroPtTables)
+	Variable useZeroPtTables = 1
+	
+	Prompt useZeroPtTables, "1 = Use Tables, 0 = Don't use Tables"
+	
+	root:Packages:NIST:gUseZeroPointTables = useZeroPtTables
+End
+
 //set the angle->Q conversion factor
 // or set the Q->Q "conversion" factor
 // this is the same value that is set in Init_USANS_Facility()
@@ -1719,25 +1741,37 @@ Function RawUSANSisQPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 	
 	Variable isKIST_USANS=0
-	if(exists("KIST_USANS") == 3)
+	if(exists("KIST_USANS") == 6)
 		isKIST_USANS = 1
 	endif
+
+	NVAR gCalibration = root:Packages:NIST:gCalibration
 	
 	if(checked == 1)
-		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = 1		//so that the q-values are unchanged
-	else
-		if(isKIST_USANS == 1)
-				NVAR gCalibration = root:Packages:NIST:gCalibration
-				NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base
-
-				Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * gCalibration
+	// for both NCNR and KIST, only in different locations... :(
+		if(isKIST_USANS)
+			Variable/G root:Packages:NIST:gdeg2QConv_base = 1		//so that the q-values are unchanged
 		else
-		
-			Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+			Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv_base = 1		//so that the q-values are unchanged
 		endif
+	else
+		if(isKIST_USANS)
+			Variable/G root:Packages:NIST:gDeg2QConv_base = 1.5707963e-4		// motor position in mm (x100) MHK for KIST ---07/19/2013
+			NVAR gDeg2QConv_base = root:Packages:NIST:gdeg2QConv_base			//different locations for this global...
+
+		else
+			NVAR gDeg2QConv_base = root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv_base
+
+			Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv_base = 5.55e-5		//JGB -- 2/24/01
+		endif
+
 	endif
 	
 	
+	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * gCalibration   //multiply by calibration
+
+
+	return(0)
 End
 
 Function UseQTrapPref(ctrlName,checked) : CheckBoxControl

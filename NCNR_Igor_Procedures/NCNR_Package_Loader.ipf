@@ -46,8 +46,8 @@ Menu "Macros"
 
 	Submenu	"Load SANS Reduction Macros"
 		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros - VAX Data"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
-		"Load NCNR SANS Reduction 10m SANS - Nexus Data",LoadSANS_Nexus_Tubes()
-//		"Load NCNR SANS Reduction Ordela - Nexus Data",LoadSANS_Nexus_Ordela()
+		"Load NCNR SANS Reduction 10m SANS Tubes+Nexus Data",LoadSANS_Nexus_Tubes()
+		"Load NCNR SANS Reduction 30m SANS Ordela+Nexus Data",LoadSANS_Nexus_Ordela()
 		"-"
 		StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"))
 		StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"))
@@ -55,7 +55,7 @@ Menu "Macros"
 //		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
 		"-"
-//		"Include Batch HDF Converter",LoadBatchHDFConverter()
+//		"Include Batch VAX-HDF Converter",LoadBatchHDFConverter()
 
 	End
 	
@@ -68,6 +68,8 @@ Menu "Macros"
 //	StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"))
 //	StrVarOrDefault("root:Packages:NCNRItemStr4b","-"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4b","-"))
 
+	"Load VSANS Procedures",VSANSLoader()
+
 	// for testing ONLY
 	"-"
 	"Load SANS Polarization Reduction",PolarizationLoader()
@@ -76,8 +78,7 @@ Menu "Macros"
 	"Load Batch Fitting - Beta",BatchFitLoader()
 	"Load Simulation Run Builder",SimSANSRunListLoader()
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
-	"-"
-	"Load VSANS Procedures",VSANSLoader()
+//	"-"
 
 
 end
@@ -113,6 +114,14 @@ Function ConflictingPackage(loaded)
 
 End
 
+// this Proc was in the loader above, but I couldn't find it anywhere
+// it may or may not need to be visible on the macros menu, but it may be necessary to convert VAX data to Nexus for 
+// (1) testing of Nexus reduction and (2) to properly reduce event data (VAX only allows time in integer seconds)
+//
+Proc LoadBatchHDFConverter()
+	Execute/P "INSERTINCLUDE \"HDF5_ConvertVAX_to_HDF5\""
+	Execute/P "COMPILEPROCEDURES "
+end
 
 Proc LoadSANS_Nexus_Tubes()
 
@@ -120,7 +129,7 @@ Proc LoadSANS_Nexus_Tubes()
 		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
 	else
 
-		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_N\""
+		Execute/P "INSERTINCLUDE \"NCNR_Includes_10mTubes_N\""
 		Execute/P "COMPILEPROCEDURES "
 		Execute/P ("Initialize()")
 	//			Execute/P ("PickPath()")
@@ -134,7 +143,7 @@ Proc LoadSANS_Nexus_Ordela()
 		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
 	else
 
-		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_Ordela_N\""
+		Execute/P "INSERTINCLUDE \"NCNR_Includes_30mOrdela_N\""
 		Execute/P "COMPILEPROCEDURES "
 		Execute/P ("Initialize()")
 	//			Execute/P ("PickPath()")
@@ -925,10 +934,17 @@ Function AfterFileOpenHook(refNum,file,pathName,type,creator,kind)
 	Variable refNum,kind
 	String file,pathName,type,creator
 
+	String str
+	Variable ll,tt,rr,bb,dum
+	
 	if(kind == 1)		// an Igor experiment, not any other kind of file
 	
 		Print "Re-initialization running"
-		
+//		print igorinfo(0)		
+		str = 	StringByKey("SCREEN1",IgorInfo(0),":",";")
+		sscanf str,"DEPTH=%d,RECT=%d,%d,%d,%d",dum,ll,tt,rr,bb
+		Print dum,ll,tt,rr,bb
+
 		// check for VSANS
 		if(exists("Initialize_VSANS") > 2)
 			Execute/P "Initialize_VSANS()"
