@@ -2669,3 +2669,102 @@ Function fPatch_IntegratedCount(variable lo, variable hi)
 	return (0)
 End
 
+
+/////////////////////////////
+Macro Patch_SANS_Files_2026(lo, hi)
+	variable lo, hi
+
+	fPatch_SANS_Files_2026(lo, hi)
+EndMacro
+
+
+
+
+////////////////////////
+//
+// Changes needed to make the "new" data collected after startup to be useable.
+// -- some are new errors that have been introduced
+//
+////////////////////////
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatch_SANS_Files_2026(variable lo, variable hi)
+
+	variable ii, jj
+	string fname
+
+	variable pixSize_x, pixSize_y
+	variable pixNum_x, pixNum_y
+	variable fwhm_x, fwhm_y, dead_time
+
+//
+	pixSize_x = 5.08	 	// [mm]
+	pixSize_y = 5.08 		// [mm]
+	pixNum_x  = 128
+	pixNum_y  = 128
+
+	fwhm_x    = 0.508  		// [cm]
+	fwhm_y    = 0.508 	 	// [cm]
+//	dead_time = 1e-20 // [s]
+//
+
+	Make/O/D/N=3 cal_x, cal_y
+	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
+	cal_x[1] = 1              // values to ensure linear behavior in calculation
+	cal_x[2] = 10000
+	cal_y[0] = pixSize_y / 10 // pixel size in [cm]
+	cal_y[1] = 1
+	cal_y[2] = 10000
+//
+
+	//loop over all files
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+// any top-level patching?
+			WriteReductionIntent(fname,"Sample")
+
+// detector patching - 
+
+			// patch cal_x and cal_y
+//			V_writeDet_cal_x(fname, "B", cal_x)
+//			V_writeDet_cal_y(fname, "B", cal_y)
+
+			// patch n_pix_x and y
+//			writeDet_pixel_num_x(fname, pixNum_x)
+//			writeDet_pixel_num_y(fname, pixNum_y)
+
+			// patch pixel size x and y [mm]
+			writeDet_x_pixel_size(fname, pixSize_x)
+			writeDet_y_pixel_size(fname, pixSize_y)
+
+			// patch dead time
+			// TODO: enter a proper value here once it's actually measured
+//			writeDetector_deadtime_B(fname, "B", dead_time)
+
+			// patch fwhm_x and y
+			// TODO: verify the values once they are measured, and also the UNITS!!! [cm]???
+//			writeDet_pixel_fwhm_x(fname, "B", fwhm_x)
+//			writeDet_pixel_fwhm_y(fname, "B", fwhm_y)
+
+			// patch beam center (nominal x,y) [pixel] values for "B"
+//			writeDet_beam_center_x(fname, "B", 51)
+//			writeDet_beam_center_y(fname, "B", 51)
+
+			
+
+			
+
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+	KillWaves/Z cal_x, cal_y, tmpData
+	return (0)
+End
+

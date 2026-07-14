@@ -1389,9 +1389,10 @@ Function fVerifyImportantUnits(string fname)
 	val2 = getDet_y_pixel_size(fname)
 	printf "Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
 
-	// beam stop size, diameter in [cm]
+	// beam stop size, diameter in [cm], shape
 	val = getBeamStop_size(fname)
 	printf "Beam stop diameter = %g [cm]\r", val
+	print "Beam stop shape = ", getBeamStop_shape(fname)
 
 	// sample aperture diameter [mm]
 	val = getSampleAp_size(fname)
