@@ -3669,6 +3669,11 @@ Function V_fPatch_Files_2026(variable lo, variable hi)
 
 // detector patching - start with "B"
 
+// back beamstop shape (circle) is #2? (I think) and 12 mm (size=diam)
+			V_writeBeamStopC3num_stop(fname, 2)
+			V_writeBeamStopC3_shape(fname,"circle")
+			V_writeBeamStopC3_size(fname, 12)
+			
 			// patch cal_x and cal_y
 			V_writeDet_cal_x(fname, "B", cal_x)
 			V_writeDet_cal_y(fname, "B", cal_y)
