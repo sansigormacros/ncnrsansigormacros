@@ -3605,11 +3605,43 @@ End
 
 
 /////////////////////////////
-Macro V_Patch_Files_2026(lo, hi)
-	variable lo, hi
+// patches ALL of the files
+Function V_Patch_Files_2026()
 
-	V_fPatch_Files_2026(lo, hi)
-EndMacro
+	Variable lo,hi
+	
+	V_Find_LoHi_RunNum(lo, hi) //lo,hi returned pbr
+	NVAR gFileNum_Lo_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
+	NVAR gFileNum_Hi_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
+	gFileNum_Lo_xy = lo
+	gFileNum_Hi_xy = hi
+
+	String desc = V_getDetDescription(V_FindFileFromRunNumber(lo), "B")
+	if(cmpstr(desc,"Denex")==0)
+		DoAlert 0,"It looks like the files have been patched already"
+	endif
+	
+	DoAlert 1,"This wlll patch ALL files in the data folder. OK?"
+	if(V_flag == 1)
+		V_fPatch_Files_2026(lo, hi)
+		
+		//once patched, clean all of them from memory so that they will need to be reloaded
+		// with correct values
+		variable t1 = ticks
+		variable numToClean
+		numToClean = V_CleanupData_w_Progress(0, 1)
+
+		Print "Cleaned # files = ", numToClean
+		Print "Cleanup time (s) = ", (ticks - t1) / 60.15
+		variable cleanupTime = (ticks - t1) / 60.15
+		
+		
+	else
+		DoAlert 0,"No files patched"
+	endif
+	
+	return(0)
+End
 
 
 
@@ -3705,6 +3737,8 @@ Function V_fPatch_Files_2026(variable lo, variable hi)
 
 
 /////////////	F and M carriages		
+// !! MUST be sure to NOT re-apply these corrections - or the offset will continue to shrink!
+//
 			// lateral and vertical offsets for all F, M panels written in mm, need cm
 			Variable val=0
 			
