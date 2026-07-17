@@ -45,6 +45,8 @@ Menu "SANS"
 		"Tile Raw 2D files", Show_Tile_2D_Panel()
 		"Export 2D ASCII data", Export_RAW_Ascii_Panel()
 		//		"Bin QxQy Data to 1D",BinQxQy_to_1D()
+		"-"
+		"Add RAW to WORK",Add_to_WorkFile()
 	End
 	SubMenu "Event Processing"
 		"Event Mode Process Panel", Show_Event_Panel()

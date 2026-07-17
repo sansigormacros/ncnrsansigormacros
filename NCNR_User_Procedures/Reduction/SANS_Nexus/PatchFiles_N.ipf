@@ -2672,7 +2672,7 @@ End
 
 /////////////////////////////
 Macro Patch_SANS_Files_2026(lo, hi)
-	variable lo, hi
+	variable lo=119183, hi=119208
 
 	fPatch_SANS_Files_2026(lo, hi)
 EndMacro
@@ -2701,23 +2701,23 @@ Function fPatch_SANS_Files_2026(variable lo, variable hi)
 	variable fwhm_x, fwhm_y, dead_time
 
 //
-	pixSize_x = 5.08	 	// [mm]
-	pixSize_y = 5.08 		// [mm]
-	pixNum_x  = 128
-	pixNum_y  = 128
+//	pixSize_x = 5.08	 	// [mm]
+//	pixSize_y = 5.08 		// [mm]
+//	pixNum_x  = 128
+//	pixNum_y  = 128
 
-	fwhm_x    = 0.508  		// [cm]
-	fwhm_y    = 0.508 	 	// [cm]
+//	fwhm_x    = 0.508  		// [cm]
+//	fwhm_y    = 0.508 	 	// [cm]
 //	dead_time = 1e-20 // [s]
 //
 
-	Make/O/D/N=3 cal_x, cal_y
-	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
-	cal_x[1] = 1              // values to ensure linear behavior in calculation
-	cal_x[2] = 10000
-	cal_y[0] = pixSize_y / 10 // pixel size in [cm]
-	cal_y[1] = 1
-	cal_y[2] = 10000
+//	Make/O/D/N=3 cal_x, cal_y
+//	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
+//	cal_x[1] = 1              // values to ensure linear behavior in calculation
+//	cal_x[2] = 10000
+//	cal_y[0] = pixSize_y / 10 // pixel size in [cm]
+//	cal_y[1] = 1
+//	cal_y[2] = 10000
 //
 
 	//loop over all files
@@ -2729,40 +2729,133 @@ Function fPatch_SANS_Files_2026(variable lo, variable hi)
 			WriteReductionIntent(fname,"Sample")
 
 // detector patching - 
-
-			// patch cal_x and cal_y
-//			V_writeDet_cal_x(fname, "B", cal_x)
-//			V_writeDet_cal_y(fname, "B", cal_y)
-
-			// patch n_pix_x and y
-//			writeDet_pixel_num_x(fname, pixNum_x)
-//			writeDet_pixel_num_y(fname, pixNum_y)
-
-			// patch pixel size x and y [mm]
-			writeDet_x_pixel_size(fname, pixSize_x)
-			writeDet_y_pixel_size(fname, pixSize_y)
-
-			// patch dead time
-			// TODO: enter a proper value here once it's actually measured
-//			writeDetector_deadtime_B(fname, "B", dead_time)
-
-			// patch fwhm_x and y
-			// TODO: verify the values once they are measured, and also the UNITS!!! [cm]???
-//			writeDet_pixel_fwhm_x(fname, "B", fwhm_x)
-//			writeDet_pixel_fwhm_y(fname, "B", fwhm_y)
-
-			// patch beam center (nominal x,y) [pixel] values for "B"
-//			writeDet_beam_center_x(fname, "B", 51)
-//			writeDet_beam_center_y(fname, "B", 51)
-
-			
-
-			
+	// all OK?
 
 		else
 			printf "run number %d not found\r", jj
 		endif
 	endfor
+
+
+// patches to specific run numbers
+	// 1.33m data
+	lo = 119183
+	hi = 119187
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+			// i don't know the proper values, copy 4m values (if they are correct)
+			// source aperture distance = 855.05 [cm]
+			writeSourceAp_distance(fname, 855.05)
+			
+			// source aperture size = "50.8 mm"
+			writeSourceAp_size(fname, "50.8 mm")
+			
+			// collimator number of guides = 5
+			writeNumberOfGuides(fname, "5")
+			
+			// beam stop number = 2
+				// I do not have a read or write function for this
+				// entry:instrument:beam_stop:num
+			
+			// beam stop size = 5.08 [cm] = 2" (visual, from detector pixels)
+			writeBeamStop_size(fname, 5.08)
+			
+			// beam center (pixels)
+			// not missing from file, just patching here for ease of repeating 
+			//  X-center (in detector coordinates) =   116.501
+  			//  Y-center (in detector coordinates) =   68.5752
+  			writeDet_beam_center_x(fname, 116.50)
+  			writeDet_beam_center_y(fname, 68.57)
+			
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+
+	// 4m data
+	lo = 119188
+	hi = 119203
+	
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+			// beam stop number = 2
+				// I do not have a read or write function for this
+				// entry:instrument:beam_stop:num
+
+			// beam stop size = 5.08 [cm] = 2" (visual, from detector pixels)
+			writeBeamStop_size(fname, 5.08)
+
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+// 4m on-center data
+	lo = 119188
+	hi = 119200
+
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+//  X-center (in detector coordinates) =   67.1191
+//  Y-center (in detector coordinates) =   68.6953
+  			writeDet_beam_center_x(fname, 67.12)
+  			writeDet_beam_center_y(fname, 68.69)
+  
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+ 
+// 4m 25 cm offset data
+	lo = 119201
+	hi = 119203
+
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+//  X-center (in detector coordinates) =   115.984
+//  Y-center (in detector coordinates) =   68.6188 
+  			writeDet_beam_center_x(fname, 115.98)
+  			writeDet_beam_center_y(fname, 68.62)
+  
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+
+	// 10m data
+	lo = 119204
+	hi = 119208
+	
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+			// beam stop number = 3
+				// I do not have a read or write function for this
+				// entry:instrument:beam_stop:num
+			
+			// beam stop size = 7.62 [cm] = 3" (visual, from detector pixels)
+			writeBeamStop_size(fname, 7.62)
+
+			//  X-center (in detector coordinates) =   67.5146
+			//  Y-center (in detector coordinates) =   67.8229
+  			writeDet_beam_center_x(fname, 67.51)
+  			writeDet_beam_center_y(fname, 67.82)
+  
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+
 
 	KillWaves/Z cal_x, cal_y, tmpData
 	return (0)
