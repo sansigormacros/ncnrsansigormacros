@@ -1702,15 +1702,15 @@ Proc VC_Initialize_Space()
 		// DENEX-TOFIX-WHEN-INSTALLED
 		// 
 		//
-		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.15 // 1.5 mm resolution (units of [cm] here)
-		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.15
+		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.05 // 0.5 mm resolution (units of [cm] here)
+		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.05
 
 		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = kNum_x_Denex // detector pixels in x-direction
 		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = kNum_y_Denex
 
 		// pixel beam center - HDF style
-		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 255.1 // == x beam center, in pixels +0.1 so I know it's from here
-		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 254.1 // == y beam center, in pixels
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 50.1 // == x beam center, in pixels +0.1 so I know it's from here
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 50.1 // == y beam center, in pixels
 	endif
 
 	// Generate all of the waves used for the detector and the q values
