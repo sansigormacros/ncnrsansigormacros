@@ -318,10 +318,10 @@ Function V_NonLinearCorrection_B(string folder, WAVE dataW, WAVE cal_x, WAVE cal
 
 	Print "***Cal_X and Cal_Y for Back are using file values ***"
 
-	//		cal_x[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+	//		cal_x[0] = VCALC_getPixSizeX(detStr)			// pixel size from VCALC_getPixSizeX(detStr) is [cm]
 	//		cal_x[1] = 1
 	//		cal_x[2] = 10000
-	//		cal_y[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+	//		cal_y[0] = VCALC_getPixSizeY(detStr)			// pixel size from VCALC_getPixSizeX(detStr) is [cm]
 	//		cal_y[1] = 1
 	//		cal_y[2] = 10000
 
