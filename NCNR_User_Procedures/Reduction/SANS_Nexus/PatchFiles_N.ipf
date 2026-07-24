@@ -2670,6 +2670,7 @@ Function fPatch_IntegratedCount(variable lo, variable hi)
 End
 
 
+
 /////////////////////////////
 Macro Patch_SANS_Files_2026(lo, hi)
 	variable lo=119183, hi=119208
@@ -2861,3 +2862,42 @@ Function fPatch_SANS_Files_2026(variable lo, variable hi)
 	return (0)
 End
 
+
+/////////////////////////////
+Macro Patch_BeamstopDiameter(lo, hi, diam_cm)
+	variable lo=119183, hi=119208, diam_cm=5.08
+
+	fPatch_BeamstopDiameter(lo, hi, diam_cm)
+EndMacro
+
+
+////////////////////////
+// patch the beamstop diameter, needed for resolution calculations
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+// val is beamstop diameter [cm]
+//
+Function fPatch_BeamstopDiameter(variable lo, variable hi, variable val)
+
+	variable ii, jj
+	string fname
+
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+			// beam stop number = 2
+				// I do not have a read or write function for this
+				// entry:instrument:beam_stop:num
+
+			// beam stop size = 5.08 [cm] = 2", 2.54 cm = 1", 7.62 cm  = 3"
+			//
+			writeBeamStop_size(fname, val)
+
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+	return (0)
+End
