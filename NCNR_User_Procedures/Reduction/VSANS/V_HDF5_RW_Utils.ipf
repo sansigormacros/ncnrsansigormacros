@@ -1456,17 +1456,21 @@ EndMacro
 // to sever ties to all links to DAS_logs in 2026 startup files
 //
 // - this is a method of last resort -
-// - there are better solutions that unlink data as needed
-// - best solution would be to (possibly) read in the whole file and 
-// correct the linked value at the source (in DAS_logs)
 //
-Macro BatchConvert_VSANS_toOLDHDF(firstFile,lastFile)
+// - there are better solutions that unlink data as needed (see V_WriteWaveToHDF()). This is
+// how I work around the problem currently
+//
+// - another solution would be to (possibly) read in the whole file and 
+// correct the linked value at the source (in DAS_logs) - but this would require
+// the MUCH slower reading/writing of the entire file (3+MB vs 300KB)
+//
+Proc BatchConvert_VSANS_to_UnlinkedHDF(firstFile,lastFile)
 	Variable firstFile=1,lastFile=10
 	Prompt firstFile, "Enter first run number"
 	Prompt lastFile, "Enter last run number"
 
 
-	fBatchConvertToOldHDF5(firstFile,lastFile)
+	fBatchConvert_VSANS_to_UnlinkedHDF(firstFile,lastFile)
 
 End
 
@@ -1474,7 +1478,7 @@ End
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
-Function fBatchConvertToOldHDF5(lo,hi)
+Function fBatchConvert_VSANS_to_UnlinkedHDF(lo,hi)
 	Variable lo,hi
 	
 	Variable ii
