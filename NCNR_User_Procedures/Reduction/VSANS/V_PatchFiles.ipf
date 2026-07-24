@@ -3618,12 +3618,19 @@ Function V_Patch_Files_2026()
 
 	String desc = V_getDetDescription(V_FindFileFromRunNumber(lo), "B")
 	if(cmpstr(desc,"Denex")==0)
-		DoAlert 0,"It looks like the files have been patched already"
+		DoAlert 1,"It looks like the files have been patched already. Do you want to skip patching the offset again?"
+	endif
+	
+	Variable skip = 0		// skip = 1 means don't re-apply the /10 correction for det offsets
+	if(V_flag == 1)
+		skip = 1
+	else
+		skip = 0
 	endif
 	
 	DoAlert 1,"This wlll patch ALL files in the data folder. OK?"
 	if(V_flag == 1)
-		V_fPatch_Files_2026(lo, hi)
+		V_fPatch_Files_2026(lo, hi, skip)
 		
 		//once patched, clean all of them from memory so that they will need to be reloaded
 		// with correct values
@@ -3657,9 +3664,10 @@ End
 //
 // lo is the first file number
 // hi is the last file number (inclusive)
+// skip = 1 skips the det offset correction, =0 applies the correction
 //
 // DENEX-TOFIX-WHEN-INSTALLED
-Function V_fPatch_Files_2026(variable lo, variable hi)
+Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 
 	variable ii, jj
 	string fname, detStr, descriptionStr
@@ -3669,13 +3677,18 @@ Function V_fPatch_Files_2026(variable lo, variable hi)
 	variable fwhm_x, fwhm_y, dead_time
 
 // DENEX-TOFIX-WHEN-INSTALLED
-	pixSize_x = 0.5 // [mm]
-	pixSize_y = 0.5 // [mm]
+//	pixSize_x = 0.5 // [mm]
+//	pixSize_y = 0.5 // [mm]
+	pixSize_x = 1.9 // [mm]
+	pixSize_y = 1.9 // [mm]
+
 	pixNum_x  = kNum_x_Denex
 	pixNum_y  = kNum_y_Denex
 
-	fwhm_x    = 0.05  // [cm]
-	fwhm_y    = 0.05  // [cm]
+//	fwhm_x    = 0.05  // [cm]
+//	fwhm_y    = 0.05  // [cm]
+	fwhm_x    = 0.19  // [cm]
+	fwhm_y    = 0.19  // [cm]
 	dead_time = 1e-20 // [s]
 //
 //	detStr         = "B"
@@ -3742,29 +3755,32 @@ Function V_fPatch_Files_2026(variable lo, variable hi)
 			// lateral and vertical offsets for all F, M panels written in mm, need cm
 			Variable val=0
 			
-			val = V_getDet_LateralOffset(fname, "FL")
-			V_writeDet_LateralOffset(fname, "FL", val/10)
-
-			val = V_getDet_LateralOffset(fname, "FR")
-			V_writeDet_LateralOffset(fname, "FR", val/10)
-
-			val = V_getDet_LateralOffset(fname, "ML")
-			V_writeDet_LateralOffset(fname, "ML", val/10)
-
-			val = V_getDet_LateralOffset(fname, "MR")
-			V_writeDet_LateralOffset(fname, "MR", val/10)
-			
-			val = V_getDet_VerticalOffset(fname, "FT")
-			V_writeDet_VerticalOffset(fname, "FT", val/10)
-			
-			val = V_getDet_VerticalOffset(fname, "FB")
-			V_writeDet_VerticalOffset(fname, "FB", val/10)
-			
-			val = V_getDet_VerticalOffset(fname, "MT")
-			V_writeDet_VerticalOffset(fname, "MT", val/10)
-			
-			val = V_getDet_VerticalOffset(fname, "MB")
-			V_writeDet_VerticalOffset(fname, "MB", val/10)
+			if (skip == 0)
+				val = V_getDet_LateralOffset(fname, "FL")
+				V_writeDet_LateralOffset(fname, "FL", val/10)
+	
+				val = V_getDet_LateralOffset(fname, "FR")
+				V_writeDet_LateralOffset(fname, "FR", val/10)
+	
+				val = V_getDet_LateralOffset(fname, "ML")
+				V_writeDet_LateralOffset(fname, "ML", val/10)
+	
+				val = V_getDet_LateralOffset(fname, "MR")
+				V_writeDet_LateralOffset(fname, "MR", val/10)
+				
+				val = V_getDet_VerticalOffset(fname, "FT")
+				V_writeDet_VerticalOffset(fname, "FT", val/10)
+				
+				val = V_getDet_VerticalOffset(fname, "FB")
+				V_writeDet_VerticalOffset(fname, "FB", val/10)
+				
+				val = V_getDet_VerticalOffset(fname, "MT")
+				V_writeDet_VerticalOffset(fname, "MT", val/10)
+				
+				val = V_getDet_VerticalOffset(fname, "MB")
+				V_writeDet_VerticalOffset(fname, "MB", val/10)
+				
+			endif
 			
 ////////		
 			
