@@ -3618,7 +3618,7 @@ Function V_Patch_Files_2026()
 
 	String desc = V_getDetDescription(V_FindFileFromRunNumber(lo), "B")
 	if(cmpstr(desc,"Denex")==0)
-		DoAlert 1,"It looks like the files have been patched already. Do you want to skip patching the offset again?"
+		DoAlert 1,"It looks like the files have been patched already. Do you want to skip patching the offset and intent again?"
 	endif
 	
 	Variable skip = 0		// skip = 1 means don't re-apply the /10 correction for det offsets
@@ -3677,18 +3677,18 @@ Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 	variable fwhm_x, fwhm_y, dead_time
 
 // DENEX-TOFIX-WHEN-INSTALLED
-//	pixSize_x = 0.5 // [mm]
-//	pixSize_y = 0.5 // [mm]
-	pixSize_x = 1.9 // [mm]
-	pixSize_y = 1.9 // [mm]
+//	pixSize_x = 1.9 // [mm]
+//	pixSize_y = 1.9 // [mm]
+	pixSize_x = 2.0 // [mm]
+	pixSize_y = 2.0 // [mm]
 
 	pixNum_x  = kNum_x_Denex
 	pixNum_y  = kNum_y_Denex
 
-//	fwhm_x    = 0.05  // [cm]
-//	fwhm_y    = 0.05  // [cm]
-	fwhm_x    = 0.19  // [cm]
-	fwhm_y    = 0.19  // [cm]
+//	fwhm_x    = 0.19  // [cm]
+//	fwhm_y    = 0.19  // [cm]
+	fwhm_x    = 0.20  // [cm]
+	fwhm_y    = 0.20  // [cm]
 	dead_time = 1e-20 // [s]
 //
 //	detStr         = "B"
@@ -3710,8 +3710,11 @@ Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 		if(strlen(fname) != 0)
 
 // any top-level patching?
-			V_WriteReductionIntent(fname,"Sample")
-
+			// don't overwrite the changes to intent if the files have already been worked on
+			// (it breaks the reduction protocols and transmission calculations)
+			if (skip == 0)
+				V_WriteReductionIntent(fname,"Sample")
+			endif
 // detector patching - start with "B"
 
 // back beamstop shape (circle) is #2? (I think) and 12 mm (size=diam)
