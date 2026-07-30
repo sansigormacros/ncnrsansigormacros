@@ -549,7 +549,7 @@ Function V_fDoSectorBin_QxQy2D(string folderStr, string type, string collimation
 
 	// -- nq will need to be larger (or smaller), once the Denex replaces the CCD
 	//
-	// DENEX-TOFIX-WHEN-INSTALLED
+	// DENEX-TOFIX-WHEN-INSTALLED-OK
 	if(cmpstr(type, "B") == 0)
 		nq = 800
 	else

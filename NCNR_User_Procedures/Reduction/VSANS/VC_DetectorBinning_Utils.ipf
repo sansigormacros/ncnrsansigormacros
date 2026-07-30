@@ -218,7 +218,8 @@ End
 //
 // TODO:
 // -- tube width is hard-wired in
-// DENEX-TOFIX
+//
+// DENEX-TOFIX-DONE
 //
 Function VC_Detector_2Q_NonLin(WAVE data, WAVE qTot, WAVE qx, WAVE qy, WAVE qz, variable xCtr, variable yCtr, variable sdd, variable lam, variable pixSizeX, variable pixSizeY, string detStr)
 

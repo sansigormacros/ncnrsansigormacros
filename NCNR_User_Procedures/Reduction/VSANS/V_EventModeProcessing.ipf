@@ -879,30 +879,49 @@ End
 // XBINS is for an individual panel
 // NTUBES is the total number of tubes = (4)(48)=192
 //
+// DENEX-TOFIX-DONE
+// - added conditionals to switch based on back data
+// -- NEED to do the same fixes for OSC and TOF ProcessEventLog functions (TOF = OSC)
+//
 Function V_Osc_ProcessEventLog(string ctrlName)
 
-	//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
-	Make/O/D/N=(NTUBES, YBINS) root:Packages:NIST:VSANS:Event:binnedData
 
-	WAVE binnedData = root:Packages:NIST:VSANS:Event:binnedData
-	WAVE xLoc       = root:Packages:NIST:VSANS:Event:xLoc
-	WAVE yLoc       = root:Packages:NIST:VSANS:Event:yLoc
 
 	// now with the number of slices and max time, process the events
 
 	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
 	NVAR nslices   = root:Packages:NIST:VSANS:Event:gEvent_nslices
 
+	// dimension the waves correctly for the different carriages
+	NVAR gEventCarriage_is_B = root:Packages:NIST:VSANS:Event:gEventCarriage_is_B
+	if(gEventCarriage_is_B)
+		Make/O/D/N=(kNum_x_Denex, kNum_y_Denex) root:Packages:NIST:VSANS:Event:binnedData
+		Make/O/D/N=(kNum_x_Denex, kNum_y_Denex) root:Packages:NIST:VSANS:Event:tmpData
+		Make/D/O/N=(kNum_x_Denex, kNum_y_Denex, nslices) root:Packages:NIST:VSANS:Event:slicedData
+	else
+		//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
+		Make/O/D/N=(NTUBES, YBINS) root:Packages:NIST:VSANS:Event:binnedData
+		//	Make/D/O/N=(XBINS,YBINS,nslices) root:Packages:NIST:VSANS:Event:slicedData
+		Make/D/O/N=(NTUBES, YBINS, nslices) root:Packages:NIST:VSANS:Event:slicedData
+		//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:tmpData
+		Make/O/D/N=(NTUBES, YBINS) root:Packages:NIST:VSANS:Event:tmpData
+	endif
+
+
+	WAVE binnedData = root:Packages:NIST:VSANS:Event:binnedData
+	WAVE xLoc       = root:Packages:NIST:VSANS:Event:xLoc
+	WAVE yLoc       = root:Packages:NIST:VSANS:Event:yLoc
+
+
 	SetDataFolder root:Packages:NIST:VSANS:Event //don't count on the folder remaining here
 
-	//	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
-	Make/D/O/N=(NTUBES, YBINS, nslices) slicedData
 
 	WAVE slicedData   = slicedData
 	WAVE rescaledTime = rescaledTime
 	WAVE timePt       = timePt
-	//	Make/O/D/N=(XBINS,YBINS) tmpData
-	Make/O/D/N=(NTUBES, YBINS) tmpData
+
+	WAVE tmpData = tmpData
+
 	Make/O/D/N=(nslices + 1) binEndTime, binCount
 	Make/O/D/N=(nslices) timeWidth
 	WAVE timeWidth  = timeWidth
@@ -1018,9 +1037,9 @@ End
 // XBINS is for an individual panel
 // NTUBES is the total number of tubes = (4)(48)=192
 //
-// DENEX-TOFIX
-// - added conditionals to switch base on back data
-// -- NEED to do the same fixes for OSC and TOF ProcessEventLog functions
+// DENEX-TOFIX-DONE
+// - added conditionals to switch based on back data
+// -- NEED to do the same fixes for OSC and TOF ProcessEventLog functions (TOF = OSC)
 //
 Function V_Stream_ProcessEventLog(string ctrlName)
 
@@ -1379,9 +1398,13 @@ Function V_LoadEventLog_Button(string ctrlName) : ButtonControl
 	// if not loading from raw, still need to know which panel - now that Denex added
 	// DENEX-TOFIX - changes how data is loaded and processed!
 	// LoadEvents is generic for reading and decoding the event file. for Denex:
-	// location = xPos
+	// location = xPos 
 	// tube = yPos
 	// eventTime = as normal
+	//
+	// (?) is this x-y assignment correct? it's different for the tubes
+	// - see which order the values are in the event file
+	// -- MAY NEED TO ADD CONDITIONAL to swap the x-y assignment
 	
 	// load in the event file and decode it
 

@@ -1667,8 +1667,8 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_y = 55
 
 	//// BACK DETECTOR -- DENEX-TOFIX-WHEN-INSTALLED
-	variable/G gBack_w = 22.2 //w and h for the back detector [cm]
-	variable/G gBack_h = 50.4
+	variable/G gBack_w = 20 //w and h for the back detector [cm]
+	variable/G gBack_h = 20
 
 	// all of this is correct, hard-wired values
 	// -- can't use a switch so I'm using an if(), where the default is 4x4 binning
@@ -1699,11 +1699,11 @@ Proc VC_Initialize_Space()
 
 		// HARD WIRED DENEX VAULES (that are WRONG)
 		// as of APRIL 2023
-		// DENEX-TOFIX-WHEN-INSTALLED
+		// DENEX-TOFIX-WHEN-INSTALLED - DONE
 		// 
 		//
-		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.05 // 0.5 mm resolution (units of [cm] here)
-		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.05
+		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.2 // 2 mm resolution (units of [cm] here)
+		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.2
 
 		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = kNum_x_Denex // detector pixels in x-direction
 		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = kNum_y_Denex

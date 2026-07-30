@@ -1540,7 +1540,7 @@ Function V_MakeFakeEventWave(variable num)
 End
 
 //
-// DENEX-TOFIX
+// DENEX-TOFIX-OK
 //
 // using a fake Nx and Ny dimension, constants defined in V_Initialize.ipf
 // kNum_x_Denex, kNum_y_Denex
