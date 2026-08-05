@@ -1420,7 +1420,7 @@ Function LoadEvents_OLD()
 // dispStr will be displayed on the panel
 	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
 	
-	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
+	sprintf tmpStr, "%s:\r%d total bytes\r",fileStr,totBytes 
 	dispStr = tmpStr
 	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr
@@ -1923,7 +1923,7 @@ tic()
 // dispStr will be displayed on the panel
 	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
 	
-	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
+	sprintf tmpStr, "%s:\r%d total bytes\r",fileStr,totBytes 
 	dispStr = tmpStr
 	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr
@@ -2591,7 +2591,7 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			
 	
 			fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
-			sprintf tmpStr, "%s: a user-modified event file\r",fileStr 
+			sprintf tmpStr, "%s:\ra user-modified event file\r",fileStr 
 			dispStr = tmpStr
 	
 			SetDataFolder root:
@@ -4066,7 +4066,7 @@ Function Osc_LoadAdjList_BinOnFly(ctrlName)
 	// clear out the old sort index, if present, since new data is being loaded
 	KillWaves/Z OscSortIndex	
 	SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
-	sprintf tmpStr, "%s: a user-modified event file\r",StringFromList(jj, listStr  ,";")
+	sprintf tmpStr, "%s:\ra user-modified event file\r",StringFromList(jj, listStr  ,";")
 	dispStr = tmpStr	
 	
 //(2) bin
@@ -4100,7 +4100,7 @@ Function Osc_LoadAdjList_BinOnFly(ctrlName)
 		// clear out the old sort index, if present, since new data is being loaded
 		KillWaves/Z OscSortIndex	
 		SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
-		sprintf tmpStr, "%s: a user-modified event file\r",StringFromList(jj, listStr  ,";")
+		sprintf tmpStr, "%s:\ra user-modified event file\r",StringFromList(jj, listStr  ,";")
 		dispStr = tmpStr	
 		
 	//(2) bin
@@ -4639,7 +4639,7 @@ Function GetBitsFromEvents()
 
 	totBytes = V_logEOF
 	
-	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
+	sprintf tmpStr, "%s:\r%d total bytes\r",fileStr,totBytes 
 	dispStr = tmpStr
 	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr

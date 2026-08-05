@@ -521,7 +521,7 @@ End
 // fname is the filename or folder
 //
 // use one of two methods:
-// 1 = directly check the detector description
+// 1 = directly check the detector description, then time (if description fails)
 // 2 = use the method based on comparison to the arbitrary time of > 1/1/2025
 //
 // return values are the same for both methods
@@ -552,12 +552,29 @@ Function/S V_IdentifyBackDetectorType(string fname, variable method)
 	
 	if(method == 1)
 	
-		typeStr = V_getDetDescription(fname,"B")
-		if(cmpstr(typeStr,"Denex") != 0 )		// string is NOT "Denex"
+		if(cmpstr(V_getDetDescription(fname,"B"),"Denex") != 0 )		// string is NOT "Denex"
 			typeStr = "CCD"							// assume it's "CCD"
 		endif
+
+		// if the description was the default "fancy model", check the time (duplicate of below)
+		if(cmpstr(V_getDetDescription(fname,"B"),"fancy model") == 0)
 		
-	else		// check the time
+			startTime = V_getDataStartTime(fname)
+		// 1 if iso1 is greater than iso2 (meaning iso1 is more RECENT)
+		// 2 if iso2 is greater than iso1 (meaning iso2 is more RECENT)
+		// 0 if they are the same time
+			retVal = V_Compare_ISO_Dates(startTime, useDenexTime)
+			
+			if(retVal == 1)		// == 1 == current data is more recent than Denex install time
+				typeStr = "Denex"
+			else
+				typeStr = "CCD"
+			endif
+
+		endif
+
+	
+	else		// check the time only
 	
 		startTime = V_getDataStartTime(fname)
 	//	print startTime

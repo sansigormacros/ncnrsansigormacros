@@ -2698,7 +2698,7 @@ Function V_EC_ImportWavesButtonProc(STRUCT WMButtonAction &ba) : ButtonControl
 			t_longest = waveMax(rescaledTime) //should be the last point
 
 			fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
-			sprintf tmpStr, "%s: a user-modified event file\r", fileStr
+			sprintf tmpStr, "%s:\ra user-modified event file\r", fileStr
 			dispStr = tmpStr
 
 			SetDataFolder root:
