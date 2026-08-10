@@ -640,7 +640,8 @@ End
 //
 // Generic Read/Write operations.
 
-//Needed to test whether file is NXcanSAS. The load routine will then either give an error if HDF5 XOP is not present or load the file if it is.
+//Needed to test whether file is NXcanSAS. The load routine will then either give an error if
+// HDF5 XOP is not present or load the file if it is.
 Function isNXcanSAS(filestr)
 	String filestr
 	

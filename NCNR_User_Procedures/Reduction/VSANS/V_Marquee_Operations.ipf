@@ -63,6 +63,7 @@ Function V_PrintMarqueeCoords() : GraphMarquee
 		Print "err/counts = ", ct_err / count
 		print "average counts per pixel = ", count / (x2 - x1) / (y2 - y1)
 	endif
+	return(0)
 End
 
 // NOTE:
@@ -561,4 +562,47 @@ Function V_UpdateBoxCoords() : GraphMarquee
 		//
 		V_KillNamedDataFolder(gCurrentFile)
 	endif
+	return(0)
 End
+
+
+//function will save full data set from the displayed work file to 
+// the NXcanSAS2D data format
+//
+// - data can then be read back in to display all three carriages on a common QxQy scale
+//
+//
+Function V_SaveDataAs_NXcanSAS2D() : GraphMarquee
+
+	GetMarquee left, bottom
+	if(V_flag == 0)
+		Print "There is no Marquee"
+	else
+
+		Execute "V_QuickSave_as_NXcanSAS2D()"
+
+	endif
+	return(0)
+End
+
+
+
+//function will save the displayed data as a graphics file
+//
+//
+Function V_SaveData_Image() : GraphMarquee
+
+	GetMarquee left, bottom
+	if(V_flag == 0)
+		Print "There is no Marquee"
+	else
+
+	// clear marquee first, then get the snapshot
+		GetMarquee/K
+		SavePICT/P=catPathName/SNAP=1/E=-5/B=2
+	
+	endif
+	return(0)
+End
+
+

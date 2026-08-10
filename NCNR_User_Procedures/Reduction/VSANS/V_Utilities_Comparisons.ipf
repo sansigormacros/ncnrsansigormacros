@@ -551,9 +551,12 @@ Function/S V_IdentifyBackDetectorType(string fname, variable method)
 	variable retval
 	
 	if(method == 1)
-	
-		if(cmpstr(V_getDetDescription(fname,"B"),"Denex") != 0 )		// string is NOT "Denex"
-			typeStr = "CCD"							// assume it's "CCD"
+
+		if(cmpstr(V_getDetDescription(fname,"B"),"Denex") == 0 )		// string IS "Denex"
+			typeStr = "Denex"
+			Return(typeStr)							// get out now
+		else
+			typeStr = "CCD"							// assume it's "CCD" for now
 		endif
 
 		// if the description was the default "fancy model", check the time (duplicate of below)

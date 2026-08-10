@@ -118,7 +118,11 @@ End
 //
 // TODO:
 // -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- The final writer will need to be aware of resolution, and there may be different forms
+// 	 The final writer will need to be aware of resolution, and there may be different forms
+// ?? it appears that the resolution IS calculated and written to the file. all that needs to be
+//    done looks like documentation of the format of the resolution information, such as
+//    what do the 2D resolution values represent, why is the shadow factor = 1, etc.
+//		(AUG 2026)
 //
 // dialog=1 will present dialog for name
 Function V_WriteNXcanSAS2DData(string folderStr, string pathStr, string saveName, variable dialog)
