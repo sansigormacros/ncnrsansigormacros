@@ -308,7 +308,7 @@ Function GetTransHeaderInfoToWave(string fname, string sname)
 	InsertPoints lastPoint, 1, GFilenames
 	GFilenames[lastPoint] = sname
 
-	//read the file suffix
+	//read the file suffix -- for Nexus file, this is the file name instead of a VAX suffix
 	InsertPoints lastPoint, 1, GSuffix
 	GSuffix[lastPoint] = getSuffix(fname)
 
