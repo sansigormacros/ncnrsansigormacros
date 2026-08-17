@@ -3093,7 +3093,7 @@ End
 // DENEX-TOFIX-WHEN-INSTALLED
 Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 
-	//	Abort "this replaces the detector data. only for making fake data. modify function for patching"
+	Abort "this replaces the detector data. only for making fake data. modify function for patching"
 
 	variable ii, jj
 	string fname, detStr, descriptionStr
