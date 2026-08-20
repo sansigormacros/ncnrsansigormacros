@@ -910,7 +910,10 @@ Function V_DecayPanelPopMenuProc(pa) : PopupMenuControl
 			// clear old data, and plot the new
 			//
 			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells:
-
+			Wave/Z tmp_muP=tmp_muP
+			Wave/Z tmp_muP2=tmp_muP2
+			Wave/Z fit_tmp_muP=fit_tmp_muP
+			
 			CheckDisplayed/W=V_DecayPanel#G0 tmp_muP,tmp_muP2,fit_tmp_muP
 			// if both present, bit 0 + bit 1 = 3
 			if(V_flag & 2^0)			//check bit 0
@@ -1452,7 +1455,8 @@ Function V_DecayFitButtonProc(ba) : ButtonControl
 
 
 
-
+			Wave/Z fit_tmp_Y=fit_tmp_Y
+			
 			// clear old data, and plot the new
 			//
 			CheckDisplayed/W=V_DecayPanel#G0 tmp_Y,tmp_Y2,fit_tmp_Y

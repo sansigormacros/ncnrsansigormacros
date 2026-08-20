@@ -860,6 +860,7 @@ Function V_LoadRawPolarizedButton(STRUCT WMButtonAction &ba) : ButtonControl
 				// calculate the inverse of the coefficient matrix
 				//				SetDataFolder $("root:Packages:NIST:VSANS:Globals:")
 				MatrixInverse/G matA
+				Wave M_Inverse
 				Duplicate/O M_Inverse, $("root:Packages:NIST:VSANS:Globals:" + type + "_Inv_PolMatrix")
 				WAVE Inv_PolMatrix = $("root:Packages:NIST:VSANS:Globals:" + type + "_Inv_PolMatrix")
 
