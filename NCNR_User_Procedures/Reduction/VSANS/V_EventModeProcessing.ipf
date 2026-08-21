@@ -6,7 +6,11 @@
 
 // in progress-- V_ExportStatus_Button
 
-
+// global value to set the number of bytes read in for the time value in the event header
+// -- specified as 10 bytes, but is actually 12 bytes (bug, per Phil)
+// if set to one, read 12 bytes of time, if 0, read only 10 bytes
+// as of 2021 (and 2026?) read in 12 bytes
+Constant kRead12ByteTime = 1
 
 /////////////
 //VSANS Event File Format
@@ -1764,7 +1768,12 @@ Function V_LoadEvents()
 	FBinRead/F=2/U refnum, gTime3
 	FBinRead/F=2/U refnum, gTime4
 	FBinRead/F=2/U refnum, gTime5
-//	FBinRead/F=2/U refnum, gTime6		//don't read these bytes, only 10 bytes are written for time, not 12
+	if(kRead12ByteTime == 1)
+		Print "Reading 12 byte time"
+		FBinRead/F=2/U refnum, gTime6		//??don't read these bytes, only 10 bytes are written for time, not 12
+	else
+		Print "Reading 10 byte time"
+	endif
 	//	FBinRead refnum, gDetStr			//don't read the detector identifier, it's not written out
 	FBinRead/F=2/U refnum, gVolt
 	FBinRead/F=3/U refnum, gResol

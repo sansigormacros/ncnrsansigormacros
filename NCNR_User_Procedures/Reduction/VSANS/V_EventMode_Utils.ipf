@@ -2259,14 +2259,19 @@ Function V_ReadEventHeader()
 	Open/R refnum as filepathstr
 
 	FBinRead refnum, gVSANSStr
-	FBinRead/F=2/U/B=3 refnum, gRevision
+	FBinRead/F=2/U/B=3 refnum, gRevision		//B=3 == Little-endian = Intel
 	FBinRead/F=2/U/B=3 refnum, gOffset
 	FBinRead/F=2/U/B=3 refnum, gTime1
 	FBinRead/F=2/U/B=3 refnum, gTime2
 	FBinRead/F=2/U/B=3 refnum, gTime3
 	FBinRead/F=2/U/B=3 refnum, gTime4
 	FBinRead/F=2/U/B=3 refnum, gTime5
-//	FBinRead/F=2/U/B=3 refnum, gTime6
+	if(kRead12ByteTime == 1)
+		Print "Reading 12 byte time"
+		FBinRead/F=2/U/B=3 refnum, gTime6
+	else
+		Print "Reading 10 byte time"
+	endif
 //	FBinRead refnum, gDetStr
 	FBinRead/F=2/U/B=3 refnum, gVolt
 	FBinRead/F=3/U/B=3 refnum, gResol
@@ -2305,7 +2310,7 @@ Function V_ReadEventHeader()
 
 	nn = numpnts(byteWave)
 	for(ii = 0; ii < nn; ii += 1)
-		printf "%X  ", byteWave[ii]
+		printf "%02X  ", byteWave[ii]
 	endfor
 	printf "\r"
 
