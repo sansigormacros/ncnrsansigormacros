@@ -6,7 +6,7 @@
 
 //////////////////////////////////
 //
-//  --  January 2107
+//  --  January 2017
 //
 // This is experimental, making the patch work with list boxes as "groups" of the Nexus file structure
 //
@@ -3616,6 +3616,10 @@ Function V_Patch_Files_2026()
 	gFileNum_Lo_xy = lo
 	gFileNum_Hi_xy = hi
 
+//   V_writeReductionComments(fname,str)
+//   V_getReductionComments(string fname)
+
+
 	String desc = V_getDetDescription(V_FindFileFromRunNumber(lo), "B")
 	if(cmpstr(desc,"Denex")==0)
 		DoAlert 1,"It looks like the files have been patched already. Do you want to skip patching the offset and intent again?"
@@ -3710,17 +3714,25 @@ Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 		if(strlen(fname) != 0)
 
 // any top-level patching?
-			// don't overwrite the changes to intent if the files have already been worked on
-			// (it breaks the reduction protocols and transmission calculations)
-			if (skip == 0)
-				V_WriteReductionIntent(fname,"Sample")
-			endif
+
+// skip the intent -- this should be fixed in 2nd round of data collection
+//
+//			// don't overwrite the changes to intent if the files have already been worked on
+//			// (it breaks the reduction protocols and transmission calculations)
+//			if (skip == 0)
+//				V_WriteReductionIntent(fname,"Sample")
+//			endif
+			
+			
+			
 // detector patching - start with "B"
 
 // back beamstop shape (circle) is #2? (I think) and 12 mm (size=diam)
-			V_writeBeamStopC3num_stop(fname, 2)
-			V_writeBeamStopC3_shape(fname,"circle")
-			V_writeBeamStopC3_size(fname, 12)
+//			V_writeBeamStopC3num_stop(fname, 2)
+//			V_writeBeamStopC3_shape(fname,"circle")
+//			V_writeBeamStopC3_size(fname, 12)
+
+
 			
 			// patch cal_x and cal_y
 			V_writeDet_cal_x(fname, "B", cal_x)
@@ -3755,36 +3767,42 @@ Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 /////////////	F and M carriages		
 // !! MUST be sure to NOT re-apply these corrections - or the offset will continue to shrink!
 //
-			// lateral and vertical offsets for all F, M panels written in mm, need cm
-			Variable val=0
-			
-			if (skip == 0)
-				val = V_getDet_LateralOffset(fname, "FL")
-				V_writeDet_LateralOffset(fname, "FL", val/10)
-	
-				val = V_getDet_LateralOffset(fname, "FR")
-				V_writeDet_LateralOffset(fname, "FR", val/10)
-	
-				val = V_getDet_LateralOffset(fname, "ML")
-				V_writeDet_LateralOffset(fname, "ML", val/10)
-	
-				val = V_getDet_LateralOffset(fname, "MR")
-				V_writeDet_LateralOffset(fname, "MR", val/10)
-				
-				val = V_getDet_VerticalOffset(fname, "FT")
-				V_writeDet_VerticalOffset(fname, "FT", val/10)
-				
-				val = V_getDet_VerticalOffset(fname, "FB")
-				V_writeDet_VerticalOffset(fname, "FB", val/10)
-				
-				val = V_getDet_VerticalOffset(fname, "MT")
-				V_writeDet_VerticalOffset(fname, "MT", val/10)
-				
-				val = V_getDet_VerticalOffset(fname, "MB")
-				V_writeDet_VerticalOffset(fname, "MB", val/10)
-				
-			endif
-			
+
+// skip the offset correction - these should be corrected at the instrument with a magic command
+// (that is permanent?) - at the second round of data collection
+//
+
+
+//			// lateral and vertical offsets for all F, M panels written in mm, need cm
+//			Variable val=0
+//			
+//			if (skip == 0)
+//				val = V_getDet_LateralOffset(fname, "FL")
+//				V_writeDet_LateralOffset(fname, "FL", val/10)
+//	
+//				val = V_getDet_LateralOffset(fname, "FR")
+//				V_writeDet_LateralOffset(fname, "FR", val/10)
+//	
+//				val = V_getDet_LateralOffset(fname, "ML")
+//				V_writeDet_LateralOffset(fname, "ML", val/10)
+//	
+//				val = V_getDet_LateralOffset(fname, "MR")
+//				V_writeDet_LateralOffset(fname, "MR", val/10)
+//				
+//				val = V_getDet_VerticalOffset(fname, "FT")
+//				V_writeDet_VerticalOffset(fname, "FT", val/10)
+//				
+//				val = V_getDet_VerticalOffset(fname, "FB")
+//				V_writeDet_VerticalOffset(fname, "FB", val/10)
+//				
+//				val = V_getDet_VerticalOffset(fname, "MT")
+//				V_writeDet_VerticalOffset(fname, "MT", val/10)
+//				
+//				val = V_getDet_VerticalOffset(fname, "MB")
+//				V_writeDet_VerticalOffset(fname, "MB", val/10)
+//				
+//			endif
+//			
 ////////		
 			
 
