@@ -58,7 +58,8 @@ Function V_InitTransPanelGlobals()
 	string/G gEmptyPanel     = "ENTER PANEL"
 	string/G gSamMatchList   = "_none_"
 	string/G gTransMatchList = "_none_"
-	string/G gUUID = ""
+	string/G gTransGrpUUID = ""
+	String/G gSamGrpUUID = ""
 //	Variable/G gValidUUID = 0
 
 // this is now initialized when the catTable is first opened
@@ -99,18 +100,24 @@ Window V_TransmissionPanel() : Panel
 	Button button_4, pos={sc * 164.00, 500.00 * sc}, size={sc * 150.00, 20.00 * sc}, proc=V_CalcTransmListButtonProc, title="Calculate All In Popup"
 	SetVariable setvar_0, pos={sc * 18.00, 390.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Label:"
 	SetVariable setvar_0, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gSamLabel
-	SetVariable setvar_1, pos={sc * 18.00, 417.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Group ID:"
-	SetVariable setvar_1, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
+
 	SetVariable setvar_2, pos={sc * 15.00, 257.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Label:"
 	SetVariable setvar_2, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gTransLabel
 
 // TODO UUID (DONE) -- need to switch before this to determine which ID to use
 	if(root:Packages:NIST:VSANS:Globals:gValidUUID)
-		SetVariable setvar_3u, pos={sc * 14.00, 283.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="UUID:"
-		SetVariable setvar_3u, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:UUID
+		SetVariable setvar_3u, pos={sc * 14.00, 283.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="UUID:"		//transmission files
+		SetVariable setvar_3u, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gTransGrpUUID
+		
+		SetVariable setvar_1u, pos={sc * 18.00, 417.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="UUID:"  	//scattering files
+		SetVariable setvar_1u, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpUUID
 	else
 		SetVariable setvar_3, pos={sc * 14.00, 283.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Group ID:"
 		SetVariable setvar_3, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID	
+	
+		SetVariable setvar_1, pos={sc * 18.00, 417.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Group ID:"
+		SetVariable setvar_1, limits={-Inf, Inf, 0}, value=root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
+	
 	endif
 
 	SetVariable setvar_4, pos={sc * 18.00, 108.00 * sc}, size={sc * 300.00, 14.00 * sc}, title="Label:"
@@ -158,8 +165,8 @@ Function V_TSamFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 		gSamGrpID = V_getSample_GroupID(pa.popStr)
 
 		// TODO UUID (DONE)
-		SVAR gUUID = root:Packages:NIST:VSANS:Globals:Transmission:gUUID
-		gUUID = V_getSample_UUID(pa.popStr)
+		SVAR gSamGrpUUID = root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpUUID
+		gSamGrpUUID = V_getSample_UUID(pa.popStr)
 				
 		NVAR gTrans = root:Packages:NIST:VSANS:Globals:Transmission:gTrans
 		gTrans = V_getSampleTransmission(pa.popStr)
@@ -193,8 +200,8 @@ Function V_TTransmFilePopMenuProc(STRUCT WMPopupAction &pa) : PopupMenuControl
 			NVAR gTrnGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
 			gTrnGrpID = V_getSample_GroupID(popStr)
 
-			SVAR gUUID = root:Packages:NIST:VSANS:Globals:Transmission:gUUID
-			gUUID = V_getSample_UUID(popStr)
+			SVAR gTransGrpUUID = root:Packages:NIST:VSANS:Globals:Transmission:gTransGrpUUID
+			gTransGrpUUID = V_getSample_UUID(popStr)
 			
 			//			SVAR gSamMatchList = root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList
 			//			String quote = "\""
@@ -224,13 +231,13 @@ Function/S V_getSamListForPopup()
 
 	//	String quote = "\""
 	NVAR gTrnGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
-	SVAR gUUID = root:Packages:NIST:VSANS:Globals:Transmission:gUUID
+	SVAR gTransGrpUUID = root:Packages:NIST:VSANS:Globals:Transmission:gTransGrpUUID
 
 // let the function decide which is valid - if strlen(UUID) != 36, use the groupID
-	string retStr = V_getFileIntentPurposeIDList("SAMPLE", "SCATTERING", gTrnGrpID, gUUID, 0)		
+	string retStr = V_getFileIntentPurposeIDList("SAMPLE", "SCATTERING", gTrnGrpID, gTransGrpUUID, 0)		
 
 	// and be sure to add in the empty cell, since it's not a "sample"
-	retStr += V_getFileIntentPurposeIDList("EMPTY CELL", "SCATTERING", gTrnGrpID, gUUID, 0)
+	retStr += V_getFileIntentPurposeIDList("EMPTY CELL", "SCATTERING", gTrnGrpID, gTransGrpUUID, 0)
 
 	// now filter through the string to refine the list to only scattering files that match
 	// the transmission file conditions
