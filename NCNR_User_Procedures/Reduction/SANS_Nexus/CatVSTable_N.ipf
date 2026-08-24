@@ -277,8 +277,10 @@ Function BuildCatVeryShortTable()
 	//	Print "Time per raw data file (s) = ",(ticks - t1)/60.15/(numItems-numpnts(notRawList))
 	
 // set the global switch for UUID or GroupID (used later for transmission)
+// don't check the first point, alignment files won't have a valid UUID
+// TODO -- need a better way to set this flag reliably, even if not all files have the field filled in
 	NVAR gValidUUID = root:myGlobals:gValidUUID
-	if(strlen(UUID[0]) == 36)
+	if(strlen(UUID[(numpnts(UUID)-1)]) == 36)
 		gValidUUID = 1
 	endif
 

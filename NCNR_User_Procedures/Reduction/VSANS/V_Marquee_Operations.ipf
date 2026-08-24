@@ -606,3 +606,117 @@ Function V_SaveData_Image() : GraphMarquee
 End
 
 
+// generates a histogram of the data as defined by the marquee. The longer dimension of the marquee
+// becomes the x-axis of the histogram (this may need to be changed for some odd case). Pixel range specified
+// by the marquee is inclusive, and is automatically kept in-bounds
+//
+// The counts over the (short) dimension are averaged, and plotted vs. the pixel position.
+// Pixel position is reported as Detector coordinates (1,128). Counts are whatever the current display
+// happens to be.
+//
+Function VSANS_Histogram() : GraphMarquee
+
+	GetMarquee left, bottom
+	if(V_flag == 0)
+		Abort "There is no Marquee"
+	endif
+	//	// if cursor A on graph
+	//	// Do histogram pair
+	//	Variable aExists= strlen(CsrInfo(A)) > 0	// A is a name, not a string
+	//	if(aExists)
+	//		DoHistogramPair(hcsr(A),vcsr(A))
+	//		return(0)
+	//	endif
+	//
+	variable count, x1, x2, y1, y2, xwidth, ywidth, xx, yy
+	variable vsX = 1
+	x1 = V_left
+	x2 = V_right
+	y1 = V_bottom
+	y2 = V_top
+	
+	string detStr = V_FindDetStrFromLoc(x1, x2, y1, y2)
+	//		Printf "Detector = %s\r",detStr
+	
+	//
+	SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
+	
+	V_KeepSelectionInBounds(x1, x2, y1, y2, detStr, gCurDispType)
+	Print "x1,x2,y1,y2 (det) =", x1 + 1, x2 + 1, y1 + 1, y2 + 1
+	//determine whether to do x vs y or y vs x
+	xwidth = x2 - x1
+	ywidth = y2 - y1
+	if(xwidth < ywidth)
+		vsX = 0 //sum and graph vs Y
+	endif
+
+
+	WAVE data       = V_getDetectorDataW(gCurDispType,detStr) //this will be the linear data
+	Make/O/N=(max(xwidth, ywidth) + 1) Position, AvgCounts
+	AvgCounts = 0
+	//set position wave
+	if(vsX)
+		position = p + x1
+	else
+		position = p + y1
+	endif
+	//convert the position to Detector coordinates
+	position += 1
+
+	//Compute the histogram (manually)
+	if(vsX)
+		for(xx = x1; xx <= x2; xx += 1) //outer loop is the "x-axis"
+			for(yy = y1; yy <= y2; yy += 1)
+				AvgCounts[xx - x1] += data[xx][yy]
+			endfor
+		endfor
+		AvgCounts /= (ywidth + 1)
+	else
+		for(yy = y1; yy <= y2; yy += 1)
+			for(xx = x1; xx <= x2; xx += 1)
+				AvgCounts[yy - y1] += data[xx][yy]
+			endfor
+		endfor
+		AvgCounts /= (xwidth + 1)
+	endif
+	GetMarquee/K //to keep from drawing the marquee on the new histo graph
+	//draw the graph, or just bring to the front with the new data
+	DoWindow/F VSANS_Histo
+	if(V_Flag != 1)
+		V_Draw_Histo()
+	endif
+
+	return (0)
+End
+
+//draws the histogram of the 2d data as specified by AvgCounts and Position
+//both wave are assumed to exist in the data folder. The SANS_Histogram() marquee
+//operation is responsible for creating them.
+//
+//
+Function V_Draw_Histo()
+
+	// this assumes I'm in the right data folder
+	WAVE AvgCounts = AvgCounts
+	WAVE Position = Position
+
+	Display/W=(197, 329, 567, 461)/K=1 AvgCounts vs Position
+	DoWindow/C VSANS_Histo
+	DoWindow/T VSANS_Histo, "Histogram"
+	ModifyGraph grid=1,mirror=2
+//	ModifyGraph mode=0
+	ModifyGraph mode=4,marker=8
+	ModifyGraph rgb=(21845, 21845, 21845)
+	ModifyGraph standoff=0
+	ModifyGraph hbFill=2
+	ModifyGraph useNegPat=1
+	ModifyGraph usePlusRGB=1
+	ModifyGraph useNegRGB=1
+	ModifyGraph hBarNegFill=2
+	ModifyGraph negRGB=(0, 0, 65535)
+	SetAxis/A/N=2 left
+	Label left, "Counts"
+	Label bottom, "Pixel (detector coordinates)"
+End
+
+
