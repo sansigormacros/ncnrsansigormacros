@@ -301,14 +301,20 @@ End
 
 //
 // Only the first element of the three is actually used
-// - the stored values are in cm, and converted to mm
 //
-// cal_x[0] = 0.03175 [cm] = 0.3175 mm/pixel
+// --- meaning that the correction is LINEAR ONLY
+//
+//
+// - the stored values in cal[] are in cm, and converted to mm
+//
 //
 // Since only the first element is used, the "correction" is linear.
 //
 // DENEX-TOFIX-DONE -- MAR 2023 -- this will work fine for the Denex, as long as cal_x and cal_y are set correctly
-//		(need to verify the values)
+//	(verified values entered August 2026)
+//
+// pix size = 0.94 mm (x and y)
+// fwhm = 1.6 mm (x and y)
 //
 Function V_NonLinearCorrection_B(string folder, WAVE dataW, WAVE cal_x, WAVE cal_y, string detStr, string destPath)
 
@@ -343,8 +349,18 @@ Function V_NonLinearCorrection_B(string folder, WAVE dataW, WAVE cal_x, WAVE cal
 	//	Wave cal_x = V_getDet_cal_x(folder,detStr)
 	//	Wave cal_y = V_getDet_cal_y(folder,detStr)
 
+// IF LINEAR - just use the first coefficient
 	data_realDistX[][] = cal_x[0] * p * 10 // cal_x and cal_y are in [cm], need mm
 	data_realDistY[][] = cal_y[0] * q * 10
+
+// IF NONLINEAR corrections are needed, use the full calculation
+// test this first - Newer style Ordela was always linear, so I never needed this
+// I don't think this is correct at all - is the calculation for the parabola centered?
+// - this form of the equation starts from the edge...
+//	data_realDistX[][] = cal_x[0]*p*10 + cal_x[1]*p*10*q + cal_x[2]*p*10*q*q
+//	data_realDistY[][] = cal_y[0]*p*10 + cal_y[1]*p*10*q + cal_y[2]*p*10*q*q
+
+
 
 	return (0)
 End

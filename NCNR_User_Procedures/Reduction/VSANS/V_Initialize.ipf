@@ -144,9 +144,9 @@ Constant kNum_y_HighRes_CCD = 1656
 
 //////// HIGH RESOLUTION (DENEX) DETECTOR  ///////////////
 
-// DENEX-TOFIX-WHEN-INSTALLED
-Constant kNum_x_Denex = 100 	// TODO -- as of Feb 2026, these values are not exactly known
-Constant kNum_y_Denex = 100		// 100x100 is Phil's current numbers, before real neutron operation
+// DENEX-TOFIX (DONE)
+Constant kNum_x_Denex = 200 		// FINAL values as of August 2026 based on real neutron operations
+Constant kNum_y_Denex = 200		// 
 
 
 ////////////////////////

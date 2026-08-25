@@ -3683,16 +3683,16 @@ Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 // DENEX-TOFIX-WHEN-INSTALLED
 //	pixSize_x = 1.9 // [mm]
 //	pixSize_y = 1.9 // [mm]
-	pixSize_x = 2.0 // [mm]
-	pixSize_y = 2.0 // [mm]
+	pixSize_x = 0.94 // [mm]		measured value August 2026
+	pixSize_y = 0.94 // [mm]
 
-	pixNum_x  = kNum_x_Denex
+	pixNum_x  = kNum_x_Denex		// now 200x200
 	pixNum_y  = kNum_y_Denex
 
 //	fwhm_x    = 0.19  // [cm]
 //	fwhm_y    = 0.19  // [cm]
-	fwhm_x    = 0.20  // [cm]
-	fwhm_y    = 0.20  // [cm]
+	fwhm_x    = 0.16  // [cm]		measured value August 2026 (1.6 mm)
+	fwhm_y    = 0.16  // [cm]
 	dead_time = 1e-20 // [s]
 //
 //	detStr         = "B"
@@ -3756,8 +3756,8 @@ Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 			V_writeDet_pixel_fwhm_y(fname, "B", fwhm_y)
 
 			// patch beam center (nominal x,y) [pixel] values for "B"
-			V_writeDet_beam_center_x(fname, "B", 51)
-			V_writeDet_beam_center_y(fname, "B", 51)
+			V_writeDet_beam_center_x(fname, "B", 101)
+			V_writeDet_beam_center_y(fname, "B", 101)
 
 			// write the detector description as "Denex" so it can be identified
 			V_writeDetDescription(fname, "B", "Denex")
