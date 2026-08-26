@@ -668,7 +668,7 @@ Function/S N_RunDigitString(variable num)
 	//		if(num<100)
 	//			numStr = "0"+num2str(num)
 	//		else
-	numStr = num2str(num)
+	numStr = num2istr(num)			// 2026-- be sure to return integer since num is larger now
 	//		Endif
 	//	Endif
 	//Print "numstr = ",numstr
