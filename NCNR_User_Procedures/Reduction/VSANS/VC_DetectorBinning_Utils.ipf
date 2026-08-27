@@ -1092,7 +1092,7 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	// way to the corners
 
 	if(cmpstr(type, "B") == 0)
-		if(isDenex(type,1) == 1)
+		if(isDenex(folderStr,1) == 1)
 			nq = 600
 		else
 			nq = 5000		// for the CCD, especially if all 3 panels were active

@@ -2757,10 +2757,10 @@ EndMacro
 // it to FAKE Denex data
 //
 // DENEX-TOFIX-WHEN-INSTALLED
-Proc V_Patch_Back_Detector_Denex(lo, hi)
+Proc V_Make_Back_Detector_Denex(lo, hi)
 	variable lo, hi
 
-	V_fPatch_BackDetector_Denex(lo, hi)
+	V_fMake_BackDetector_Denex(lo, hi)
 EndMacro
 
 Proc V_Patch_Back_XYPixelSize(lo, hi)
@@ -3091,7 +3091,7 @@ End
 // hi is the last file number (inclusive)
 //
 // DENEX-TOFIX-WHEN-INSTALLED
-Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
+Function V_fMake_BackDetector_Denex(variable lo, variable hi)
 
 	Abort "this replaces the detector data. only for making fake data. modify function for patching"
 
@@ -3154,9 +3154,9 @@ Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 			V_writeDet_pixel_fwhm_x(fname, detStr, fwhm_x)
 			V_writeDet_pixel_fwhm_y(fname, detStr, fwhm_y)
 
-			// patch beam center (nominal x,y) [cm] values
-			V_writeDet_beam_center_x(fname, detStr, 251)
-			V_writeDet_beam_center_y(fname, detStr, 241)
+			// patch beam center (nominal x,y) [pixel] values
+			V_writeDet_beam_center_x(fname, detStr, 101)
+			V_writeDet_beam_center_y(fname, detStr, 101)
 
 			///////////////
 			//		// fake data by taking the real CCD data and trimming the center 512x512 out of it
@@ -3169,14 +3169,14 @@ Function V_fPatch_BackDetector_Denex(variable lo, variable hi)
 			//			V_writeDet_IntegratedCount(fname,detStr,sum(tmpData))
 			///////////////
 
-//			//		// fake data by taking the center 100x100 out of the previous 512x512
-//						Wave data = V_getDetectorDataW(fname,detStr)
-//						tmpData[][] = data[p+206][q+206]
-//						V_writeDetectorData(fname,detStr,tmpData)
-//
-//			// update the integrated count on the "detector"
-//						V_writeDet_IntegratedCount(fname,detStr,sum(tmpData))
-//			///////////////
+			//		// fake data by taking the center 200x200 out of the previous 512x512
+						Wave data = V_getDetectorDataW(fname,detStr)
+						tmpData[][] = data[p+156][q+156]
+						V_writeDetectorData(fname,detStr,tmpData)
+
+			// update the integrated count on the "detector"
+						V_writeDet_IntegratedCount(fname,detStr,sum(tmpData))
+			///////////////
 			
 			// write the detector description as "Denex" so it can be identified
 			V_writeDetDescription(fname, detStr, descriptionStr)

@@ -71,10 +71,11 @@ Menu "VSANS"
 		"-"
 		"Patch New Files 2026", V_Patch_Files_2026()
 		"Batch Convert VSANS to Unlinked HDF",BatchConvert_VSANS_to_UnlinkedHDF()
-//		"Patch Back Detector Denex Values", V_Patch_Back_Detector_Denex()  // DENEX-TOFIX
 		"Patch Data Start Time",V_Patch_DataStartTime()		//only to "fake" Denex time
 		"Use Zero Point Tables?", V_UseZeroPointTables()
 		"Visualize Adjusted Tubes", V_ShiftDetectorPanel()
+		"-"
+		"Make Fake Denex Data", V_Make_Back_Detector_Denex()  // DENEX-TOFIX
 	End
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"
