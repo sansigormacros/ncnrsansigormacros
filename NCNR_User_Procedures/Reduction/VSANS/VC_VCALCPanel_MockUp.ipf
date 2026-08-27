@@ -1666,7 +1666,8 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_x = 64
 	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_y = 55
 
-	//// BACK DETECTOR -- DENEX-TOFIX-WHEN-INSTALLED
+	//// BACK DETECTOR -- DENEX-TOFIX-WHEN-INSTALLED--DONE
+	// 20 cm should be good (200 pix x 0.94 mm/pix ~ 20 cm)
 	variable/G gBack_w = 20 //w and h for the back detector [cm]
 	variable/G gBack_h = 20
 

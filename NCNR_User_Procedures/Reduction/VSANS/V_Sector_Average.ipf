@@ -551,7 +551,11 @@ Function V_fDoSectorBin_QxQy2D(string folderStr, string type, string collimation
 	//
 	// DENEX-TOFIX-WHEN-INSTALLED-OK
 	if(cmpstr(type, "B") == 0)
-		nq = 800
+		if(isDenex(type,1) == 1)
+			nq = 800
+		else
+			nq = 5000		// for the CCD, especially if all 3 panels were active
+		endif
 	else
 		nq = 600
 	endif

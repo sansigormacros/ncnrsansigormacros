@@ -203,8 +203,8 @@ Function V_WritePerfectSpatialCalib(string filename)
 	// is the resolution in X and Y the same??
 
 	if(isDenex(filename,1))
-		tmpPix = 0.15			//WRONG 0.15 cm resolution
-		// is the resolution in X and Y the same??
+		tmpPix = 0.094 		//[cm]			//Correct as of AUG 2026 per Phil
+		// is the resolution in X and Y the same? Assumed yes for the Denex, but not exactly...
 	else
 			//assume CCD
 		if(gHighResBinning == 1)

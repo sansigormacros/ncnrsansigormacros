@@ -1082,15 +1082,23 @@ Function VC_fDoBinning_QxQy2D(string folderStr, string type, string collimationS
 	//
 	// - the needs for the back detector keep shrinkng as the CCDs die...
 	//
-	//  DENEX-TOFIX-WHEN-INSTALLED   is nq large enough (or too large) for the # of points generated
+	//  ??   is nq large enough (or too large) for the # of points generated
+	// 		DENEX-TOFIX-DONE
 	//
 	// need nq = 5000 for CCD??
 	//
+	// as of AUG 2026, the Denex is 200x200, so if 1 DeltaQ ~ 1 pixel, then 
+	// 600 q bins should be way more than enough (200/2 * sqrt(2)/2) to bin alll the
+	// way to the corners
 
 	if(cmpstr(type, "B") == 0)
-		nq = 5000
+		if(isDenex(type,1) == 1)
+			nq = 600
+		else
+			nq = 5000		// for the CCD, especially if all 3 panels were active
+		endif
 	else
-		nq = 600
+		nq = 600	// all other panels
 	endif
 
 	//******(DONE) averaged data stored in the (type) data folder-- right now, folderStr is forced to ""
