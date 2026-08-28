@@ -3816,3 +3816,135 @@ Function V_fPatch_Files_2026(variable lo, variable hi, variable skip)
 End
 
 
+/////////////////////////////
+// patches ALL of the files
+Function V_Patch_Denex_Parameters()
+
+	Variable lo,hi
+	
+	V_Find_LoHi_RunNum(lo, hi) //lo,hi returned pbr
+	NVAR gFileNum_Lo_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
+	NVAR gFileNum_Hi_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
+	gFileNum_Lo_xy = lo
+	gFileNum_Hi_xy = hi
+
+	DoAlert 1,"This wlll patch August 2026 Denex parameters to ALL files in the data folder. OK?"
+	if(V_flag == 1)
+		V_fPatch_Denex_Parameters(lo, hi)
+		
+		//once patched, clean all of them from memory so that they will need to be reloaded
+		// with correct values
+		variable t1 = ticks
+		variable numToClean
+		numToClean = V_CleanupData_w_Progress(0, 1)
+
+		Print "Cleaned # files = ", numToClean
+		Print "Cleanup time (s) = ", (ticks - t1) / 60.15
+		variable cleanupTime = (ticks - t1) / 60.15
+		
+	else
+		DoAlert 0,"No files patched"
+	endif
+	
+	return(0)
+End
+
+
+////////////////////////
+//
+// updates the parameters for the Denex detector resolution
+//
+// can be applied multiple times, does not rescale values
+//
+////////////////////////
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+// DENEX-TOFIX-WHEN-INSTALLED
+Function V_fPatch_Denex_Parameters(variable lo, variable hi)
+
+	variable ii, jj
+	string fname, detStr, descriptionStr
+
+	variable pixSize_x, pixSize_y
+	variable pixNum_x, pixNum_y
+	variable fwhm_x, fwhm_y, dead_time
+
+// DENEX-TOFIX-DONE
+	pixSize_x = 0.94 // [mm]		measured value August 2026
+	pixSize_y = 0.94 // [mm]
+
+	pixNum_x  = kNum_x_Denex		// now 200x200, set in V_Initialize.ipf
+	pixNum_y  = kNum_y_Denex
+
+
+	fwhm_x    = 0.16  // [cm]		measured value August 2026 (1.6 mm)
+	fwhm_y    = 0.16  // [cm]
+	dead_time = 1e-20 // [s]
+//
+//	detStr         = "B"
+//	descriptionStr = "Denex"
+
+// DENEX-TOFIX-DONE
+	Make/O/D/N=3 cal_x, cal_y
+	cal_x[0] = pixSize_x / 10 // pixel size in [cm]
+	cal_x[1] = 1              // values to ensure linear behavior in calculation
+	cal_x[2] = 10000
+	cal_y[0] = pixSize_y / 10 // pixel size in [cm]
+	cal_y[1] = 1
+	cal_y[2] = 10000
+//
+
+	//loop over all files
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+// any top-level patching?
+
+// back beamstop shape (circle) is #2? (I think) and 12 mm (size=diam)
+//			V_writeBeamStopC3num_stop(fname, 2)
+//			V_writeBeamStopC3_shape(fname,"circle")
+//			V_writeBeamStopC3_size(fname, 12)
+
+		
+			// patch cal_x and cal_y
+			V_writeDet_cal_x(fname, "B", cal_x)
+			V_writeDet_cal_y(fname, "B", cal_y)
+
+			// patch n_pix_x and y
+			V_writeDet_pixel_num_x(fname, "B", pixNum_x)
+			V_writeDet_pixel_num_y(fname, "B", pixNum_y)
+
+			// patch pixel size x and y [mm]
+			V_writeDet_x_pixel_size(fname, "B", pixSize_x)
+			V_writeDet_y_pixel_size(fname, "B", pixSize_y)
+
+			// patch dead time
+			// TODO: enter a proper value here once it's actually measured
+			V_writeDetector_deadtime_B(fname, "B", dead_time)
+
+			// patch fwhm_x and y
+			// TODO: verify the values once they are measured, and also the UNITS!!! [cm]???
+			V_writeDet_pixel_fwhm_x(fname, "B", fwhm_x)
+			V_writeDet_pixel_fwhm_y(fname, "B", fwhm_y)
+
+			// patch beam center (nominal x,y) [pixel] values for "B"
+			V_writeDet_beam_center_x(fname, "B", 101)
+			V_writeDet_beam_center_y(fname, "B", 101)
+
+			// write the detector description as "Denex" so it can be identified
+			V_writeDetDescription(fname, "B", "Denex")
+			
+
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+	KillWaves/Z cal_x, cal_y
+	return (0)
+End
+

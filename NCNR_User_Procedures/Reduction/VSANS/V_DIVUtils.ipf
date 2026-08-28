@@ -715,7 +715,7 @@ Proc H_Setup_VSANS_DIV_Structure()
 	variable ny = V_getDet_pixel_num_y("RAW", "B")
 
 	// fill the correct description string in the DIV file so that the (B) panel will display correctly
-	string detType = V_IdentifyBackDetectorType("RAW")
+	string detType = V_IdentifyBackDetectorType("RAW",1)
 
 	Print "DIV setup nx,ny = ", nx, ny
 
@@ -1007,11 +1007,13 @@ Function V_UpdatePanelDisp()
 		ModifyGraph tlOffset=-2
 
 // DENEX-TOFIX-DONE
-		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder,1))  == 0)
-			variable nx = V_getDet_pixel_num_x(folder, "B")
-			variable ny = V_getDet_pixel_num_y(folder, "B")
-			ModifyGraph height={Aspect, ny / nx}
-		endif
+// DIV file won't have the back detector description
+//		if(cmpstr("Denex", V_IdentifyBackDetectorType(folder,1))  == 0)
+//			variable nx = V_getDet_pixel_num_x(folder, "B")
+//			variable ny = V_getDet_pixel_num_y(folder, "B")
+//			ModifyGraph height={Aspect, ny / nx}
+			ModifyGraph height={Aspect, 1}		//square display
+//		endif
 
 		SetActiveSubwindow ##
 		return (0)

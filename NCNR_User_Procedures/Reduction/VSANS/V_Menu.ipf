@@ -69,13 +69,14 @@ Menu "VSANS"
 		"Patch Beam Stop", V_Patch_BeamStop()
 		"Patch Sample Aperture", V_Patch_SampleAperture2()
 		"-"
-		"Patch New Files 2026", V_Patch_Files_2026()
-		"Batch Convert VSANS to Unlinked HDF",BatchConvert_VSANS_to_UnlinkedHDF()
+//		"Batch Convert VSANS to Unlinked HDF",BatchConvert_VSANS_to_UnlinkedHDF()
 		"Patch Data Start Time",V_Patch_DataStartTime()		//only to "fake" Denex time
 		"Use Zero Point Tables?", V_UseZeroPointTables()
 		"Visualize Adjusted Tubes", V_ShiftDetectorPanel()
 		"-"
-		"Make Fake Denex Data", V_Make_Back_Detector_Denex()  // DENEX-TOFIX
+		"Patch Denex Parameters", V_Patch_Denex_Parameters()
+//		"Patch New Denex Files 2026", V_Patch_Files_2026()
+//		"Make Fake Denex Data", V_Make_Back_Detector_Denex()  // DENEX-TOFIX
 	End
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"
