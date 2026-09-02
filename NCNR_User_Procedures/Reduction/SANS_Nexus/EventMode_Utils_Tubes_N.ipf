@@ -1347,6 +1347,13 @@ Function FrameOverlap(variable lam, variable fwhm, variable sdd)
 
 	delta = (time_hi - time_lo) //hi wavelength is slower
 
+
+	String str=""
+	str = "Accounting for 2 sigma = 95% of distribution\r\r"
+	str += "Use bin widths larger than frame overlap time (s) = "+ num2str(delta)
+	DoAlert 0,str
+
+
 	Print "Accounting for 2 sigma = 95% of distribution"
 	Print "Use bin widths larger than frame overlap time (s) = ", delta
 
