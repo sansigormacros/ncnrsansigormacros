@@ -47,6 +47,10 @@ Menu "VSANS"
 		"Median+Read Noise", pV_MedianAndReadNoiseBack()
 	End
 	SubMenu "Nexus File Corrections"
+		"Patch Denex Parameters", V_Patch_Denex_Parameters()
+//		"Patch New Denex Files 2026", V_Patch_Files_2026()
+//		"Make Fake Denex Data", V_Make_Back_Detector_Denex()  // DENEX-TOFIX
+		"-"
 		// TODO UUID -- make this inoperational if UUID is being used (DONE)
 		// and ?? write a way to update UUID?? (NOT DONE)
 		"Patch GroupID using CatTable", V_Patch_GroupID_catTable()		
@@ -73,10 +77,6 @@ Menu "VSANS"
 		"Patch Data Start Time",V_Patch_DataStartTime()		//only to "fake" Denex time
 		"Use Zero Point Tables?", V_UseZeroPointTables()
 		"Visualize Adjusted Tubes", V_ShiftDetectorPanel()
-		"-"
-		"Patch Denex Parameters", V_Patch_Denex_Parameters()
-//		"Patch New Denex Files 2026", V_Patch_Files_2026()
-//		"Make Fake Denex Data", V_Make_Back_Detector_Denex()  // DENEX-TOFIX
 	End
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"
@@ -95,14 +95,17 @@ Menu "VSANS"
 		"-"
 		"Detector Panel Count Report", pV_DetPanelCountReport()
 		"Plot Dead Time Per Tube", V_PlotDeadTime()
-		"Plot Event Stream per Panel", V_EventStream_by_Panel()
-		"Differentiate One Panel", pV_Differentiate_onePanel()
-		"Estimate Frame Overlap", V_EstFrameOverlap()
 		"-"
 		"Quick Save WORK to 2D NXcanSAS", V_QuickSave_as_NXcanSAS2D()
 		"Load+Display QxQy_ASCII DAT", V_LoadQxQy_ASCII_DAT_VSANS()
 		"Load+Display 2D NXcanSAS", V_Display_2D_VSANS()
-
+	End
+	SubMenu "Event Mode"
+		"Plot Event Stream per Panel", V_EventStream_by_Panel()
+		"Differentiate One Panel", pV_Differentiate_onePanel()
+		"Estimate Frame Overlap", V_EstFrameOverlap()
+		"Insert Time Reset",V_InsertTimeReset()
+	End
 		//
 		//		"Setup_VSANS_DIV_Struct"
 		//		"Save_VSANS_DIV_Nexus"
@@ -121,7 +124,7 @@ Menu "VSANS"
 		//		"IgorOnly_Save_VSANS_Nexus"
 		//		"IgorOnly_Setup_SANS_Struct"
 		//		"IgorOnly_Save_SANS_Struct"
-	End
+	
 	SubMenu "Polarization"
 		"Scan for new cells", V_ScanCellParams()
 		//		"Load 2D NXcanSAS",V_Load_2D_NXCS()

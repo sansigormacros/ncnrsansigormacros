@@ -2347,6 +2347,11 @@ Function V_FrameOverlap(variable lam, variable fwhm, variable sdd)
 
 	delta = (time_hi - time_lo) //hi wavelength is slower
 
+	String str=""
+	str = "Accounting for 2 sigma = 95% of distribution\r\r"
+	str += "Use bin widths larger than frame overlap time (s) = "+ num2str(delta)
+	DoAlert 0,str
+
 	Print "Accounting for 2 sigma = 95% of distribution"
 	Print "Use bin widths larger than frame overlap time (s) = ", delta
 
@@ -2400,3 +2405,52 @@ End
 //Resample/DOWN=1000 rescaledTime_samp;DelayUpdate
 //
 //
+
+
+Proc V_InsertTimeReset(period)
+	Variable period
+	
+	V_fInsertTimeReset(period)
+End
+
+
+//
+// for event data where a time reset signal was not sent, but the data is
+// actually periodic. This function will reset the time at the input period.
+// This assumes that you accurately know the period, and that the start time
+// of the data coincides with the start time of the period, otherwise the 
+// time reset will happen in the middle of the cycle.
+//
+// period = period of reset (s)
+//
+// This can also be done efficiently with mod(period) (multithreaded?)
+//
+Function V_fInsertTimeReset(period)
+	Variable period
+	
+	SetDataFolder root:Packages:NIST:VSANS:Event:
+	
+	Wave rescaledTime = rescaledTime
+	Wave timePt = timePt
+	Variable rollTime,rollTicks,ii,delta
+	
+	Variable period_ticks
+	
+	period_ticks = period*1e7		//period in ticks
+	
+
+	for(ii=0;ii<numpnts(rescaledTime)-1;ii+=1)
+		if(rescaledTime[ii] > period)
+			MultiThread timePt[ii,] -= period_ticks
+			MultiThread rescaledTime[ii,] -= period
+		endif
+	endfor
+
+// updates the longest time (as does every operation of adjusting the data)
+	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
+	t_longest = waveMax(rescaledTime)
+	SetDataFolder root:
+
+	return(0)
+End
+
