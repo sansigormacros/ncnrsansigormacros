@@ -418,7 +418,10 @@ Function ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr, 
 	putCount_time("RAW", ctTime_STO * timeFract)
 //	putCount_time("RAW", timeWidth[varNum])  //use the bin time width directly (NO--wrong for OSC data)
 	// label
-	putSampleDescription("RAW", label_STO + " slice " + num2str(varNum))
+	String str1="",str2=""
+	str1 = "\r\tBin Start-Stop = "+num2str(binEnd[varNum])+" s to "+num2str(binEnd[varNum+1])+" s"
+	str2 = "\r\tBin Width = "+ num2str(timeWidth[varNum]) +" s"
+	putSampleDescription("RAW", label_STO + " slice " + num2str(varNum) + str1 + str2)
 
 // for testing
 	Duplicate/O timeWidth sliceCtTimes

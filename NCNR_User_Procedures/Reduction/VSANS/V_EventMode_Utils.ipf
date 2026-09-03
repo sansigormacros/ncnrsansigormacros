@@ -752,7 +752,16 @@ Function V_ChangeSliceViewSetVar(string ctrlName, variable varNum, string varStr
 //	V_putCount_time("RAW", timeWidth_F[varNum])			//use the bin time width directly (NO--wrong for OSC data)
 	
 	// label
-	V_putSampleDescription("RAW", label_STO + " slice " + num2str(varNum))
+	String str1="",str2=""
+	str1 = "\r\tBin Start-Stop = "+num2str(binEnd_F[varNum])+" s to "+num2str(binEnd_F[varNum+1])+" s"
+	str2 = "\r\tBin Width = "+ num2str(timeWidth_F[varNum]) +" s"
+	
+	V_putSampleDescription("RAW", label_STO + "\r\tslice " + num2str(varNum) + str1 + str2)
+
+	//fake a click on the status button
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2		//mouse up
+	V_StatusButtonProc(ba)
 
 // for testing
 	Duplicate/O timeWidth_F sliceCtTime
