@@ -77,6 +77,8 @@ Menu "SANS"
 		"Patch Purpose", Patch_Purpose_catTable()
 		"Patch Intent", Patch_Intent_catTable()
 		"-"
+		"Patch Beamstop Diameter",Patch_BeamstopDiameter()
+		"-"
 		"Patch Detector Calibration Panel"
 		"Patch Detector Deadtime Panel"
 		"Patch Atten Table Panel"

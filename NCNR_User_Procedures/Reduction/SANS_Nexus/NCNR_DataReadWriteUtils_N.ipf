@@ -1343,8 +1343,8 @@ End
 //
 // -- more items can be added in the future as needed
 //
-Macro VerifyImportantUnits(fname)
-	string fname
+Proc VerifyImportantUnits(fname)
+	string fname="sans119334"
 
 	fVerifyImportantUnits(fname)
 EndMacro
@@ -1356,10 +1356,7 @@ Function fVerifyImportantUnits(string fname)
 
 	Print "*** units listed are the EXPECTED units ****"
 	Print "*** verify that the value makes sense with the listed units ***"
-
-	// detector distance [cm]
-	val = getDet_distance(fname)
-	printf "Detector distance = %g [cm]\r", val
+	Print ""
 
 	// number of (x,y) pixels
 	val  = getDet_pixel_num_x(fname)
@@ -1389,6 +1386,8 @@ Function fVerifyImportantUnits(string fname)
 	val2 = getDet_y_pixel_size(fname)
 	printf "Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
 
+	Print ""
+	
 	// beam stop size, diameter in [cm], shape
 	val = getBeamStop_size(fname)
 	printf "Beam stop diameter = %g [cm]\r", val
@@ -1398,6 +1397,12 @@ Function fVerifyImportantUnits(string fname)
 	val = getSampleAp_size(fname)
 	printf "Sample aperture diameter = %g [mm]\r", val
 
+	Print ""
+
+	// detector distance [cm]
+	val = getDet_distance(fname)
+	printf "Sample to detector distance = %g [cm]\r", val
+	
 	// sample aperture distance (to sample, only a few cm) = [cm]
 	val = getSampleAp_distance(fname)
 	printf "Sample aperture distance (short) = %g [cm]\r", val
@@ -1410,5 +1415,7 @@ Function fVerifyImportantUnits(string fname)
 	val = getSourceAp_distance(fname)
 	printf "Source aperture distance = %g [cm]\r", val
 
+	Print ""
+	Print ""
 	return (0)
 End

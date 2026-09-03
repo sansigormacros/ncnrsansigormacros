@@ -2864,7 +2864,7 @@ End
 
 
 /////////////////////////////
-Macro Patch_BeamstopDiameter(lo, hi, diam_cm)
+Proc Patch_BeamstopDiameter(lo, hi, diam_cm)
 	variable lo=119183, hi=119208, diam_cm=5.08
 
 	fPatch_BeamstopDiameter(lo, hi, diam_cm)
@@ -2901,3 +2901,4 @@ Function fPatch_BeamstopDiameter(variable lo, variable hi, variable val)
 
 	return (0)
 End
+

@@ -1626,10 +1626,16 @@ Function OverwriteFilePurpose(String filePath)
 End
 
 //
-Macro VerifyImportantUnits(fname,detStr)
-	string fname,detStr
+//Macro V_VerifyImportantUnits(fname,detStr)
+//	string fname,detStr
+//
+//	V_fVerifyImportantUnits(fname,detStr)
+//EndMacro
 
-	V_fVerifyImportantUnits(fname,detStr)
+Macro V_VerifyImportantUnits(fname)
+	string fname
+
+	V_fVerifyImportantUnits(fname)
 EndMacro
 
 //
@@ -1646,14 +1652,19 @@ EndMacro
 //
 // the units listed here are the units I'm expecting for the calculations
 //
-Function V_fVerifyImportantUnits(string fname, string detStr)
+//Function V_fVerifyImportantUnits(string fname, string detStr)
+Function V_fVerifyImportantUnits(string fname)
 
 	variable val, val2
 	string str
+	
+	string detStr="FL"
 
 	Print "*** units listed are the EXPECTED units ****"
 	Print "*** verify that the value makes sense with the listed units ***"
-
+	Print "	Detector Panel FL"
+	Print ""
+	
 	// detector distance [cm]
 	val = V_getDet_NominalDistance(fname,detStr)
 	printf "Detector distance = %g [cm]\r", val
@@ -1688,15 +1699,18 @@ Function V_fVerifyImportantUnits(string fname, string detStr)
 
 //	// beam stop size, diameter in [mm]
 	val = V_getBeamStopC2_size(fname)
-	printf "Beam stop diameter C2 = %g [mm]\r", val
+	printf "Beam stop diameter C2 (middle) = %g [mm]\r", val
 
 	val = V_getBeamStopC3_size(fname)
-	printf "Beam stop diameter C3 = %g [mm]\r", val
+	printf "Beam stop diameter C3 (back) = %g [mm]\r", val
 
 	// sample aperture diameter [mm]
-	str = V_getSampleAp_size(fname)
-	printf "Sample aperture diameter = %s [mm]\r", str
+	// Call V_getSampleAp2_size since V_getSampleAp_size is the "internal" sample aperture, (not ever used?)
+	val = V_getSampleAp2_size(fname)
+	printf "Sample aperture diameter = %g [cm]\r", val
 
+	Print ""
+	
 	// sample aperture distance (to sample, only a few cm) = [cm]
 	val = V_getSampleAp_distance(fname)
 	printf "Sample aperture distance to sample = %g [cm]\r", val
@@ -1709,5 +1723,7 @@ Function V_fVerifyImportantUnits(string fname, string detStr)
 	val = V_getSourceAp_distance(fname)
 	printf "Source aperture distance = %g [cm]\r", val
 
+	Print ""
+	Print ""
 	return (0)
 End

@@ -15,6 +15,7 @@ Menu "VSANS"
 	"VSANS Help"
 	"Help for These Menu Items", VSANS_Menu_Help()
 	"-"
+	"Main Control Panel", V_Redraw_MainPanel()
 	"VCALC", VCALC_Panel()
 	"VSANS Preferences", Show_VSANSPreferences_Panel()
 	"Turn Laptop Mode ON", V_SetLaptopMode()
