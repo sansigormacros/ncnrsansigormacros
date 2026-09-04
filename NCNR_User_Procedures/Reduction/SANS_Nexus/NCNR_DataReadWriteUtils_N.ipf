@@ -1405,15 +1405,15 @@ Function fVerifyImportantUnits(string fname)
 	
 	// sample aperture distance (to sample, only a few cm) = [cm]
 	val = getSampleAp_distance(fname)
-	printf "Sample aperture distance (short) = %g [cm]\r", val
+	printf "Sample aperture to sample distance (short) = %g [cm]\r", val
 
-	// source aperture diameter [mm] (derived a text value!)
+	// source aperture diameter [mm] (derived from a text value!)
 	val = getSourceAp_size(fname)
 	printf "Source aperture diameter = %g [mm]\r", val
 
 	// source aperture distance [cm]
 	val = getSourceAp_distance(fname)
-	printf "Source aperture distance = %g [cm]\r", val
+	printf "Source aperture to sample distance = %g [cm]\r", val
 
 	Print ""
 	Print ""

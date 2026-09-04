@@ -49,6 +49,7 @@ Menu "VSANS"
 	End
 	SubMenu "Nexus File Corrections"
 		"Patch Denex Parameters", V_Patch_Denex_Parameters()
+		"Patch Panel Offset",V_Patch_PanelOffset_2026()
 //		"Patch New Denex Files 2026", V_Patch_Files_2026()
 //		"Make Fake Denex Data", V_Make_Back_Detector_Denex()  // DENEX-TOFIX
 		"-"

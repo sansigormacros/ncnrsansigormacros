@@ -1655,48 +1655,69 @@ EndMacro
 //Function V_fVerifyImportantUnits(string fname, string detStr)
 Function V_fVerifyImportantUnits(string fname)
 
-	variable val, val2
-	string str
+	variable val, val2, nn,ii
+	string str,detStr
 	
-	string detStr="FL"
-
 	Print "*** units listed are the EXPECTED units ****"
 	Print "*** verify that the value makes sense with the listed units ***"
-	Print "	Detector Panel FL"
+//	Print "	Detector Panel FL"
 	Print ""
 	
-	// detector distance [cm]
-	val = V_getDet_NominalDistance(fname,detStr)
-	printf "Detector distance = %g [cm]\r", val
+//// loop over all detectors
+	nn = ItemsInList(ksDetectorListAll)
+	for(ii = 0; ii < nn; ii += 1)
+		detStr     = StringFromList(ii, ksDetectorListAll, ";")
+		Print "DETECTOR  ",detStr
+		print ""
+		
+		// detector distance [cm]
+		val = V_getDet_NominalDistance(fname,detStr)
+		printf "Sample to detector distance = %g [cm]\r", val
+		val = V_getDet_ActualDistance(fname, detStr)
+		printf "Sample to detector distance (with setback) = %g [cm]\r", val
+		
+		// number of (x,y) pixels
+		val  = V_getDet_pixel_num_x(fname,detStr)
+		val2 = V_getDet_pixel_num_y(fname,detStr)
+		printf "Number of pixels (x,y) = (%d,%d)\r", val, val2
+	
+		// beam center (x,y) in [cm]
+		val  = V_getDet_beam_center_x(fname,detStr)
+		val2 = V_getDet_beam_center_y(fname,detStr)
+		printf "Beam center in [cm] (x,y) = (%g,%g)\r", val, val2
+	
+		// lateral offset in [cm]
+		val = V_getDet_LateralOffset(fname,detStr)
+		printf "Lateral offset = %g [cm]\r", val
+	
+		// pixel fwhm (x,y) in [cm]
+		val  = V_getDet_pixel_fwhm_x(fname,detStr)
+		val2 = V_getDet_pixel_fwhm_y(fname,detStr)
+		printf "Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
+	
+		// tube width [mm]
+		val = V_getDet_tubeWidth(fname,detStr)
+		printf "Tube width = %g [mm]\r", val
+	
+		// pixel size (x,y) in [mm]
+		val  = V_getDet_x_pixel_size(fname,detStr)
+		val2 = V_getDet_y_pixel_size(fname,detStr)
+		printf "Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
+	
+		Print ""
 
-	// number of (x,y) pixels
-	val  = V_getDet_pixel_num_x(fname,detStr)
-	val2 = V_getDet_pixel_num_y(fname,detStr)
-	printf "Number of pixels (x,y) = (%d,%d)\r", val, val2
-
-	// beam center (x,y) in [cm]
-	val  = V_getDet_beam_center_x(fname,detStr)
-	val2 = V_getDet_beam_center_y(fname,detStr)
-	printf "Beam center in [cm] (x,y) = (%g,%g)\r", val, val2
-
-	// lateral offset in [cm]
-	val = V_getDet_LateralOffset(fname,detStr)
-	printf "Lateral offset = %g [cm]\r", val
-
-	// pixel fwhm (x,y) in [cm]
-	val  = V_getDet_pixel_fwhm_x(fname,detStr)
-	val2 = V_getDet_pixel_fwhm_y(fname,detStr)
-	printf "Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
-
-	// tube width [mm]
-	val = V_getDet_tubeWidth(fname,detStr)
-	printf "Tube width = %g [mm]\r", val
-
-	// pixel size (x,y) in [mm]
-	val  = V_getDet_x_pixel_size(fname,detStr)
-	val2 = V_getDet_y_pixel_size(fname,detStr)
-	printf "Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
-
+	endfor
+///// end loop over all detectors
+	
+	// wavelength (A)
+	val = V_getWavelength(fname)
+	printf "Wavelength = %g [A]\r", val
+	
+	// wavelength spread (dimensionless)
+	val = V_getWavelength_spread(fname)
+	printf "Wavelength spread = %g [-]\r", val
+	
+	
 //	// beam stop size, diameter in [mm]
 	val = V_getBeamStopC2_size(fname)
 	printf "Beam stop diameter C2 (middle) = %g [mm]\r", val
@@ -1715,13 +1736,23 @@ Function V_fVerifyImportantUnits(string fname)
 	val = V_getSampleAp_distance(fname)
 	printf "Sample aperture distance to sample = %g [cm]\r", val
 
+	// source aperture shape
+	str = V_getSourceAp_shape(fname)
+	printf "Source aperture shape = %s\r", str
+
 	// source aperture diameter [mm] (derived a text value!)
 	str = V_getSourceAp_size(fname)
 	printf "Source aperture diameter = %s [mm]\r", str
 
+	// if rectangular, height and width will be reported
+	val   = V_getSourceAp_height(fname) 
+	printf "Source aperture height = %g [mm]\r", val
+	val    = V_getSourceAp_width(fname) 
+	printf "Source aperture width = %g [mm]\r", val
+
 	// source aperture distance [cm]
 	val = V_getSourceAp_distance(fname)
-	printf "Source aperture distance = %g [cm]\r", val
+	printf "Source aperture to sample distance = %g [cm]\r", val
 
 	Print ""
 	Print ""

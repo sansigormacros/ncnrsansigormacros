@@ -3616,9 +3616,6 @@ Function V_Patch_Files_2026()
 	gFileNum_Lo_xy = lo
 	gFileNum_Hi_xy = hi
 
-//   V_writeReductionComments(fname,str)
-//   V_getReductionComments(string fname)
-
 
 	String desc = V_getDetDescription(V_FindFileFromRunNumber(lo), "B")
 	if(cmpstr(desc,"Denex")==0)
@@ -3945,6 +3942,114 @@ Function V_fPatch_Denex_Parameters(variable lo, variable hi)
 	endfor
 
 	KillWaves/Z cal_x, cal_y
+	return (0)
+End
+
+
+
+
+/////////////////////////////
+// patches ALL of the files
+Function V_Patch_PanelOffset_2026()
+
+	Variable lo,hi
+	
+	V_Find_LoHi_RunNum(lo, hi) //lo,hi returned pbr
+	NVAR gFileNum_Lo_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
+	NVAR gFileNum_Hi_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
+	gFileNum_Lo_xy = lo
+	gFileNum_Hi_xy = hi
+
+
+	Variable undo = 0		// undo = 1 means mm/10=cm, undo = 2 means dm*10=cm 
+	
+	DoAlert 1,"Yes = convert mm to cm\rNo = undo the conversion"
+	undo = V_flag
+
+	V_fPatch_PanelOffset_2026(lo, hi, undo)
+	
+	//once patched, clean all of them from memory so that they will need to be reloaded
+	// with correct values
+	variable t1 = ticks
+	variable numToClean
+	numToClean = V_CleanupData_w_Progress(0, 1)
+
+	Print "Cleaned # files = ", numToClean
+	Print "Cleanup time (s) = ", (ticks - t1) / 60.15
+	variable cleanupTime = (ticks - t1) / 60.15
+			
+	return(0)
+End
+
+
+
+
+////////////////////////
+//
+// Changes needed to make the "new" data collected after startup to be useable.
+// --many of the changes are for the new Denex HR detector, but some are new errors
+//   that have been introduced
+//
+////////////////////////
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+// skip = 1 skips the det offset correction, =0 applies the correction
+//
+// DENEX-TOFIX-WHEN-INSTALLED
+Function V_fPatch_PanelOffset_2026(variable lo, variable hi, variable undo)
+
+	variable ii, jj
+	string fname, detStr, descriptionStr
+
+	Variable val=0, multFac
+
+	if(undo == 1)
+		multFac = 0.1
+	else
+		multFac = 10
+	endif
+	
+	//loop over all files
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+			/////////////	F and M carriages		
+			// !! MUST be sure to NOT re-apply these corrections - or the offset will continue to shrink!
+			//
+			// lateral and vertical offsets for all F, M panels were written in mm, need cm
+			val = V_getDet_LateralOffset(fname, "FL")
+			V_writeDet_LateralOffset(fname, "FL", val*multFac)
+
+			val = V_getDet_LateralOffset(fname, "FR")
+			V_writeDet_LateralOffset(fname, "FR", val*multFac)
+
+			val = V_getDet_LateralOffset(fname, "ML")
+			V_writeDet_LateralOffset(fname, "ML", val*multFac)
+
+			val = V_getDet_LateralOffset(fname, "MR")
+			V_writeDet_LateralOffset(fname, "MR", val*multFac)
+			
+			val = V_getDet_VerticalOffset(fname, "FT")
+			V_writeDet_VerticalOffset(fname, "FT", val*multFac)
+			
+			val = V_getDet_VerticalOffset(fname, "FB")
+			V_writeDet_VerticalOffset(fname, "FB", val*multFac)
+			
+			val = V_getDet_VerticalOffset(fname, "MT")
+			V_writeDet_VerticalOffset(fname, "MT", val*multFac)
+			
+			val = V_getDet_VerticalOffset(fname, "MB")
+			V_writeDet_VerticalOffset(fname, "MB", val*multFac)
+				
+////////		
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
 	return (0)
 End
 
