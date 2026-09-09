@@ -1656,105 +1656,155 @@ EndMacro
 Function V_fVerifyImportantUnits(string fname)
 
 	variable val, val2, nn,ii
-	string str,detStr
+	string str,detStr,tmpStr
+
+	NewNotebook/F=1/N=HdrWin as "Header_Values"
+		
+	tmpStr = "FILE:  "+fname+"\r"
+	Notebook HdrWin,fsize=13,fstyle=1,textRGB=(0,0,0),text=tmpStr
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
+
+//	Notebook HdrWin,fstyle=1,text=sname
+//	tmpStr = "\t\t"+date_time+"\r"
+//	Notebook HdrWin,fstyle=0,text=tmpStr
+
 	
-	Print "*** units listed are the EXPECTED units ****"
-	Print "*** verify that the value makes sense with the listed units ***"
+	sprintf tmpStr, "*** units listed are the EXPECTED units ****\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+	
+	sprintf tmpStr,"*** verify that the value makes sense with the listed units ***\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
 //	Print "	Detector Panel FL"
-	Print ""
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
 	
 //// loop over all detectors
 	nn = ItemsInList(ksDetectorListAll)
 	for(ii = 0; ii < nn; ii += 1)
 		detStr     = StringFromList(ii, ksDetectorListAll, ";")
-		Print "DETECTOR  ",detStr
-		print ""
+		sprintf tmpStr, "DETECTOR  "+detStr+"\r"
+		Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+		Notebook HdrWin,textRGB=(0,0,0),text="\r"
+
 		
 		// detector distance [cm]
 		val = V_getDet_NominalDistance(fname,detStr)
-		printf "Sample to detector distance = %g [cm]\r", val
+		sprintf tmpStr,"Sample to detector distance = %g [cm]\r", val
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr	
+			
 		val = V_getDet_ActualDistance(fname, detStr)
-		printf "Sample to detector distance (with setback) = %g [cm]\r", val
-		
+		sprintf tmpStr,"Sample to detector distance (with setback) = %g [cm]\r", val
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+				
 		// number of (x,y) pixels
 		val  = V_getDet_pixel_num_x(fname,detStr)
 		val2 = V_getDet_pixel_num_y(fname,detStr)
-		printf "Number of pixels (x,y) = (%d,%d)\r", val, val2
+		sprintf tmpStr,"Number of pixels (x,y) = (%d,%d)\r", val, val2
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 	
 		// beam center (x,y) in [cm]
 		val  = V_getDet_beam_center_x(fname,detStr)
 		val2 = V_getDet_beam_center_y(fname,detStr)
-		printf "Beam center in [cm] (x,y) = (%g,%g)\r", val, val2
-	
+		sprintf tmpStr,"Beam center in [cm] (x,y) = (%g,%g)\r", val, val2
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+			
 		// lateral offset in [cm]
 		val = V_getDet_LateralOffset(fname,detStr)
-		printf "Lateral offset = %g [cm]\r", val
-	
+		sprintf tmpStr,"Lateral offset = %g [cm]\r", val
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+			
 		// pixel fwhm (x,y) in [cm]
 		val  = V_getDet_pixel_fwhm_x(fname,detStr)
 		val2 = V_getDet_pixel_fwhm_y(fname,detStr)
-		printf "Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
-	
+		sprintf tmpStr,"Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+			
 		// tube width [mm]
 		val = V_getDet_tubeWidth(fname,detStr)
-		printf "Tube width = %g [mm]\r", val
-	
+		sprintf tmpStr,"Tube width = %g [mm]\r", val
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+			
 		// pixel size (x,y) in [mm]
 		val  = V_getDet_x_pixel_size(fname,detStr)
 		val2 = V_getDet_y_pixel_size(fname,detStr)
-		printf "Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
-	
-		Print ""
+		sprintf tmpStr,"Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
+		Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+			
+		Notebook HdrWin,textRGB=(0,0,0),text="\r"
 
 	endfor
 ///// end loop over all detectors
+
+	tmpStr = "COLLIMATION:\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
 	
 	// wavelength (A)
 	val = V_getWavelength(fname)
-	printf "Wavelength = %g [A]\r", val
-	
+	sprintf tmpStr,"Wavelength = %g [A]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+			
 	// wavelength spread (dimensionless)
 	val = V_getWavelength_spread(fname)
-	printf "Wavelength spread = %g [-]\r", val
-	
+	sprintf tmpStr,"Wavelength spread = %g [-]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 	
 //	// beam stop size, diameter in [mm]
 	val = V_getBeamStopC2_size(fname)
-	printf "Beam stop diameter C2 (middle) = %g [mm]\r", val
+	sprintf tmpStr,"Beam stop diameter C2 (middle) = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
 	val = V_getBeamStopC3_size(fname)
-	printf "Beam stop diameter C3 (back) = %g [mm]\r", val
+	sprintf tmpStr,"Beam stop diameter C3 (back) = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
 	// sample aperture diameter [mm]
 	// Call V_getSampleAp2_size since V_getSampleAp_size is the "internal" sample aperture, (not ever used?)
 	val = V_getSampleAp2_size(fname)
-	printf "Sample aperture diameter = %g [cm]\r", val
+	sprintf tmpStr,"Sample aperture diameter = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
-	Print ""
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
+
 	
 	// sample aperture distance (to sample, only a few cm) = [cm]
 	val = V_getSampleAp_distance(fname)
-	printf "Sample aperture distance to sample = %g [cm]\r", val
+	sprintf tmpStr,"Sample aperture distance to sample = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
 	// source aperture shape
 	str = V_getSourceAp_shape(fname)
-	printf "Source aperture shape = %s\r", str
+	sprintf tmpStr,"Source aperture shape = %s\r", str
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
 	// source aperture diameter [mm] (derived a text value!)
 	str = V_getSourceAp_size(fname)
-	printf "Source aperture diameter = %s [mm]\r", str
+	sprintf tmpStr,"Source aperture diameter = %s [mm]\r", str
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
 	// if rectangular, height and width will be reported
 	val   = V_getSourceAp_height(fname) 
-	printf "Source aperture height = %g [mm]\r", val
+	sprintf tmpStr,"Source aperture height = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	val    = V_getSourceAp_width(fname) 
-	printf "Source aperture width = %g [mm]\r", val
+	sprintf tmpStr,"Source aperture width = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
 	// source aperture distance [cm]
 	val = V_getSourceAp_distance(fname)
-	printf "Source aperture to sample distance = %g [cm]\r", val
+	sprintf tmpStr,"Source aperture to sample distance = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
-	Print ""
-	Print ""
+	Notebook HdrWin,textRGB=(0,0,0),text="\r\r"
+
+
+//return to the top of the notebook
+//	Notebook HdrWin selection={startOfFile,startOfFile}
+	
 	return (0)
 End
+
+
+
+
+
+

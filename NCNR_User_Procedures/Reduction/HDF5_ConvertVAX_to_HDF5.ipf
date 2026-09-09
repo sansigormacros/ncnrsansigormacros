@@ -1341,7 +1341,55 @@ End
 
 //////////////////////////////////////////////////
 
+//need to have a MSK file loaded already
 
+Macro Convert_MSK_File(style,instrStr)
+	String style="Tubes",instrStr=""
+	Prompt style, "Detector style", popup "Tubes;Ordela;"
+	Prompt instrStr, "Instrument", popup "[NG3SANSNN];[NGBSANSNN];[NG7SANSNN];"
+
+	String/G root:DetectorStyle = style
+
+
+	SetupStructure()
+	Make/O/D/N=23 root:Packages:NIST:MSK:IntegersRead
+	Make/O/D/N=52 root:Packages:NIST:MSK:RealsRead
+	Make/O/T/N=11 root:Packages:NIST:MSK:TextRead
+
+	//copy it to RAW
+	// need to make sure that the linear_data and linear_data_error exists (it won't in a VAX Mask file)
+	Duplicate/O root:Packages:NIST:MSK:data root:Packages:NIST:MSK:linear_data_error
+	Duplicate/O root:Packages:NIST:MSK:data root:Packages:NIST:MSK:linear_data
+	root:Packages:NIST:MSK:linear_data_error = 0.01
+	
+	// Fake RTI waves to "copy" 
+	
+	CopyWorkContents("MSK","RAW")
+	
+	//instrument String 
+	//WAVE/T tw = root:Packages:NIST:RAW:TextRead
+	root:Packages:NIST:RAW:TextRead[3] = instrStr
+		
+	// fill the structure
+	FillStructureFromRTI()
+	
+	// tweak a few items
+	
+
+	
+	//linear_data_error and linear_data
+	Duplicate/O root:toExport:entry:instrument:detector:data root:toExport:entry:instrument:detector:linear_data_error
+	Duplicate/O root:toExport:entry:instrument:detector:data root:toExport:entry:instrument:detector:linear_data
+	root:toExport:entry:instrument:detector:linear_data_error = 0.01
+					
+	// save it
+	//don't use .nxs, or it'll be confused with raw data
+	// yes use MASK in the name - this is the only way to identify MASK data
+	VAXSaveGroupAsHDF5("root:toExport", "MASK_Description_MSK.hdf5")		
+
+End
+
+//////////////////////////////////////////////////
 
 Macro BatchConvertToHDF5(firstFile,lastFile,style,instr)
 	Variable firstFile=1,lastFile=10
