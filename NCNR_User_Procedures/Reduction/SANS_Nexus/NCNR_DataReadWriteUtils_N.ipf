@@ -1352,70 +1352,113 @@ EndMacro
 Function fVerifyImportantUnits(string fname)
 
 	variable val, val2
-	string str
+	string str,tmpStr
 
-	Print "*** units listed are the EXPECTED units ****"
-	Print "*** verify that the value makes sense with the listed units ***"
-	Print ""
+	DoWindow/F HdrWin
+	if(V_flag == 0)
+		NewNotebook/F=1/N=HdrWin as "Header_Values"
+	else
+		Notebook HdrWin selection={startOfFile, endOfFile}
+		Notebook HdrWin,textRGB=(0,0,0),text="\r"
+	endif
+	
+	tmpStr = "FILE:  "+fname+"\r"
+	Notebook HdrWin,fsize=13,fstyle=1,textRGB=(0,0,0),text=tmpStr
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
+
+	sprintf tmpStr, "*** units listed are the EXPECTED units ****\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+	
+	sprintf tmpStr,"*** verify that the value makes sense with the listed units ***\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
+
 
 	// number of (x,y) pixels
 	val  = getDet_pixel_num_x(fname)
 	val2 = getDet_pixel_num_y(fname)
-	printf "Number of pixels (x,y) = (%d,%d)\r", val, val2
-
+	sprintf tmpStr,"Number of pixels (x,y) = (%d,%d)\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// beam center (x,y) in pixels
 	val  = getDet_beam_center_x(fname)
 	val2 = getDet_beam_center_y(fname)
-	printf "Beam center in pixels (x,y) = (%g,%g)\r", val, val2
-
+	sprintf tmpStr,"Beam center in pixels (x,y) = (%g,%g)\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// lateral offset in [cm]
 	val = getDet_LateralOffset(fname)
-	printf "Lateral offset = %g [cm]\r", val
-
+	sprintf tmpStr,"Lateral offset = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// pixel fwhm (x,y) in [cm]
 	val  = getDet_pixel_fwhm_x(fname)
 	val2 = getDet_pixel_fwhm_y(fname)
-	printf "Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
-
+	sprintf tmpStr,"Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// tube width [mm]
 	val = getDet_tubeWidth(fname)
-	printf "Tube width = %g [mm]\r", val
-
+	sprintf tmpStr,"Tube width = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// pixel size (x,y) in [mm]
 	val  = getDet_x_pixel_size(fname)
 	val2 = getDet_y_pixel_size(fname)
-	printf "Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
-
-	Print ""
+	sprintf tmpStr,"Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
 	
 	// beam stop size, diameter in [cm], shape
 	val = getBeamStop_size(fname)
-	printf "Beam stop diameter = %g [cm]\r", val
-	print "Beam stop shape = ", getBeamStop_shape(fname)
-
+	sprintf tmpStr,"Beam stop diameter = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	sprintf tmpStr,"Beam stop shape = %s\r", getBeamStop_shape(fname)
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// sample aperture diameter [mm]
 	val = getSampleAp_size(fname)
-	printf "Sample aperture diameter = %g [mm]\r", val
+	sprintf tmpStr,"Sample aperture diameter = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
 
-	Print ""
 
 	// detector distance [cm]
 	val = getDet_distance(fname)
-	printf "Sample to detector distance = %g [cm]\r", val
-	
+	sprintf tmpStr,"Sample to detector distance = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+		
 	// sample aperture distance (to sample, only a few cm) = [cm]
 	val = getSampleAp_distance(fname)
-	printf "Sample aperture to sample distance (short) = %g [cm]\r", val
-
+	sprintf tmpStr,"Sample aperture to sample distance (short) = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// source aperture diameter [mm] (derived from a text value!)
 	val = getSourceAp_size(fname)
-	printf "Source aperture diameter = %g [mm]\r", val
-
+	sprintf tmpStr,"Source aperture diameter = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	// source aperture distance [cm]
 	val = getSourceAp_distance(fname)
-	printf "Source aperture to sample distance = %g [cm]\r", val
+	sprintf tmpStr,"Source aperture to sample distance = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
-	Print ""
-	Print ""
+	// wavelength
+	val = getWavelength(fname)
+	sprintf tmpStr,"Wavelength = %g [A]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// wavelength spread
+	val = getWavelength_spread(fname)
+	sprintf tmpStr,"Wavelength spread = %g [-]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+			
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
+
+
 	return (0)
 End

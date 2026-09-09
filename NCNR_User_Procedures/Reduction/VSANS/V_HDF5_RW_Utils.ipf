@@ -1658,7 +1658,13 @@ Function V_fVerifyImportantUnits(string fname)
 	variable val, val2, nn,ii
 	string str,detStr,tmpStr
 
-	NewNotebook/F=1/N=HdrWin as "Header_Values"
+	DoWindow/F HdrWin
+	if(V_flag == 0)
+		NewNotebook/F=1/N=HdrWin as "Header_Values"
+	else
+		Notebook HdrWin selection={startOfFile, endOfFile}
+		Notebook HdrWin,textRGB=(0,0,0),text="\r"
+	endif
 		
 	tmpStr = "FILE:  "+fname+"\r"
 	Notebook HdrWin,fsize=13,fstyle=1,textRGB=(0,0,0),text=tmpStr
