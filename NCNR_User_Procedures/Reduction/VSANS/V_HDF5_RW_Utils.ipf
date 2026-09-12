@@ -1758,15 +1758,43 @@ Function V_fVerifyImportantUnits(string fname)
 	sprintf tmpStr,"Beam stop diameter C2 (middle) = %g [mm]\r", val
 	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
+	// beamstop 3 shape
+	str = V_getBeamStopC3_shape(fname)
+	sprintf tmpStr,"BeamStop C3 (back) shape = %s\r", str
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	val = V_getBeamStopC3_size(fname)
 	sprintf tmpStr,"Beam stop diameter C3 (back) = %g [mm]\r", val
 	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
 
+	val = V_getBeamStopC3_height(fname)
+	sprintf tmpStr,"Beam stop height C3 (back) = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	val = V_getBeamStopC3_width(fname)
+	sprintf tmpStr,"Beam stop width C3 (back) = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
+		
 	// sample aperture diameter [mm]
 	// Call V_getSampleAp2_size since V_getSampleAp_size is the "internal" sample aperture, (not ever used?)
+	str = V_getSampleAp2_shape(fname)
+	sprintf tmpStr,"Sample aperture shape = %s\r", str
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
 	val = V_getSampleAp2_size(fname)
 	sprintf tmpStr,"Sample aperture diameter = %g [cm]\r", val
 	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	val = V_getSampleAp2_height(fname)
+	sprintf tmpStr,"Sample aperture height = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	val = V_getSampleAp2_width(fname)
+	sprintf tmpStr,"Sample aperture width = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
 
 	Notebook HdrWin,textRGB=(0,0,0),text="\r"
 
@@ -1803,6 +1831,24 @@ Function V_fVerifyImportantUnits(string fname)
 	Notebook HdrWin,textRGB=(0,0,0),text="\r\r"
 
 
+	tmpStr = "SAMPLE:\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+
+	// sample label
+	str = V_getSampleDescription(fname)
+	sprintf tmpStr,"Sample description = %s\r", str
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	// sample thickness [cm]
+	val = V_getSampleThickness(fname)
+	sprintf tmpStr,"Sample thickness = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr	
+
+	// sample transmission
+	val = V_getSampleTransmission(fname)
+	sprintf tmpStr,"Sample transmission = %g [-]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr	
+		
 //return to the top of the notebook
 //	Notebook HdrWin selection={startOfFile,startOfFile}
 	

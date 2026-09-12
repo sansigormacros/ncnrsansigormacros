@@ -877,6 +877,8 @@ Function V_BuildCatSortPanel()
 		sc = 0.7
 	endif
 
+	NVAR gValidUUID = root:Packages:NIST:VSANS:Globals:gValidUUID
+
 	//PauseUpdate
 	NewPanel/W=(600 * sc, 360 * sc, 790 * sc, 730 * sc)/K=1 as "CAT - Sort Panel"
 	DoWindow/C CatSortPanel
@@ -887,7 +889,11 @@ Function V_BuildCatSortPanel()
 	Button SortDateAndTimeButton, pos={sc * 25, 68 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="Date and Time"
 	Button SortIntentButton, pos={sc * 25, 98 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="Intent"
 	Button SortPurposeButton, pos={sc * 25, 128 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="Purpose"
-	Button SortIDButton, pos={sc * 25, 158 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="Group ID"
+	if(gValidUUID)
+		Button SortIDButton, pos={sc * 25, 158 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="UUID"	
+	else
+		Button SortIDButton, pos={sc * 25, 158 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="Group ID"	
+	endif
 	Button SortLambdaButton, pos={sc * 25, 188 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="Lambda"
 	Button SortCountTimButton, pos={sc * 25, 218 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="Count Time"
 	Button SortSDDFButton, pos={sc * 25, 248 * sc}, size={sc * 140, 24 * sc}, proc=V_CatVSANSTable_SortProc, title="SDD F"
@@ -991,8 +997,12 @@ Function V_CatVSANSTable_SortFunction(string ctrlName) // added by [davidm]
 
 		case "SortIDButton":
 			//			Sort G_ID,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
-			sortKey = "Group_ID"
-
+			NVAR gValidUUID = root:Packages:NIST:VSANS:Globals:gValidUUID
+			if(gValidUUID)
+				sortKey = "UUID"
+			else
+				sortKey = "Group_ID"
+			endif
 			break
 
 		case "SortLambdaButton":

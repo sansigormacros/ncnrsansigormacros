@@ -2672,7 +2672,11 @@ End
 
 
 /////////////////////////////
-Macro Patch_SANS_Files_2026(lo, hi)
+//
+// only needed for the first few data files collected in August 2026
+// Sept 2026 files do not appear to need any patching except for the sample thickness
+//
+Proc Patch_SANS_Files_2026(lo, hi)
 	variable lo=119183, hi=119208
 
 	fPatch_SANS_Files_2026(lo, hi)
@@ -2901,4 +2905,91 @@ Function fPatch_BeamstopDiameter(variable lo, variable hi, variable val)
 
 	return (0)
 End
+
+
+
+/////////////////////////////
+// patches ALL of the files
+Function PatchSampleThickness()
+
+	Variable lo,hi
+	
+	Find_LoHi_RunNum(lo, hi) //lo,hi returned pbr
+	NVAR gFileNum_Lo_xy = root:myGlobals:gFileNum_Lo_xy
+	NVAR gFileNum_Hi_xy = root:myGlobals:gFileNum_Hi_xy
+	gFileNum_Lo_xy = lo
+	gFileNum_Hi_xy = hi
+
+
+	Variable undo = 0		// undo = 1 means mm/10=cm, undo = 2 means dm*10=cm 
+	
+	DoAlert 2,"Yes = convert mm to cm\rNo = undo the conversion"
+	
+	if(V_flag == 3)
+		// user cancelled
+		DoAlert 0,"No files modified"
+		return(0)
+	endif
+	undo = V_flag
+
+	fPatchSampleThickness(lo, hi, undo)
+	
+	//once patched, clean all of them from memory so that they will need to be reloaded
+	// with correct values
+	variable t1 = ticks
+	variable numToClean
+	numToClean = CleanupData_w_Progress(0, 1)
+
+	Print "Cleaned # files = ", numToClean
+	Print "Cleanup time (s) = ", (ticks - t1) / 60.15
+	variable cleanupTime = (ticks - t1) / 60.15
+			
+	return(0)
+End
+
+
+
+
+
+////////////////////////
+//
+// data collected starting August 2026 may have the thickness entered in [mm], but needs to be in [cm]
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+// skip = 1 skips the correction, =0 applies the correction
+//
+Function fPatchSampleThickness(variable lo, variable hi, variable undo)
+
+	variable ii, jj
+	string fname, detStr, descriptionStr
+
+	Variable val=0, multFac
+
+	if(undo == 1)
+		multFac = 0.1
+	else
+		multFac = 10
+	endif
+	
+	//loop over all files
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+		// !! MUST be sure to NOT re-apply these corrections - or the thickness will continue to shrink!
+
+			val = getSampleThickness(fname)
+			writeSampleThickness(fname, val*multFac)
+			
+////////		
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+	return (0)
+End
+
 

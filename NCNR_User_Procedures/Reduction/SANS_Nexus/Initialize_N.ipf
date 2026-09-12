@@ -170,6 +170,10 @@ Function InitGlobals()
 	//set XML globals
 	string/G root:Packages:NIST:gXMLLoader_Title = ""
 
+	// for patching files
+	Variable/G root:myGlobals:gFileNum_Lo_xy = 1
+	Variable/G root:myGlobals:gFileNum_Hi_xy = 2
+
 	return (0)
 End
 

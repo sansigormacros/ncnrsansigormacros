@@ -1202,6 +1202,8 @@ Function S_BuildCatSortPanel()
 		sc = 0.7
 	endif
 
+	NVAR gValidUUID = root:myGlobals:gValidUUID
+	
 	//PauseUpdate
 	NewPanel/W=(600 * sc, 360 * sc, 790 * sc, 740 * sc)/K=1 as "CAT - Sort Panel"
 	DoWindow/C CatSortPanel
@@ -1220,7 +1222,11 @@ Function S_BuildCatSortPanel()
 
 	Button SortIntentButton, pos={sc * 25, 278 * sc}, size={sc * 140, 24 * sc}, proc=S_CatSANSTable_SortProc, title="Intent"
 	Button SortPurposeButton, pos={sc * 25, 308 * sc}, size={sc * 140, 24 * sc}, proc=S_CatSANSTable_SortProc, title="Purpose"
-	Button SortIDButton, pos={sc * 25, 338 * sc}, size={sc * 140, 24 * sc}, proc=S_CatSANSTable_SortProc, title="Group ID"
+	If(gValidUUID)
+		Button SortIDButton, pos={sc * 25, 338 * sc}, size={sc * 140, 24 * sc}, proc=S_CatSANSTable_SortProc, title="UUID"
+	else
+		Button SortIDButton, pos={sc * 25, 338 * sc}, size={sc * 140, 24 * sc}, proc=S_CatSANSTable_SortProc, title="Group ID"	
+	endif
 End
 
 Proc S_CatSANSTable_SortProc(ctrlName) : ButtonControl // added by [davidm]
@@ -1292,8 +1298,12 @@ Function S_CatSANSTable_SortFunction(string ctrlName) // added by [davidm]
 			break
 
 		case "SortIDButton":
-			sortKey = "Group_ID"
-
+			NVAR gValidUUID = root:myGlobals:gValidUUID
+			if(gValidUUID)
+				sortKey = "UUID"
+			else
+				sortKey = "Group_ID"
+			endif
 			break
 
 		case "SortLambdaButton":

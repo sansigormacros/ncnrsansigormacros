@@ -885,9 +885,14 @@ Proc V_fDeriveBeamCenters(x_FrontReference, y_FrontReference, x_MiddleReference,
 	newYCtr_cm[6] = y_MiddleReference + kBCtrDelta_MT_y
 
 	// default value for B (approx center) in pixels
-	newXCtr_cm[8] = 340
-	newYCtr_cm[8] = 828
-
+	if(isDenex("RAW",1)
+		newXCtr_cm[8] = 100.1
+		newYCtr_cm[8] = 100.1
+	else
+		newXCtr_cm[8] = 340
+		newYCtr_cm[8] = 828
+	endif
+	
 	return
 EndMacro
 
@@ -993,6 +998,9 @@ Function V_MakeCorrelationMatrix()
 	return (0)
 End
 
+//
+// not called -- use Proc V_Patch_xyCtr_Panel() : Panel instead
+//
 Function V_AutoBeamCenter()
 
 	NVAR gIgnoreBack = root:Packages:NIST:VSANS:Globals:gIgnoreDetB

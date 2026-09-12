@@ -1456,7 +1456,29 @@ Function fVerifyImportantUnits(string fname)
 	val = getWavelength_spread(fname)
 	sprintf tmpStr,"Wavelength spread = %g [-]\r", val
 	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
-			
+
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
+
+
+	tmpStr = "SAMPLE:\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+
+	// sample label
+	str = getSampleDescription(fname)
+	sprintf tmpStr,"Sample description = %s\r", str
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	// sample thickness [cm]
+	val = getSampleThickness(fname)
+	sprintf tmpStr,"Sample thickness = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr	
+
+	// sample transmission
+	val = getSampleTransmission(fname)
+	sprintf tmpStr,"Sample transmission = %g [-]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr	
+		
+				
 	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
 
 

@@ -3963,7 +3963,13 @@ Function V_Patch_PanelOffset_2026()
 
 	Variable undo = 0		// undo = 1 means mm/10=cm, undo = 2 means dm*10=cm 
 	
-	DoAlert 1,"Yes = convert mm to cm\rNo = undo the conversion"
+	DoAlert 2,"Yes = convert mm to cm\rNo = undo the conversion"
+	
+	if(V_flag == 3)
+		// user cancelled
+		DoAlert 0,"No files modified"
+		return(0)
+	endif
 	undo = V_flag
 
 	V_fPatch_PanelOffset_2026(lo, hi, undo)
@@ -4052,4 +4058,91 @@ Function V_fPatch_PanelOffset_2026(variable lo, variable hi, variable undo)
 
 	return (0)
 End
+
+
+/////////////////////////////
+// patches ALL of the files
+Function V_PatchSampleThickness()
+
+	Variable lo,hi
+	
+	V_Find_LoHi_RunNum(lo, hi) //lo,hi returned pbr
+	NVAR gFileNum_Lo_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
+	NVAR gFileNum_Hi_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
+	gFileNum_Lo_xy = lo
+	gFileNum_Hi_xy = hi
+
+
+	Variable undo = 0		// undo = 1 means mm/10=cm, undo = 2 means dm*10=cm 
+	
+	DoAlert 2,"Yes = convert mm to cm\rNo = undo the conversion"
+	
+	if(V_flag == 3)
+		// user cancelled
+		DoAlert 0,"No files modified"
+		return(0)
+	endif
+	undo = V_flag
+
+	V_fPatchSampleThickness(lo, hi, undo)
+	
+	//once patched, clean all of them from memory so that they will need to be reloaded
+	// with correct values
+	variable t1 = ticks
+	variable numToClean
+	numToClean = V_CleanupData_w_Progress(0, 1)
+
+	Print "Cleaned # files = ", numToClean
+	Print "Cleanup time (s) = ", (ticks - t1) / 60.15
+	variable cleanupTime = (ticks - t1) / 60.15
+			
+	return(0)
+End
+
+
+
+
+
+////////////////////////
+//
+// data collected starting August 2026 may have the thickness entered in [mm], but needs to be in [cm]
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+// skip = 1 skips the det offset correction, =0 applies the correction
+//
+// DENEX-TOFIX-WHEN-INSTALLED
+Function V_fPatchSampleThickness(variable lo, variable hi, variable undo)
+
+	variable ii, jj
+	string fname, detStr, descriptionStr
+
+	Variable val=0, multFac
+
+	if(undo == 1)
+		multFac = 0.1
+	else
+		multFac = 10
+	endif
+	
+	//loop over all files
+	for(jj = lo; jj <= hi; jj += 1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+		// !! MUST be sure to NOT re-apply these corrections - or the thickness will continue to shrink!
+
+			val = V_getSampleThickness(fname)
+			V_writeSampleThickness(fname, val*multFac)
+			
+////////		
+		else
+			printf "run number %d not found\r", jj
+		endif
+	endfor
+
+	return (0)
+End
+
 

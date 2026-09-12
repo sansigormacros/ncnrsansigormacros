@@ -40,7 +40,7 @@ Menu "VSANS"
 		//		"Trim I(q) points",V_CombineDataGraph()
 		"-"
 		"Derive Beam Centers From Reference", V_DeriveBeamCenters()
-		"Derive Beam Centers From Open Beam Files", V_AutoBeamCenter()
+//		"Derive Beam Centers From Open Beam Files", V_AutoBeamCenter()
 		"-"
 		"Back Detector Saturation", Vm_NumberSaturated()
 		"Median Filter Back Det", pV_MedianFilterBack()
@@ -49,23 +49,24 @@ Menu "VSANS"
 	End
 	SubMenu "Nexus File Corrections"
 		"Patch Denex Parameters", V_Patch_Denex_Parameters()
-		"Patch Panel Offset",V_Patch_PanelOffset_2026()
+		"Correct Panel Offset (mm->cm)",V_Patch_PanelOffset_2026()
+		"Correct Sample Thickness (mm->cm)", V_PatchSampleThickness()
 //		"Patch New Denex Files 2026", V_Patch_Files_2026()
 //		"Make Fake Denex Data", V_Make_Back_Detector_Denex()  // DENEX-TOFIX
 		"-"
 		// TODO UUID -- make this inoperational if UUID is being used (DONE)
 		// and ?? write a way to update UUID?? (NOT DONE)
-		"Patch GroupID using CatTable", V_Patch_GroupID_catTable()		
+//		"Patch GroupID using CatTable", V_Patch_GroupID_catTable()		
 			
-		"Patch Purpose using CatTable", V_Patch_Purpose_catTable()
-		"Patch Intent using CatTable", V_Patch_Intent_catTable()
-		"-"
+//		"Patch Purpose using CatTable", V_Patch_Purpose_catTable()
+//		"Patch Intent using CatTable", V_Patch_Intent_catTable()
+//		"-"
 		//		"Flip Lateral Offset",V_PatchDet_Offset()
 		//		"Mark Lateral Flip Done",V_MarkLeftRightFlip_Done()
 		//		"Mark Lateral Flip NOT Done",V_MarkLeftRightFlip_Not_Done()
 		//		"Patch Detector Panel Gap",V_PatchDet_Gap()
 		//		"Read Detetcor Panel Gap",V_ReadDet_Gap()
-		"Patch Detector Distance", V_PatchDet_Distance()
+//		"Patch Detector Distance", V_PatchDet_Distance()
 		"Patch XY Pixel Size (M,F)", V_Patch_XYPixelSize()
 		"Patch XY Pixel Size (B)", V_Patch_Back_XYPixelSize()
 		"Patch Wavelength", V_Patch_Wavelength()
