@@ -271,7 +271,7 @@ Function V_getResolution(variable inQ, string folderStr, string type, string col
 	// narrowSlit_whiteBeam
 
 	// TODO: this is a messy way to identify the super white beam condition, and it needs to be
-	// done in a cleaner fashion (through IdentityCollimation) once NICE catches up
+	// done in a cleaner fashion (through IdentifyCollimation) once NICE catches up
 
 	//	String monoType = V_IdentifyMonochromatorType(folderStr)
 

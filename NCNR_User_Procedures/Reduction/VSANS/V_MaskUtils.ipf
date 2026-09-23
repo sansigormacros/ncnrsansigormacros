@@ -1222,7 +1222,7 @@ Proc V_Display_Det_Panels()
 	PopupMenu popup2, pos={sc * 200.00, 10.00 * sc}, size={sc * 83.00, 23.00 * sc}, title="Bin Type" //,proc=V_DummyPopMenuProc
 	PopupMenu popup2, mode=1, value=ksBinTypeStr
 	PopupMenu popup3, pos={sc * 350, 10.00 * sc}, size={sc * 83.00, 23.00 * sc}, title="Average Type" //,proc=V_DummyPopMenuProc
-	PopupMenu popup3, mode=1, value=#"\"Circular;Sector;Annular;\""
+	PopupMenu popup3, mode=1, value=#"\"Circular;Sector;Annular;Narrow_Slit;\""
 	//	Button button0,pos={sc*520.00,10.00*sc},size={sc*110.00,20.00*sc},proc=V_UpdatePanelsButtonProc,title="Update Display"
 	Button button1, pos={sc * 380.00, 40.00 * sc}, size={sc * 140.00, 20.00 * sc}, proc=V_ToggleFourMaskButtonProc, title="Regular Mask"
 	Button button2, pos={sc * 380.00, 70.00 * sc}, size={sc * 140.00, 20.00 * sc}, proc=V_ShowAvgRangeButtonProc, title="Special+Reg Mask"

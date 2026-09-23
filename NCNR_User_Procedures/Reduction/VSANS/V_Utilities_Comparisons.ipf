@@ -345,6 +345,7 @@ End
 // convergingPinholes
 //
 // graphite at this point is treated as pinhole, until I find evidence otherwise.
+// -- collimatio is pinhole, just with avery narrow wavelength distribution
 //
 //
 Function/S V_IdentifyCollimation(string fname)
