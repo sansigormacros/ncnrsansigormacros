@@ -362,7 +362,7 @@ Function V_CatTableHook(string infoStr)
 				PopupContextualMenu "Change Purpose;-;TRANSMISSION;SCATTERING;He3;"
 
 			else
-				PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;Print Values;"
+				PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;Print Header;"
 
 			endif
 
@@ -419,7 +419,7 @@ Function V_CatTableHook(string infoStr)
 						V_MREDPopMenuProc("", 1, "")
 					endif
 					break
-				case "Print Values":
+				case "Print Header":
 					GetSelection table, CatVSANSTable, 1
 					//					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
 					Print "Header Values in " + FileNames[V_StartRow]

@@ -1040,7 +1040,7 @@ Function CatTableHook(string infoStr)
 				PopupContextualMenu "Change Purpose;-;TRANSMISSION;SCATTERING;He3;"
 
 			else
-				PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;Print Values;"
+				PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;Print Header;"
 
 			endif
 
@@ -1089,7 +1089,7 @@ Function CatTableHook(string infoStr)
 						MREDPopMenuProc("", 1, "")
 					endif
 					break
-				case "Print Values":
+				case "Print Header":
 					GetSelection table, CatVSTable, 1
 					//					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
 					Print "Header Values in  " + FileNames[V_StartRow]
@@ -1365,4 +1365,154 @@ Function S_CatSANSTable_SortFunction(string ctrlName) // added by [davidm]
 End
 
 /////////////////
+
+
+// function to list selected contents of a file to verify that the values
+// have been stored (and are read in) with the expected units
+//
+// -- more items can be added in the future as needed
+//
+Proc VerifyImportantUnits(fname)
+	string fname="sans119334"
+
+	fVerifyImportantUnits(fname)
+EndMacro
+
+Function fVerifyImportantUnits(string fname)
+
+	variable val, val2
+	string str,tmpStr
+
+	DoWindow/F HdrWin
+	if(V_flag == 0)
+		NewNotebook/F=1/N=HdrWin as "Header_Values"
+	else
+		Notebook HdrWin selection={startOfFile, endOfFile}
+		Notebook HdrWin,textRGB=(0,0,0),text="\r"
+	endif
+	
+	tmpStr = "FILE:  "+fname+"\r"
+	Notebook HdrWin,fsize=13,fstyle=1,textRGB=(0,0,0),text=tmpStr
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
+
+	sprintf tmpStr, "*** units listed are the EXPECTED units ****\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+	
+	sprintf tmpStr,"*** verify that the value makes sense with the listed units ***\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+
+	Notebook HdrWin,textRGB=(0,0,0),text="\r"
+
+
+	// number of (x,y) pixels
+	val  = getDet_pixel_num_x(fname)
+	val2 = getDet_pixel_num_y(fname)
+	sprintf tmpStr,"Number of pixels (x,y) = (%d,%d)\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// beam center (x,y) in pixels
+	val  = getDet_beam_center_x(fname)
+	val2 = getDet_beam_center_y(fname)
+	sprintf tmpStr,"Beam center in pixels (x,y) = (%g,%g)\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// lateral offset in [cm]
+	val = getDet_LateralOffset(fname)
+	sprintf tmpStr,"Lateral offset = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// pixel fwhm (x,y) in [cm]
+	val  = getDet_pixel_fwhm_x(fname)
+	val2 = getDet_pixel_fwhm_y(fname)
+	sprintf tmpStr,"Pixel FWHM (x,y) = (%g,%g) [cm]\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// tube width [mm]
+	val = getDet_tubeWidth(fname)
+	sprintf tmpStr,"Tube width = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// pixel size (x,y) in [mm]
+	val  = getDet_x_pixel_size(fname)
+	val2 = getDet_y_pixel_size(fname)
+	sprintf tmpStr,"Pixel size (x,y) = (%g,%g) [mm]\r", val, val2
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
+	
+	// beam stop size, diameter in [cm], shape
+	val = getBeamStop_size(fname)
+	sprintf tmpStr,"Beam stop diameter = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	sprintf tmpStr,"Beam stop shape = %s\r", getBeamStop_shape(fname)
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// sample aperture diameter [mm]
+	val = getSampleAp_size(fname)
+	sprintf tmpStr,"Sample aperture diameter = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
+
+
+	// detector distance [cm]
+	val = getDet_distance(fname)
+	sprintf tmpStr,"Sample to detector distance = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+		
+	// sample aperture distance (to sample, only a few cm) = [cm]
+	val = getSampleAp_distance(fname)
+	sprintf tmpStr,"Sample aperture to sample distance (short) = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// source aperture diameter [mm] (derived from a text value!)
+	val = getSourceAp_size(fname)
+	sprintf tmpStr,"Source aperture diameter = %g [mm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// source aperture distance [cm]
+	val = getSourceAp_distance(fname)
+	sprintf tmpStr,"Source aperture to sample distance = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	// wavelength
+	val = getWavelength(fname)
+	sprintf tmpStr,"Wavelength = %g [A]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+	
+	// wavelength spread
+	val = getWavelength_spread(fname)
+	sprintf tmpStr,"Wavelength spread = %g [-]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
+
+
+	tmpStr = "SAMPLE:\r"
+	Notebook HdrWin,fstyle=1,textRGB=(0,0,0),text=tmpStr
+
+	// sample label
+	str = getSampleDescription(fname)
+	sprintf tmpStr,"Sample description = %s\r", str
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr
+
+	// sample thickness [cm]
+	val = getSampleThickness(fname)
+	sprintf tmpStr,"Sample thickness = %g [cm]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr	
+
+	// sample transmission
+	val = getSampleTransmission(fname)
+	sprintf tmpStr,"Sample transmission = %g [-]\r", val
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text=tmpStr	
+		
+				
+	Notebook HdrWin,fstyle=0,textRGB=(0,0,0),text="\r"
+
+
+	return (0)
+End
+
+
 
