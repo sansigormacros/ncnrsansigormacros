@@ -2763,12 +2763,14 @@ Proc V_Make_Back_Detector_Denex(lo, hi)
 	V_fMake_BackDetector_Denex(lo, hi)
 EndMacro
 
+// patches the back CCD detector pixel dimensions
 Proc V_Patch_Back_XYPixelSize(lo, hi)
 	variable lo, hi
 
 	V_fPatch_BackDetectorPixel(lo, hi)
 EndMacro
 
+// patches the F, M tube pixel dimensions
 Proc V_Patch_XYPixelSize(lo, hi)
 	variable lo, hi
 
@@ -3825,7 +3827,9 @@ Function V_Patch_Denex_Parameters()
 	gFileNum_Lo_xy = lo
 	gFileNum_Hi_xy = hi
 
-	DoAlert 1,"This wlll patch August 2026 Denex parameters to ALL files in the data folder. OK?"
+	String str = "This wlll patch the measured August 2026 Denex pixel dimensions to ALL files in the data folder"
+	str += " and label the detector type as Denex.    YES to proceed or NO to abort"
+	DoAlert 1, str
 	if(V_flag == 1)
 		V_fPatch_Denex_Parameters(lo, hi)
 		
